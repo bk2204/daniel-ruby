@@ -1,0 +1,212 @@
+#!/usr/bin/ruby
+
+require 'io/console'
+require 'openssl'
+require 'optparse'
+require 'set'
+
+module Daniel
+	class CharacterSet < ::Set
+		@@NO_NUMBERS = 1
+		@@NO_SPACES = 2
+		@@NO_SYMBOLS_TOP = 4
+		@@NO_SYMBOLS_OTHER = 8
+		@@NO_LETTERS = 16
+
+		def initialize(options = @@NO_SPACES | @@NO_SYMBOLS_OTHER)
+			super([])
+			(0x20..0x7e).each do |x|
+				add(x)
+			end
+			if options & @@NO_NUMBERS != 0
+				(0x30..0x39).each do |x|
+					delete(x)
+				end
+			end
+			if options & @@NO_SPACES != 0
+				delete(0x20)
+			end
+			if options & @@NO_SYMBOLS_TOP != 0
+				'!@#$%^&*()'.each_byte do |x|
+					delete(x)
+				end
+			end
+			if options & @@NO_SYMBOLS_OTHER != 0
+				'"\'+,-./:;<=>?[\\]_`{|}~'.each_byte do |x|
+					delete(x)
+				end
+			end
+			if options & @@NO_LETTERS != 0
+				(0x41..0x5a).each do |x|
+					delete(x)
+				end
+				(0x61..0x7a).each do |x|
+					delete(x)
+				end
+			end
+		end
+	end
+
+	class Parameters
+		attr_reader :flags, :length, :version
+
+		def initialize(flags = 10, length = 16, version = 0)
+			@flags = flags
+			@length = length
+			@version = version
+		end
+
+		def flags=(flags)
+			raise "Flags are too large!" if flags > 0x7f;
+			@flags = flags
+		end
+
+		def length=(length)
+			raise "Length is too large!" if length > 0x7f;
+			@length = length
+		end
+
+		def version=(version)
+			raise "Version is too large!" if version > 0x7f;
+			@version = version
+		end
+	end
+
+	class PasswordGenerator
+		def initialize(pass, version = 0)
+			@version = version
+			@prefix = "DrewPassChart: Version 0x%08x: " % version
+			@master_secret = process_strings([@prefix, "Master Secret: ", pass],
+											 "")
+			@checksum = nil
+		end
+
+		def checksum
+			return @checksum if !@checksum.nil?
+			@checksum = compute_checksum
+		end
+
+		def generate(code, parameters)
+			flags = "Flags 0x%08x: " % parameters.flags
+			version = "Version 0x%08x: " % parameters.version
+			set = CharacterSet.new parameters.flags
+
+			cipher = OpenSSL::Cipher::AES.new(256, :CTR)
+			cipher.encrypt
+			cipher.key = @master_secret
+			cipher.iv = process_strings([@prefix, "IV: ", flags, version, code],
+										@master_secret)
+			buffer = ([0] * 32).pack("C*")
+			result = ""
+			while result.length < parameters.length
+				result << cipher.update(buffer).bytes.select do |x|
+					set.include?(x)
+				end.pack("C*")
+			end
+			result[0, parameters.length]
+		end
+
+		def generate_from_reminder(reminder)
+			params = Parameters.new
+			csum = reminder[0..5]
+      code = reminder[12..-1]
+      flags, length, version = [reminder[6..11]].pack("H*").bytes.to_a
+			computed = checksum.bytes.map { |x| "%02x" % x }.join("")
+			if csum != computed
+				raise "Checksum mismatch (#{csum} != #{computed})"
+			end
+      params.flags = flags
+      params.length = length
+      params.version = version
+
+			generate(code, params)
+		end
+
+		def reminder(code, p)
+			[*(checksum.bytes), p.flags, p.length, p.version].map { |x|
+				"%02x" % x
+			}.join("") + code
+		end
+
+		private
+
+		def compute_checksum
+			digest = OpenSSL::Digest::SHA256.new
+			[@prefix, "Quick Check: ", @master_secret].each do |s|
+				digest.update([s.bytesize].pack("N"))
+				digest.update(s)
+			end
+			digest.digest[0, 3]
+		end
+
+		def process_strings(strings, salt)
+			str = ""
+			strings.each do |s|
+				str << [s.bytesize].pack("N") << s
+			end
+			digest = OpenSSL::Digest::SHA256.new
+			OpenSSL::PKCS5.pbkdf2_hmac(str, salt, 1024, 32, digest)
+		end
+	end
+
+	def self.parse_args
+		params = Parameters.new
+		OptionParser.new do |opts|
+			opts.banner = "Usage: daniel [-flv]"
+
+			opts.on("-v", "Set version") do |version|
+				params.version = version
+			end
+
+			opts.on("-f", "Set flags") do |flags|
+				params.flags = flags
+			end
+
+			opts.on("-l", "Set length") do |length|
+				params.length = length
+			end
+		end.parse!
+		params
+	end
+
+	def self.handle_command(code, params)
+		name, value = code.split(/=/)
+		sym = "#{name}=".to_sym
+		params.method(sym).call(value.to_i)
+	end
+
+	def self.main
+		params = parse_args
+		print "Please enter your master password: "
+		pass = STDIN.noecho(&:gets).chomp
+		puts "\n"
+		generator = PasswordGenerator.new pass, 0
+		print "# ok, checksum is ", generator.checksum.bytes.map { |x|
+			"%02x" % x
+		}.join(''), "\n"
+		if ARGV.empty?
+			begin
+				loop do
+					print "Enter code: "
+					code = STDIN.readline.chomp
+					if code[0] == "!"
+						handle_command(code, params)
+					else
+						puts "Password is: #{generator.generate(code, params)}"
+						puts "Reminder is: #{generator.reminder(code, params)}"
+					end
+				end
+			rescue EOFError
+				return
+			end
+		else
+			ARGV.each do |reminder|
+				puts "Password is: ", generator.generate_from_reminder(reminder)
+			end
+		end
+	end
+end
+
+if __FILE__ == $0
+	Daniel::main
+end
