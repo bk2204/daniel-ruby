@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'io/console'
 require 'openssl'
 require 'optparse'
 require 'set'
@@ -144,7 +143,7 @@ module Daniel
     end
 
     def reminder(code, p)
-      [*(checksum.bytes), p.flags, p.length, p.version].map { |x|
+      [checksum.bytes.to_a, p.flags, p.length, p.version].flatten.map { |x|
         "%02x" % x
       }.join("") + code
     end
@@ -201,6 +200,7 @@ module Daniel
     params = parse_args
     print "Please enter your master password: "
     begin
+      require 'io/console'
       pass = STDIN.noecho(&:gets).chomp
     rescue Errno::ENOTTY
       pass = STDIN.gets.chomp
