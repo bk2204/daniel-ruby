@@ -213,7 +213,7 @@ module Daniel
     if ARGV.empty?
       begin
         loop do
-          print "Enter code: "
+          print "Enter code: " if STDIN.isatty
           code = STDIN.readline.chomp
           if code[0] == "!"
             handle_command(code, params)
