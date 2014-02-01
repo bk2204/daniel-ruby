@@ -1,0 +1,158 @@
+daniel
+======
+
+What is it?
+-----------
+
+daniel is a fast password generator based on using a single master password.
+When generating a password, it produces a small "reminder" containing all the
+information necessary to reproduce the password, but only in conjunction with
+the master password.  Without the master password, the reminder is useless.
+
+How does it work?
+-----------------
+
+Simply run the script from the command line:
+
+-----
+% daniel
+Please enter your master password:
+-----
+
+Enter a strong master password.  This can actually be a passphrase: it can
+contain any text you like, as long as it's in UTF-8.  Be sure this is something
+you can remember, since your passwords cannot be recovered if you forget it.
+
+Then daniel will print out a six-character checksum.  This checksum is computed
+based on the master password, and it will likely be different if you
+accidentally mistype your master password.  This helps prevent you from
+generating a lot of passwords based on a mistyped passphrase and then being
+unable to reproduce them.
+
+daniel then prompts you for a code.  This code is used to generate a unique
+password.  One common technique is to use an abbreviated form of the domain
+name, so if you wanted to generate a password for Github, you could use
+"github.com" (without the quotes).
+
+Finally, daniel produces the password and a reminder.  If you run daniel with
+the reminder on the command line, it will print out the same password as before
+once you enter your master password.
+
+-----
+% ./daniel
+Please enter your master password:
+# ok, checksum is 72eb36
+Enter code: example.tld
+Password is: nj&xzO@hz&QvuoGY
+Reminder is: 72eb360a1000example.tld
+
+% ./daniel 72eb360a1000example.tld
+Please enter your master password:
+# ok, checksum is 72eb36
+Password is: nj&xzO@hz&QvuoGY
+-----
+
+The master password in this case was "foobar".  Please use something more
+secure.
+
+Can I adjust the set of characters that are generated?
+------------------------------------------------------
+
+Yes.  The flags parameter can be adjusted on the command line with -f, or by
+entering +!flags=_<value>_+ at the "Enter code:" prompt.  When the flags are set
+to 0, all characters from hex 20 to hex 7E are included.  The different bits
+mean:
+
+|=====
+|Flag |Meaning
+|1    |Exclude all digits
+|2    |Exclude spaces
+|4    |Exclude those characters on top of the digits on a US keyboard
+|8    |Exclude other symbols
+|16   |Exclude letters
+|=====
+
+The default is 10 (exclude spaces and other symbols) because many websites don't
+want to accept those characters.  The flags parameter is encoded as part of the
+reminder, and changing the flags will cause a completely different password to
+be generated.
+
+Can I adjust the length of the password?
+----------------------------------------
+
+Yes.  The length can be adjusted using the -l parameter, or by entering
++!length=_<value>_+ at the "Enter code:" prompt.  The length is encoded as part
+of the reminder, but it does not cause the generated password to be any
+different other than in length.  That is, truncating a 16-character password to
+8 characters is exactly the same as generating an 8-character password with the
+same parameters.  The default length is 16.
+
+What if a site forces me to change my password frequently?
+----------------------------------------------------------
+
+There is a version field that can be incremented to produce a completely
+different password.  Use -v or enter +!version=_<value>_+ at the "Enter code:"
+prompt.  The default version is 0, and values up to 127 are accepted.  The
+version is encoded as part of the reminder.
+
+This feature was written with the corporate and academic worlds in mind, but it
+can also be used if you absolutely need one of a certain set of characters in
+your password, but the default one that was generated does not contain such a
+character.  Simply bump the version number until a satisfactory password is
+generated.
+
+What characters are above the digits on a US keyboard?
+------------------------------------------------------
+
+The following: '!@#$%^&*()'.
+
+Why isn't this a gem?
+---------------------
+
+daniel is designed to be loadable with Kernel#load.  (Kernel#require doesn't
+work because it doesn't have a '.rb' extension.)  The tests use this technique.
+
+It's also designed to be a single, standalone script so that people can copy it
+wherever they might need it.
+
+Why is daniel written in Ruby?
+------------------------------
+
+Ruby provides all the necessary cryptographic primitives as part of the standard
+library.  Other languages, such as Perl, do not.
+
+What versions of Ruby are supported?
+------------------------------------
+
+The code should run on MRI 1.8.7, 1.9.3, and 2.0.0 (and probably 2.1.0).
+There's no reason it shouldn't function just fine on JRuby and Rubinius as well.
+1.8 will require the io-console gem for interactive use; this is part of the
+standard library in 1.9.3.
+
+Having said that, only MRI 1.9.3 and 2.0.0 are officially supported.  I will
+probably notice if the tests fail on 1.8.7 and fix it myself. Please feel free
+to send a pull request if it doesn't work on your preferred flavor (although
+please stick to 1.8.7-equivalent or newer).
+
+So what about the cryptography you're using?
+--------------------------------------------
+
+Glad you asked.  Essentially, the master password is hashed with some static
+data using 1024 iterations of PBKDF-2 using HMAC-SHA256.  No salt is used, since
+there is no place to store the salt.  This produces the master secret.  The
+code, flags, password version, and some static data are hashed using PBKDF-2
+again, this time with the master secret as the salt.  This produces the
+initialization vector.
+
+To generate the password, AES-256 in counter mode is used as a byte generator,
+with the master secret as the key and the first 16 bytes of the initialization
+vector, as, well, the initialization vector.  If a generated byte is in the set
+of acceptable values, it is output; otherwise, it is discarded.
+
+The checksum is generated from the first three bytes, hex-encoded, of the
+SHA-256 hash of the master secret and some static data.  This is done from the
+master secret and not the master password because it forces an attacker to go
+through the PBKDF-2 step in order to generate candidate matches.
+
+That's it.  The algorithm was designed to be difficult to attack, and yet fast
+enough to run on a low-powered Android phone.
