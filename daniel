@@ -191,7 +191,8 @@ module Daniel
   end
 
   def self.handle_command(code, params)
-    name, value = code.split(/=/)
+    # Strip off the leading !.
+    name, value = code[1..-1].split(/=/)
     sym = "#{name}=".to_sym
     params.method(sym).call(value.to_i)
   end
