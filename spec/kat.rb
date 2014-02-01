@@ -6,6 +6,7 @@ load 'daniel'
 
 describe Daniel::PasswordGenerator do
   [
+    ["foo", "bar", "3*Re7n*qcDDl9N6y", "8244c50a1000bar"],
     ["foo", "baz", "Dp4iWIX26UwV55N(", "8244c50a1000baz"],
   ].each do |items|
     master, code, result, reminder = items
