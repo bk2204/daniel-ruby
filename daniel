@@ -199,7 +199,11 @@ module Daniel
   def self.main
     params = parse_args
     print "Please enter your master password: "
-    pass = STDIN.noecho(&:gets).chomp
+    begin
+      pass = STDIN.noecho(&:gets).chomp
+    rescue Errno::ENOTTY
+      pass = STDIN.gets.chomp
+    end
     puts "\n"
     generator = PasswordGenerator.new pass, 0
     print "# ok, checksum is ", generator.checksum.bytes.map { |x|
