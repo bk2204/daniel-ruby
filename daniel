@@ -27,36 +27,37 @@ require 'set'
 
 module Daniel
   class CharacterSet < ::Set
-    @@NO_NUMBERS = 1
-    @@NO_SPACES = 2
-    @@NO_SYMBOLS_TOP = 4
-    @@NO_SYMBOLS_OTHER = 8
-    @@NO_LETTERS = 16
+    NO_NUMBERS = 1
+    NO_SPACES = 2
+    NO_SYMBOLS_TOP = 4
+    NO_SYMBOLS_OTHER = 8
+    NO_LETTERS = 16
+    SYMBOL_MASK = 31
 
-    def initialize(options = @@NO_SPACES | @@NO_SYMBOLS_OTHER)
+    def initialize(options = NO_SPACES | NO_SYMBOLS_OTHER)
       super([])
       (0x20..0x7e).each do |x|
         add(x)
       end
-      if options & @@NO_NUMBERS != 0
+      if options & NO_NUMBERS != 0
         (0x30..0x39).each do |x|
           delete(x)
         end
       end
-      if options & @@NO_SPACES != 0
+      if options & NO_SPACES != 0
         delete(0x20)
       end
-      if options & @@NO_SYMBOLS_TOP != 0
+      if options & NO_SYMBOLS_TOP != 0
         '!@#$%^&*()'.each_byte do |x|
           delete(x)
         end
       end
-      if options & @@NO_SYMBOLS_OTHER != 0
+      if options & NO_SYMBOLS_OTHER != 0
         '"\'+,-./:;<=>?[\\]_`{|}~'.each_byte do |x|
           delete(x)
         end
       end
-      if options & @@NO_LETTERS != 0
+      if options & NO_LETTERS != 0
         (0x41..0x5a).each do |x|
           delete(x)
         end
