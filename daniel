@@ -66,6 +66,39 @@ module Daniel
         end
       end
     end
+
+    def self.from_characters(text)
+      return self.new mask_from_characters(text)
+    end
+
+    def self.mask_from_characters(text)
+      if text.is_a?(Fixnum)
+        return text
+      elsif text =~ /\A0[0-7]+\z/
+        return text.to_i(8)
+      elsif text =~ /\A\d+\z/
+        return text.to_i
+      elsif text =~ /\A0[xX][A-Fa-f0-9]+\z/
+        return text.to_i(16)
+      else
+        value = SYMBOL_MASK
+        masks = {
+          "0" => NO_NUMBERS,
+          "A" => NO_LETTERS,
+          "a" => NO_LETTERS,
+          "!" => NO_SYMBOLS_TOP,
+          ":" => NO_SYMBOLS_OTHER,
+          "+" => NO_SYMBOLS_OTHER,
+          "-" => NO_SYMBOLS_OTHER
+        }
+        masks.keys.each do |ch|
+          if text[ch]
+            value &= ~masks[ch]
+          end
+        end
+        return value
+      end
+    end
   end
 
   class Parameters
