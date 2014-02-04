@@ -86,6 +86,8 @@ module Daniel
           "0" => NO_NUMBERS,
           "A" => NO_LETTERS,
           "a" => NO_LETTERS,
+          "s" => NO_SPACES,
+          " " => NO_SPACES,
           "!" => NO_SYMBOLS_TOP,
           ":" => NO_SYMBOLS_OTHER,
           "+" => NO_SYMBOLS_OTHER,
