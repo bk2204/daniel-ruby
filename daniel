@@ -113,16 +113,19 @@ module Daniel
     end
 
     def flags=(flags)
+      flags = CharacterSet.mask_from_characters(flags)
       raise "Flags are too large!" if flags > 0x7f;
       @flags = flags
     end
 
     def length=(length)
+      length = length.to_i
       raise "Length is too large!" if length > 0x7f;
       @length = length
     end
 
     def version=(version)
+      version = version.to_i
       raise "Version is too large!" if version > 0x7f;
       @version = version
     end
@@ -229,7 +232,7 @@ module Daniel
     # Strip off the leading !.
     name, value = code[1..-1].split(/=/)
     sym = "#{name}=".to_sym
-    params.method(sym).call(value.to_i)
+    params.method(sym).call(value)
   end
 
   def self.main
