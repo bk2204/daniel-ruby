@@ -266,7 +266,7 @@ module Daniel
       end
     else
       ARGV.each do |reminder|
-        puts "Password is: ", generator.generate_from_reminder(reminder)
+        puts "Password is: #{generator.generate_from_reminder(reminder)}"
       end
     end
   end
