@@ -62,7 +62,7 @@ describe Daniel::PasswordGenerator do
   ].each_with_index do |result, i|
     it "gives the expected password for length 40 flags set to #{i}" do
       gen = Daniel::PasswordGenerator.new 'master-password'
-      params = Daniel::Parameters.new flags=i, length=40
+      params = Daniel::Parameters.new i, 40
       gen.generate('code', params).should == result
     end
   end
