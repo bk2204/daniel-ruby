@@ -184,7 +184,7 @@ module Daniel
 
     def generate_from_reminder(reminder)
       pieces = self.class.parse_reminder(reminder)
-      computed = checksum.bytes.map { |x| "%02x" % x }.join("")
+      computed = checksum.unpack("H*")[0]
       if pieces[:checksum] != computed
         raise "Checksum mismatch (#{pieces[:checksum]} != #{computed})"
       end
@@ -256,9 +256,7 @@ module Daniel
     end
     puts "\n"
     generator = PasswordGenerator.new pass, 0
-    print "# ok, checksum is ", generator.checksum.bytes.map { |x|
-      "%02x" % x
-    }.join(''), "\n"
+    print "# ok, checksum is ", generator.checksum.unpack("H*")[0], "\n"
     if ARGV.empty?
       begin
         loop do
