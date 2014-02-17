@@ -220,6 +220,7 @@ module Daniel
 
   def self.parse_args
     params = Parameters.new
+    clipboard = false
     OptionParser.new do |opts|
       opts.banner = "Usage: daniel [-flv]"
 
@@ -234,8 +235,17 @@ module Daniel
       opts.on("-l", "Set length") do |length|
         params.length = length
       end
+
+      opts.on("-p", "Store passwords to clipboard") do |length|
+        begin
+          require 'clipboard'
+          clipboard = true
+        rescue LoadError
+          $stderr.puts "Can't load clipboard gem; passwords will be printed"
+        end
+      end
     end.parse!
-    params
+    {:params => params, :clipboard => clipboard}
   end
 
   def self.handle_command(code, params)
@@ -246,7 +256,8 @@ module Daniel
   end
 
   def self.main
-    params = parse_args
+    argdata = parse_args
+    params = argdata[:params]
     print "Please enter your master password: "
     begin
       require 'io/console'
@@ -265,7 +276,12 @@ module Daniel
           if code[0] == "!"
             handle_command(code, params)
           else
-            puts "Password is: #{generator.generate(code, params)}"
+            if argdata[:clipboard]
+              Clipboard.copy generator.generate(code, params)
+              puts "Password copied to clipboard."
+            else
+              puts "Password is: #{generator.generate(code, params)}"
+            end
             puts "Reminder is: #{generator.reminder(code, params)}"
           end
         end
