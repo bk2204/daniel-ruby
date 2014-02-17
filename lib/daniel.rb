@@ -114,19 +114,16 @@ module Daniel
 
     def flags=(flags)
       flags = CharacterSet.mask_from_characters(flags)
-      raise "Flags are too large!" if flags > 0x7f;
       @flags = flags
     end
 
     def length=(length)
       length = length.to_i
-      raise "Length is too large!" if length > 0x7f;
       @length = length
     end
 
     def version=(version)
       version = version.to_i
-      raise "Version is too large!" if version > 0x7f;
       @version = version
     end
   end
@@ -196,9 +193,8 @@ module Daniel
     end
 
     def reminder(code, p)
-      [checksum.bytes.to_a, p.flags, p.length, p.version].flatten.map { |x|
-        "%02x" % x
-      }.join("") + code
+      bytes = checksum + [p.flags, p.length, p.version].pack("w3")
+      bytes.unpack("H*")[0] + code
     end
 
     private
