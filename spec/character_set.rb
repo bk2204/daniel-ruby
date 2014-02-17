@@ -1,9 +1,9 @@
 #!/usr/bin/ruby
 # encoding: UTF-8
 
-$:.unshift File.join(File.dirname(__FILE__), '..')
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
-load 'daniel'
+require 'daniel'
 
 describe Daniel::CharacterSet do
   it "contains all expected bytes for 0" do
