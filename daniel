@@ -165,7 +165,12 @@ module Daniel
       result[0, parameters.length]
     end
 
-    def generate_from_reminder(reminder)
+    # Parse a reminder into its constituent parts.
+    #
+    # @param reminder [String] the complete reminder string
+    # @return [Hash] a hash containing a set of parameters (key :params),
+    #   hex-encoded checksum (:checksum), and code (:code)
+    def self.parse_reminder(reminder)
       params = Parameters.new
       csum = reminder[0..5]
       if reminder[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})
@@ -174,15 +179,20 @@ module Daniel
         dparams = [hex_params].pack("H*")
         flags, length, version = dparams.unpack("w3")
       end
-      computed = checksum.bytes.map { |x| "%02x" % x }.join("")
-      if csum != computed
-        raise "Checksum mismatch (#{csum} != #{computed})"
-      end
       params.flags = flags
       params.length = length
       params.version = version
+      return {:params => params, :checksum => csum, :code => code}
+    end
 
-      generate(code, params)
+    def generate_from_reminder(reminder)
+      pieces = self.class.parse_reminder(reminder)
+      computed = checksum.bytes.map { |x| "%02x" % x }.join("")
+      if pieces[:checksum] != computed
+        raise "Checksum mismatch (#{pieces[:checksum]} != #{computed})"
+      end
+
+      generate(pieces[:code], pieces[:params])
     end
 
     def reminder(code, p)
