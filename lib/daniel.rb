@@ -255,9 +255,19 @@ module Daniel
     params.method(sym).call(value)
   end
 
+  def self.output_password(pass, clipboard=false)
+    if clipboard
+      Clipboard.copy pass
+      puts "Password copied to clipboard."
+    else
+      puts "Password is: #{pass}"
+    end
+  end
+
   def self.main
     argdata = parse_args
     params = argdata[:params]
+    clipboard = argdata[:clipboard]
     print "Please enter your master password: "
     begin
       require 'io/console'
@@ -276,12 +286,7 @@ module Daniel
           if code[0] == "!"
             handle_command(code, params)
           else
-            if argdata[:clipboard]
-              Clipboard.copy generator.generate(code, params)
-              puts "Password copied to clipboard."
-            else
-              puts "Password is: #{generator.generate(code, params)}"
-            end
+            output_password(generator.generate(code, params), clipboard)
             puts "Reminder is: #{generator.reminder(code, params)}"
           end
         end
@@ -290,7 +295,7 @@ module Daniel
       end
     else
       ARGV.each do |reminder|
-        puts "Password is: #{generator.generate_from_reminder(reminder)}"
+        output_password(generator.generate_from_reminder(reminder), clipboard)
       end
     end
   end
