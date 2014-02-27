@@ -280,9 +280,14 @@ module Daniel
     print "# ok, checksum is ", generator.checksum.unpack("H*")[0], "\n"
     if ARGV.empty?
       begin
+        code = nil
         loop do
           print "Enter code: " if STDIN.isatty
+          lastcode = code
           code = STDIN.readline.chomp
+          if code == "!!"
+            code = lastcode
+          end
           if code[0] == "!"
             handle_command(code, params)
           else
