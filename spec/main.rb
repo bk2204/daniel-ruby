@@ -112,8 +112,8 @@ describe Daniel::MainProgram do
     prog = Daniel::MainProgram.new
     prog.lines = ["example.tld"]
     prog.passphrase = "foobar"
-    prog.main(['72eb360f0801example.tld'])
-    expect(prog.passwords).to eq ["mJRUHjid"]
+    prog.main(['72eb360f0801example.tld', '72eb360a1000example.tld'])
+    expect(prog.passwords).to eq ['mJRUHjid', 'nj&xzO@hz&QvuoGY']
     expect(prog.output.flatten).to eq ["# ok, checksum is 72eb36"]
   end
 
