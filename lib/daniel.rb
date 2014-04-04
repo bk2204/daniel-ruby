@@ -219,7 +219,7 @@ module Daniel
   end
 
   class MainProgram
-    def parse_args
+    def parse_args(args)
       params = Parameters.new
       clipboard = false
       OptionParser.new do |opts|
@@ -245,7 +245,7 @@ module Daniel
             $stderr.puts "Can't load clipboard gem; passwords will be printed"
           end
         end
-      end.parse!
+      end.parse!(args)
       {:params => params, :clipboard => clipboard}
     end
 
@@ -265,8 +265,8 @@ module Daniel
       end
     end
 
-    def main
-      argdata = parse_args
+    def main(args)
+      argdata = parse_args(args)
       params = argdata[:params]
       clipboard = argdata[:clipboard]
       print "Please enter your master password: "
@@ -309,5 +309,5 @@ module Daniel
 end
 
 if __FILE__ == $0
-  Daniel::MainProgram.new.main
+  Daniel::MainProgram.new.main(ARGV)
 end
