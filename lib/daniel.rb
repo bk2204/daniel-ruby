@@ -218,94 +218,96 @@ module Daniel
     end
   end
 
-  def self.parse_args
-    params = Parameters.new
-    clipboard = false
-    OptionParser.new do |opts|
-      opts.banner = "Usage: daniel [-flv]"
+  class MainProgram
+    def parse_args
+      params = Parameters.new
+      clipboard = false
+      OptionParser.new do |opts|
+        opts.banner = "Usage: daniel [-flv]"
 
-      opts.on("-v PASSWORD-VERSION", "Set version") do |version|
-        params.version = version
-      end
-
-      opts.on("-f FLAGS", "Set flags") do |flags|
-        params.flags = flags
-      end
-
-      opts.on("-l LENGTH", "Set length") do |length|
-        params.length = length
-      end
-
-      opts.on("-p", "Store passwords to clipboard") do
-        begin
-          require 'clipboard'
-          clipboard = true
-        rescue LoadError
-          $stderr.puts "Can't load clipboard gem; passwords will be printed"
+        opts.on("-v PASSWORD-VERSION", "Set version") do |version|
+          params.version = version
         end
+
+        opts.on("-f FLAGS", "Set flags") do |flags|
+          params.flags = flags
+        end
+
+        opts.on("-l LENGTH", "Set length") do |length|
+          params.length = length
+        end
+
+        opts.on("-p", "Store passwords to clipboard") do
+          begin
+            require 'clipboard'
+            clipboard = true
+          rescue LoadError
+            $stderr.puts "Can't load clipboard gem; passwords will be printed"
+          end
+        end
+      end.parse!
+      {:params => params, :clipboard => clipboard}
+    end
+
+    def handle_command(code, params)
+      # Strip off the leading !.
+      name, value = code[1..-1].split(/=/)
+      sym = "#{name}=".to_sym
+      params.method(sym).call(value)
+    end
+
+    def output_password(pass, clipboard=false)
+      if clipboard
+        Clipboard.copy pass
+        puts "Password copied to clipboard."
+      else
+        puts "Password is: #{pass}"
       end
-    end.parse!
-    {:params => params, :clipboard => clipboard}
-  end
-
-  def self.handle_command(code, params)
-    # Strip off the leading !.
-    name, value = code[1..-1].split(/=/)
-    sym = "#{name}=".to_sym
-    params.method(sym).call(value)
-  end
-
-  def self.output_password(pass, clipboard=false)
-    if clipboard
-      Clipboard.copy pass
-      puts "Password copied to clipboard."
-    else
-      puts "Password is: #{pass}"
     end
-  end
 
-  def self.main
-    argdata = parse_args
-    params = argdata[:params]
-    clipboard = argdata[:clipboard]
-    print "Please enter your master password: "
-    begin
-      require 'io/console'
-      pass = STDIN.noecho(&:gets).chomp
-    rescue Errno::ENOTTY
-      pass = STDIN.gets.chomp
-    end
-    puts "\n"
-    generator = PasswordGenerator.new pass, 0
-    print "# ok, checksum is ", generator.checksum.unpack("H*")[0], "\n"
-    if ARGV.empty?
+    def main
+      argdata = parse_args
+      params = argdata[:params]
+      clipboard = argdata[:clipboard]
+      print "Please enter your master password: "
       begin
-        code = nil
-        loop do
-          print "Enter code: " if STDIN.isatty
-          lastcode = code
-          code = STDIN.readline.chomp
-          if code == "!!"
-            code = lastcode
-          end
-          if code[0] == "!"
-            handle_command(code, params)
-          else
-            output_password(generator.generate(code, params), clipboard)
-            puts "Reminder is: #{generator.reminder(code, params)}"
-          end
-        end
-      rescue EOFError
-        return
+        require 'io/console'
+        pass = STDIN.noecho(&:gets).chomp
+      rescue Errno::ENOTTY
+        pass = STDIN.gets.chomp
       end
-    else
-      ARGV.each do |reminder|
-        output_password(generator.generate_from_reminder(reminder), clipboard)
+      puts "\n"
+      generator = PasswordGenerator.new pass, 0
+      print "# ok, checksum is ", generator.checksum.unpack("H*")[0], "\n"
+      if ARGV.empty?
+        begin
+          code = nil
+          loop do
+            print "Enter code: " if STDIN.isatty
+            lastcode = code
+            code = STDIN.readline.chomp
+            if code == "!!"
+              code = lastcode
+            end
+            if code[0] == "!"
+              handle_command(code, params)
+            else
+              output_password(generator.generate(code, params), clipboard)
+              puts "Reminder is: #{generator.reminder(code, params)}"
+            end
+          end
+        rescue EOFError
+          return
+        end
+      else
+        ARGV.each do |reminder|
+          output_password(generator.generate_from_reminder(reminder), clipboard)
+        end
       end
     end
   end
 end
 
 if __FILE__ == $0
-  Daniel::main
+  Daniel::MainProgram.new.main
 end
