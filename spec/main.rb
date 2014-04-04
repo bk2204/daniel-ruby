@@ -52,7 +52,6 @@ describe Daniel::MainProgram do
     prog.main([])
     prog.passwords.should eq ["nj&xzO@hz&QvuoGY"]
     prog.output.flatten.should eq [
-      "\n",
       "# ok, checksum is 72eb36",
       "Reminder is: 72eb360a1000example.tld"
     ]

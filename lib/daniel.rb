@@ -285,7 +285,7 @@ module Daniel
       clipboard = argdata[:clipboard]
       print "Please enter your master password: "
       pass = read_passphrase
-      puts "\n"
+      print "\n"
       generator = PasswordGenerator.new pass, 0
       puts "# ok, checksum is #{generator.checksum.unpack("H*")[0]}"
       if args.empty?
