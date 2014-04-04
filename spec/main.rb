@@ -63,6 +63,22 @@ describe Daniel::MainProgram do
     ]
   end
 
+  it "processes !! properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ['example.tld', '!!']
+    prog.passphrase = "foobar"
+    prog.main([])
+    prog.passwords.should eq [
+      "nj&xzO@hz&QvuoGY",
+      "nj&xzO@hz&QvuoGY"
+    ]
+    prog.output.flatten.should eq [
+      "# ok, checksum is 72eb36",
+      "Reminder is: 72eb360a1000example.tld",
+      "Reminder is: 72eb360a1000example.tld"
+    ]
+  end
+
   it "processes commands properly" do
     prog = Daniel::MainProgram.new
     prog.lines = [
