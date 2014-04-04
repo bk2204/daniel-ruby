@@ -295,7 +295,7 @@ module Daniel
             if code == "!!"
               code = lastcode
             end
-            if code[0] == "!"
+            if code[0, 1] == "!"
               handle_command(code)
             else
               output_password(generator.generate(code, @params))
