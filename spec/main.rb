@@ -108,6 +108,23 @@ describe Daniel::MainProgram do
     ]
   end
 
+  it "processes reminders properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ["example.tld"]
+    prog.passphrase = "foobar"
+    prog.main(['72eb360f0801example.tld'])
+    prog.passwords.should eq ["mJRUHjid"]
+    prog.output.flatten.should eq ["# ok, checksum is 72eb36"]
+  end
+
+  it "handles mismatched reminders properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ["example.tld"]
+    prog.passphrase = "foobar"
+    lambda {
+      prog.main(['ffffff0f0801example.tld'])
+    }.should raise_error(RuntimeError, /checksum mismatch/i)
+  end
 
   it "handles loading the clipboard gem properly" do
     prog = Daniel::MainProgram.new
