@@ -265,17 +265,22 @@ module Daniel
       end
     end
 
-    def main(args)
-      argdata = parse_args(args)
-      params = argdata[:params]
-      clipboard = argdata[:clipboard]
-      print "Please enter your master password: "
+    def read_passphrase
       begin
         require 'io/console'
         pass = STDIN.noecho(&:gets).chomp
       rescue Errno::ENOTTY
         pass = STDIN.gets.chomp
       end
+      pass
+    end
+
+    def main(args)
+      argdata = parse_args(args)
+      params = argdata[:params]
+      clipboard = argdata[:clipboard]
+      print "Please enter your master password: "
+      pass = read_passphrase
       puts "\n"
       generator = PasswordGenerator.new pass, 0
       print "# ok, checksum is ", generator.checksum.unpack("H*")[0], "\n"
