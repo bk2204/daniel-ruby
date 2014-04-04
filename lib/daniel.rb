@@ -275,6 +275,10 @@ module Daniel
       pass
     end
 
+    def read_line
+      STDIN.readline.chomp
+    end
+
     def main(args)
       argdata = parse_args(args)
       params = argdata[:params]
@@ -283,14 +287,14 @@ module Daniel
       pass = read_passphrase
       puts "\n"
       generator = PasswordGenerator.new pass, 0
-      print "# ok, checksum is ", generator.checksum.unpack("H*")[0], "\n"
-      if ARGV.empty?
+      puts "# ok, checksum is #{generator.checksum.unpack("H*")[0]}"
+      if args.empty?
         begin
           code = nil
           loop do
             print "Enter code: " if STDIN.isatty
             lastcode = code
-            code = STDIN.readline.chomp
+            code = read_line
             if code == "!!"
               code = lastcode
             end
@@ -305,7 +309,7 @@ module Daniel
           return
         end
       else
-        ARGV.each do |reminder|
+        args.each do |reminder|
           output_password(generator.generate_from_reminder(reminder), clipboard)
         end
       end
