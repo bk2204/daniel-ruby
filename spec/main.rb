@@ -8,7 +8,7 @@ require 'daniel'
 
 module Daniel
   class MainProgram
-    attr_accessor :passphrase, :passwords, :lines, :output
+    attr_accessor :passphrase, :passwords, :lines, :output, :warnings
     attr_accessor :params, :clipboard
 
     def read_passphrase
@@ -18,6 +18,11 @@ module Daniel
     def output_password(pass, clipboard=false)
       @passwords ||= []
       @passwords << pass
+    end
+
+    def warn(*args)
+      @warnings ||= []
+      @warnings << args
     end
 
     def read_line
@@ -56,5 +61,20 @@ describe Daniel::MainProgram do
       "# ok, checksum is 72eb36",
       "Reminder is: 72eb360a1000example.tld"
     ]
+  end
+
+  it "handles loading the clipboard gem properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ["example.tld"]
+    prog.passphrase = "foobar"
+    prog.main(['-p'])
+    if prog.clipboard
+      # Check for absence of exception.
+      Object.const_get('Clipboard')
+    else
+      prog.warnings.flatten.should eq [
+        "Can't load clipboard gem; passwords will be printed"
+      ]
+    end
   end
 end

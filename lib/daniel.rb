@@ -242,7 +242,7 @@ module Daniel
             require 'clipboard'
             @clipboard = true
           rescue LoadError
-            $stderr.puts "Can't load clipboard gem; passwords will be printed"
+            warn "Can't load clipboard gem; passwords will be printed"
           end
         end
       end.parse!(args)
