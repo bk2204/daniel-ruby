@@ -224,19 +224,19 @@ module Daniel
     OptionParser.new do |opts|
       opts.banner = "Usage: daniel [-flv]"
 
-      opts.on("-v", "Set version") do |version|
+      opts.on("-v PASSWORD-VERSION", "Set version") do |version|
         params.version = version
       end
 
-      opts.on("-f", "Set flags") do |flags|
+      opts.on("-f FLAGS", "Set flags") do |flags|
         params.flags = flags
       end
 
-      opts.on("-l", "Set length") do |length|
+      opts.on("-l LENGTH", "Set length") do |length|
         params.length = length
       end
 
-      opts.on("-p", "Store passwords to clipboard") do |length|
+      opts.on("-p", "Store passwords to clipboard") do
         begin
           require 'clipboard'
           clipboard = true
