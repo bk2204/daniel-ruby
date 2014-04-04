@@ -46,9 +46,9 @@ describe Daniel::MainProgram do
   it "parses args correctly" do
     prog = Daniel::MainProgram.new
     prog.parse_args(%w(-l8 -v1 -f15))
-    prog.params.length.should eq 8
-    prog.params.version.should eq 1
-    prog.params.flags.should eq 15
+    expect(prog.params.length).to eq 8
+    expect(prog.params.version).to eq 1
+    expect(prog.params.flags).to eq 15
   end
 
   it "generates reasonable output" do
@@ -56,8 +56,8 @@ describe Daniel::MainProgram do
     prog.lines = ["example.tld"]
     prog.passphrase = "foobar"
     prog.main([])
-    prog.passwords.should eq ["nj&xzO@hz&QvuoGY"]
-    prog.output.flatten.should eq [
+    expect(prog.passwords).to eq ["nj&xzO@hz&QvuoGY"]
+    expect(prog.output.flatten).to eq [
       "# ok, checksum is 72eb36",
       "Reminder is: 72eb360a1000example.tld"
     ]
@@ -68,11 +68,11 @@ describe Daniel::MainProgram do
     prog.lines = ['example.tld', '!!']
     prog.passphrase = "foobar"
     prog.main([])
-    prog.passwords.should eq [
+    expect(prog.passwords).to eq [
       "nj&xzO@hz&QvuoGY",
       "nj&xzO@hz&QvuoGY"
     ]
-    prog.output.flatten.should eq [
+    expect(prog.output.flatten).to eq [
       "# ok, checksum is 72eb36",
       "Reminder is: 72eb360a1000example.tld",
       "Reminder is: 72eb360a1000example.tld"
@@ -89,8 +89,8 @@ describe Daniel::MainProgram do
     ]
     prog.passphrase = "foobar"
     prog.main([])
-    prog.passwords.should eq ["mJRUHjid"]
-    prog.output.flatten.should eq [
+    expect(prog.passwords).to eq ["mJRUHjid"]
+    expect(prog.output.flatten).to eq [
       "# ok, checksum is 72eb36",
       "Reminder is: 72eb360f0801example.tld"
     ]
@@ -101,8 +101,8 @@ describe Daniel::MainProgram do
     prog.lines = ["example.tld"]
     prog.passphrase = "foobar"
     prog.main(['-l8', '-v1', '-f15'])
-    prog.passwords.should eq ["mJRUHjid"]
-    prog.output.flatten.should eq [
+    expect(prog.passwords).to eq ["mJRUHjid"]
+    expect(prog.output.flatten).to eq [
       "# ok, checksum is 72eb36",
       "Reminder is: 72eb360f0801example.tld"
     ]
@@ -113,17 +113,17 @@ describe Daniel::MainProgram do
     prog.lines = ["example.tld"]
     prog.passphrase = "foobar"
     prog.main(['72eb360f0801example.tld'])
-    prog.passwords.should eq ["mJRUHjid"]
-    prog.output.flatten.should eq ["# ok, checksum is 72eb36"]
+    expect(prog.passwords).to eq ["mJRUHjid"]
+    expect(prog.output.flatten).to eq ["# ok, checksum is 72eb36"]
   end
 
   it "handles mismatched reminders properly" do
     prog = Daniel::MainProgram.new
     prog.lines = ["example.tld"]
     prog.passphrase = "foobar"
-    lambda {
+    expect {
       prog.main(['ffffff0f0801example.tld'])
-    }.should raise_error(RuntimeError, /checksum mismatch/i)
+    }.to raise_error(RuntimeError, /checksum mismatch/i)
   end
 
   it "handles loading the clipboard gem properly" do
@@ -132,11 +132,11 @@ describe Daniel::MainProgram do
     prog.passphrase = "foobar"
     prog.main(['-p'])
     if prog.clipboard
-      lambda {
+      expect {
         Object.const_get('Clipboard')
-      }.should_not raise_error
+      }.not_to raise_error
     else
-      prog.warnings.flatten.should eq [
+      expect(prog.warnings.flatten).to eq [
         "Can't load clipboard gem; passwords will be printed"
       ]
     end

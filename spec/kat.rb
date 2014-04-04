@@ -16,15 +16,15 @@ describe Daniel::PasswordGenerator do
     master, code, result, reminder = items
     it "gives the expected password for #{master}, #{code}" do
       gen = Daniel::PasswordGenerator.new master
-      gen.generate(code, Daniel::Parameters.new).should == result
+      expect(gen.generate(code, Daniel::Parameters.new)).to eq(result)
     end
     it "gives the expected reminder for #{master}, #{code}" do
       gen = Daniel::PasswordGenerator.new master
-      gen.reminder(code, Daniel::Parameters.new).should == reminder
+      expect(gen.reminder(code, Daniel::Parameters.new)).to eq(reminder)
     end
     it "gives the expected password for #{master}, #{code} reminder" do
       gen = Daniel::PasswordGenerator.new master
-      gen.generate_from_reminder(reminder).should == result
+      expect(gen.generate_from_reminder(reminder)).to eq(result)
     end
   end
   [
@@ -63,7 +63,7 @@ describe Daniel::PasswordGenerator do
     it "gives the expected password for length 40 flags set to #{i}" do
       gen = Daniel::PasswordGenerator.new 'master-password'
       params = Daniel::Parameters.new i, 40
-      gen.generate('code', params).should == result
+      expect(gen.generate('code', params)).to eq(result)
     end
   end
 end

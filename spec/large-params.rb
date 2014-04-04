@@ -17,17 +17,17 @@ describe Daniel::PasswordGenerator do
     password, reminder, csum, flags, length, version, code = items
     it "gives the expected values for #{reminder}" do
       pieces = Daniel::PasswordGenerator.parse_reminder(reminder)
-      pieces[:checksum].should == csum
-      pieces[:code].should == code
-      pieces[:params].flags.should == flags
-      pieces[:params].length.should == length
-      pieces[:params].version.should == version
+      expect(pieces[:checksum]).to eq(csum)
+      expect(pieces[:code]).to eq(code)
+      expect(pieces[:params].flags).to eq(flags)
+      expect(pieces[:params].length).to eq(length)
+      expect(pieces[:params].version).to eq(version)
     end
 
     it "generates the expected values of #{reminder}" do
       gen = Daniel::PasswordGenerator.new(password)
       params = Daniel::Parameters.new(flags, length, version)
-      gen.reminder(code, params).should == reminder
+      expect(gen.reminder(code, params)).to eq(reminder)
     end
   end
 end
