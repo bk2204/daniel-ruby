@@ -63,6 +63,36 @@ describe Daniel::MainProgram do
     ]
   end
 
+  it "processes commands properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = [
+      "!length=8",
+      "!version=1",
+      "!flags=15",
+      "example.tld"
+    ]
+    prog.passphrase = "foobar"
+    prog.main([])
+    prog.passwords.should eq ["mJRUHjid"]
+    prog.output.flatten.should eq [
+      "# ok, checksum is 72eb36",
+      "Reminder is: 72eb360f0801example.tld"
+    ]
+  end
+
+  it "processes command-line arguments properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ["example.tld"]
+    prog.passphrase = "foobar"
+    prog.main(['-l8', '-v1', '-f15'])
+    prog.passwords.should eq ["mJRUHjid"]
+    prog.output.flatten.should eq [
+      "# ok, checksum is 72eb36",
+      "Reminder is: 72eb360f0801example.tld"
+    ]
+  end
+
+
   it "handles loading the clipboard gem properly" do
     prog = Daniel::MainProgram.new
     prog.lines = ["example.tld"]
