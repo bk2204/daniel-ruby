@@ -132,8 +132,9 @@ describe Daniel::MainProgram do
     prog.passphrase = "foobar"
     prog.main(['-p'])
     if prog.clipboard
-      # Check for absence of exception.
-      Object.const_get('Clipboard')
+      lambda {
+        Object.const_get('Clipboard')
+      }.should_not raise_error
     else
       prog.warnings.flatten.should eq [
         "Can't load clipboard gem; passwords will be printed"
