@@ -9,6 +9,7 @@ require 'daniel'
 module Daniel
   class MainProgram
     attr_accessor :passphrase, :passwords, :lines, :output
+    attr_accessor :params, :clipboard
 
     def read_passphrase
       @passphrase
@@ -39,10 +40,10 @@ end
 describe Daniel::MainProgram do
   it "parses args correctly" do
     prog = Daniel::MainProgram.new
-    argdata = prog.parse_args(%w(-l8 -v1 -f15))
-    argdata[:params].length.should eq 8
-    argdata[:params].version.should eq 1
-    argdata[:params].flags.should eq 15
+    prog.parse_args(%w(-l8 -v1 -f15))
+    prog.params.length.should eq 8
+    prog.params.version.should eq 1
+    prog.params.flags.should eq 15
   end
 
   it "generates reasonable output" do

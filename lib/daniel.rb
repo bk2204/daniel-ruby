@@ -220,44 +220,43 @@ module Daniel
 
   class MainProgram
     def parse_args(args)
-      params = Parameters.new
-      clipboard = false
+      @params = Parameters.new
+      @clipboard = false
       OptionParser.new do |opts|
         opts.banner = "Usage: daniel [-flv]"
 
         opts.on("-v PASSWORD-VERSION", "Set version") do |version|
-          params.version = version
+          @params.version = version
         end
 
         opts.on("-f FLAGS", "Set flags") do |flags|
-          params.flags = flags
+          @params.flags = flags
         end
 
         opts.on("-l LENGTH", "Set length") do |length|
-          params.length = length
+          @params.length = length
         end
 
         opts.on("-p", "Store passwords to clipboard") do
           begin
             require 'clipboard'
-            clipboard = true
+            @clipboard = true
           rescue LoadError
             $stderr.puts "Can't load clipboard gem; passwords will be printed"
           end
         end
       end.parse!(args)
-      {:params => params, :clipboard => clipboard}
     end
 
-    def handle_command(code, params)
+    def handle_command(code)
       # Strip off the leading !.
       name, value = code[1..-1].split(/=/)
       sym = "#{name}=".to_sym
-      params.method(sym).call(value)
+      @params.method(sym).call(value)
     end
 
-    def output_password(pass, clipboard=false)
-      if clipboard
+    def output_password(pass)
+      if @clipboard
         Clipboard.copy pass
         puts "Password copied to clipboard."
       else
@@ -280,9 +279,7 @@ module Daniel
     end
 
     def main(args)
-      argdata = parse_args(args)
-      params = argdata[:params]
-      clipboard = argdata[:clipboard]
+      parse_args(args)
       print "Please enter your master password: "
       pass = read_passphrase
       print "\n"
@@ -299,10 +296,10 @@ module Daniel
               code = lastcode
             end
             if code[0] == "!"
-              handle_command(code, params)
+              handle_command(code)
             else
-              output_password(generator.generate(code, params), clipboard)
-              puts "Reminder is: #{generator.reminder(code, params)}"
+              output_password(generator.generate(code, @params))
+              puts "Reminder is: #{generator.reminder(code, @params)}"
             end
           end
         rescue EOFError
@@ -310,7 +307,7 @@ module Daniel
         end
       else
         args.each do |reminder|
-          output_password(generator.generate_from_reminder(reminder), clipboard)
+          output_password(generator.generate_from_reminder(reminder))
         end
       end
     end
