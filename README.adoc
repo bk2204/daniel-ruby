@@ -133,15 +133,19 @@ library.  Other languages, such as Perl, do not.
 What versions of Ruby are supported?
 ------------------------------------
 
-The code should run on MRI 1.8.7, 1.9.3, and 2.0.0 (and probably 2.1.0).
-There's no reason it shouldn't function just fine on JRuby and Rubinius as well.
-1.8 will require the io-console gem for interactive use; this is part of the
-standard library in 1.9.3.
+The code should run on MRI 1.8.7, 1.9.3, 2.0.0, and 2.1._x_.  1.8 will require
+the io-console gem for interactive use; this is part of the standard library in
+1.9.3.
 
-Having said that, only MRI 1.9.3 and 2.0.0 are officially supported.  I will
-probably notice if the tests fail on 1.8.7 and fix it myself. Please feel free
-to send a pull request if it doesn't work on your preferred flavor (although
-please stick to 1.8.7-equivalent or newer).
+At least some versions of JRuby are missing the appropriate classes for SHA-256,
+and the jruby-openssl gem will probably be required.  However, at least in
+theory, there's no reason it shouldn't function just fine on JRuby and Rubinius
+as well.
+
+Having said that, only MRI 1.9.3, 2.0.0, and 2.1._x_ are officially supported.
+I will probably notice if the tests fail on 1.8.7 and fix it myself. Please feel
+free to send a pull request if it doesn't work on your preferred flavor
+(although please stick to 1.8.7-equivalent or newer).
 
 So what about the cryptography you're using?
 --------------------------------------------
