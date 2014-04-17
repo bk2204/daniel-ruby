@@ -117,8 +117,9 @@ The following: '!@#$%^&*()'.
 Why isn't this a gem?
 ---------------------
 
-daniel is designed to be loadable with Kernel#load.  (Kernel#require doesn't
-work because it doesn't have a '.rb' extension.)  The tests use this technique.
+daniel _can_ be loaded with Kernel#load, or with Kernel#require if you use the
+version in the lib directory (since it has an '.rb' extension).  The tests use
+this technique.
 
 It's also designed to be a single, standalone script so that people can copy it
 wherever they might need it.
