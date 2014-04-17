@@ -101,6 +101,14 @@ your password, but the default one that was generated does not contain such a
 character.  Simply bump the version number until a satisfactory password is
 generated.
 
+Can I copy the password to the clipboard instead of printing it?
+----------------------------------------------------------------
+
+Yes.  Install the clipboard gem and its dependencies and use the +-p+ option.
+Note that on Linux, the xclip utility is required unless you are using a version
+of the clipboard gem newer than 1.0.5, as xsel support is broken in earlier
+versions.
+
 What characters are above the digits on a US keyboard?
 ------------------------------------------------------
 
