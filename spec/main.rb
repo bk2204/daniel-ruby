@@ -12,7 +12,11 @@ module Daniel
     attr_accessor :params, :clipboard
 
     def read_passphrase
-      @passphrase
+      if @passphrase.is_a? Array
+        @passphrase.shift
+      else
+        @passphrase
+      end
     end
 
     def output_password(pass, clipboard=false)
@@ -93,6 +97,27 @@ describe Daniel::MainProgram do
     expect(prog.output.flatten).to eq [
       "# ok, checksum is 72eb36",
       "Reminder is: 72eb360f0801example.tld"
+    ]
+  end
+
+  it "handles reloading the passphrase properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = [
+      "example.tld",
+      "!pass",
+      "bar"
+    ]
+    prog.passphrase = ["foobar", "foo"]
+    prog.main([])
+    expect(prog.passwords).to eq [
+      "nj&xzO@hz&QvuoGY",
+      "3*Re7n*qcDDl9N6y"
+    ]
+    expect(prog.output.flatten).to eq [
+      "# ok, checksum is 72eb36",
+      "Reminder is: 72eb360a1000example.tld",
+      "# ok, checksum is 8244c5",
+      "Reminder is: 8244c50a1000bar"
     ]
   end
 

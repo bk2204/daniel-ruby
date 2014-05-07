@@ -251,6 +251,7 @@ module Daniel
     def handle_command(code)
       # Strip off the leading !.
       name, value = code[1..-1].split(/=/)
+      throw :restart if name =~ /\Apass(word|phrase)?\z/
       sym = "#{name}=".to_sym
       @params.method(sym).call(value)
     end
@@ -280,6 +281,15 @@ module Daniel
 
     def main(args)
       parse_args(args)
+      loop do
+        catch(:restart) do
+          main_loop(args)
+          return
+        end
+      end
+    end
+
+    def main_loop(args)
       print "Please enter your master password: "
       pass = read_passphrase
       print "\n"
