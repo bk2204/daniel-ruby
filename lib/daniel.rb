@@ -27,12 +27,12 @@ require 'set'
 
 module Daniel
   class Flags
-    NO_NUMBERS = 1
-    NO_SPACES = 2
-    NO_SYMBOLS_TOP = 4
-    NO_SYMBOLS_OTHER = 8
-    NO_LETTERS = 16
-    SYMBOL_MASK = 31
+    NO_NUMBERS = 0x01
+    NO_SPACES = 0x02
+    NO_SYMBOLS_TOP = 0x04
+    NO_SYMBOLS_OTHER = 0x08
+    NO_LETTERS = 0x10
+    SYMBOL_MASK = 0x1f
 
     def self.mask_from_characters(text)
       if text.is_a?(Fixnum)
