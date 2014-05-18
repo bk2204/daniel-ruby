@@ -26,13 +26,53 @@ require 'optparse'
 require 'set'
 
 module Daniel
-  class CharacterSet < ::Set
+  class Flags
     NO_NUMBERS = 1
     NO_SPACES = 2
     NO_SYMBOLS_TOP = 4
     NO_SYMBOLS_OTHER = 8
     NO_LETTERS = 16
     SYMBOL_MASK = 31
+
+    def self.mask_from_characters(text)
+      if text.is_a?(Fixnum)
+        return text
+      elsif text =~ /\A0[0-7]+\z/
+        return text.to_i(8)
+      elsif text =~ /\A\d+\z/
+        return text.to_i
+      elsif text =~ /\A0[xX][A-Fa-f0-9]+\z/
+        return text.to_i(16)
+      else
+        value = SYMBOL_MASK
+        masks = {
+          "0" => NO_NUMBERS,
+          "A" => NO_LETTERS,
+          "a" => NO_LETTERS,
+          "s" => NO_SPACES,
+          " " => NO_SPACES,
+          "!" => NO_SYMBOLS_TOP,
+          ":" => NO_SYMBOLS_OTHER,
+          "+" => NO_SYMBOLS_OTHER,
+          "-" => NO_SYMBOLS_OTHER
+        }
+        masks.keys.each do |ch|
+          if text[ch]
+            value &= ~masks[ch]
+          end
+        end
+        return value
+      end
+    end
+  end
+
+  class CharacterSet < ::Set
+    NO_NUMBERS = Flags::NO_NUMBERS
+    NO_SPACES = Flags::NO_SPACES
+    NO_SYMBOLS_TOP = Flags::NO_SYMBOLS_TOP
+    NO_SYMBOLS_OTHER = Flags::NO_SYMBOLS_OTHER
+    NO_LETTERS = Flags::NO_LETTERS
+    SYMBOL_MASK = Flags::SYMBOL_MASK
 
     def initialize(options = NO_SPACES | NO_SYMBOLS_OTHER)
       super([])
@@ -68,38 +108,7 @@ module Daniel
     end
 
     def self.from_characters(text)
-      return self.new mask_from_characters(text)
-    end
-
-    def self.mask_from_characters(text)
-      if text.is_a?(Fixnum)
-        return text
-      elsif text =~ /\A0[0-7]+\z/
-        return text.to_i(8)
-      elsif text =~ /\A\d+\z/
-        return text.to_i
-      elsif text =~ /\A0[xX][A-Fa-f0-9]+\z/
-        return text.to_i(16)
-      else
-        value = SYMBOL_MASK
-        masks = {
-          "0" => NO_NUMBERS,
-          "A" => NO_LETTERS,
-          "a" => NO_LETTERS,
-          "s" => NO_SPACES,
-          " " => NO_SPACES,
-          "!" => NO_SYMBOLS_TOP,
-          ":" => NO_SYMBOLS_OTHER,
-          "+" => NO_SYMBOLS_OTHER,
-          "-" => NO_SYMBOLS_OTHER
-        }
-        masks.keys.each do |ch|
-          if text[ch]
-            value &= ~masks[ch]
-          end
-        end
-        return value
-      end
+      return self.new Flags.mask_from_characters(text)
     end
   end
 
@@ -113,7 +122,7 @@ module Daniel
     end
 
     def flags=(flags)
-      flags = CharacterSet.mask_from_characters(flags)
+      flags = Flags.mask_from_characters(flags)
       @flags = flags
     end
 
