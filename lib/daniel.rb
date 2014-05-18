@@ -33,6 +33,7 @@ module Daniel
     NO_SYMBOLS_OTHER = 0x08
     NO_LETTERS = 0x10
     SYMBOL_MASK = 0x1f
+    EXPLICIT_VERSION = 0x40
 
     def self.mask_from_characters(text)
       if text.is_a?(Fixnum)
