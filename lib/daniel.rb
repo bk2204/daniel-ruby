@@ -33,6 +33,7 @@ module Daniel
     NO_SYMBOLS_OTHER = 0x08
     NO_LETTERS = 0x10
     SYMBOL_MASK = 0x1f
+    REPLICATE_EXISTING = 0x20
     EXPLICIT_VERSION = 0x40
 
     def self.mask_from_characters(text)
@@ -117,13 +118,14 @@ module Daniel
     attr_reader :flags, :length, :version
 
     def initialize(flags = 10, length = 16, version = 0)
-      @flags = flags
+      self.flags = flags
       @length = length
       @version = version
     end
 
     def flags=(flags)
       flags = Flags.mask_from_characters(flags)
+      flags &= ~Flags::SYMBOL_MASK if (flags & Flags::REPLICATE_EXISTING) != 0
       @flags = flags
     end
 
@@ -152,7 +154,7 @@ module Daniel
       @checksum = compute_checksum
     end
 
-    def generate(code, parameters)
+    def generate(code, parameters, mask = nil)
       flags = "Flags 0x%08x: " % parameters.flags
       version = "Version 0x%08x: " % parameters.version
       set = CharacterSet.new parameters.flags
@@ -162,21 +164,30 @@ module Daniel
       cipher.key = @master_secret
       cipher.iv = process_strings([@prefix, "IV: ", flags, version, code],
                     @master_secret)
-      buffer = ([0] * 32).pack("C*")
-      result = ""
-      while result.length < parameters.length
-        result << cipher.update(buffer).bytes.select do |x|
-          set.include?(x)
-        end.pack("C*")
+
+      if (parameters.flags & Flags::REPLICATE_EXISTING) != 0
+        raise "Invalid mask length" if parameters.length != mask.length
+
+        keystream = cipher.update(([0] * parameters.length).pack("C*"))
+        pairs = keystream.each_byte.zip(mask.each_byte)
+        result = pairs.map { |(x, y)| x ^ y }.pack("C*")
+      else
+        buffer = ([0] * 32).pack("C*")
+        result = ""
+        while result.length < parameters.length
+          result << cipher.update(buffer).bytes.select do |x|
+            set.include?(x)
+          end.pack("C*")
+        end
+        result[0, parameters.length]
       end
-      result[0, parameters.length]
     end
 
     # Parse a reminder into its constituent parts.
     #
     # @param reminder [String] the complete reminder string
     # @return [Hash] a hash containing a set of parameters (key :params),
-    #   hex-encoded checksum (:checksum), and code (:code)
+    #   hex-encoded checksum (:checksum), code (:code), and mask (:mask)
     def self.parse_reminder(reminder)
       params = Parameters.new
       csum = reminder[0..5]
@@ -185,11 +196,19 @@ module Daniel
         hex_params, code = Regexp.last_match[1..2]
         dparams = [hex_params].pack("H*")
         flags, length, version = dparams.unpack("w3")
+        if (flags & Flags::REPLICATE_EXISTING) != 0 &&
+          code =~ /\A([0-9a-f]{#{2 * length}})(.*)\z/
+          mask, code = Regexp.last_match[1..2]
+          mask = [mask].pack("H*")
+        else
+          mask = nil
+        end
       end
       params.flags = flags
       params.length = length
       params.version = version
-      return {:params => params, :checksum => csum, :code => code}
+      return {:params => params, :checksum => csum, :code => code,
+              :mask => mask}
     end
 
     def generate_from_reminder(reminder)
@@ -199,11 +218,12 @@ module Daniel
         raise "Checksum mismatch (#{pieces[:checksum]} != #{computed})"
       end
 
-      generate(pieces[:code], pieces[:params])
+      generate(pieces[:code], pieces[:params], pieces[:mask])
     end
 
-    def reminder(code, p)
+    def reminder(code, p, mask = nil)
       bytes = checksum + [p.flags, p.length, p.version].pack("w3")
+      bytes << mask if mask
       bytes.unpack("H*")[0] + code
     end
 
