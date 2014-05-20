@@ -26,6 +26,14 @@ require 'optparse'
 require 'set'
 
 module Daniel
+  def self.to_hex(s)
+    s.unpack("H*")[0]
+  end
+
+  def self.from_hex(s)
+    [s].pack("H*").force_encoding("BINARY")
+  end
+
   class Flags
     NO_NUMBERS = 0x01
     NO_SPACES = 0x02
