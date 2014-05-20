@@ -8,6 +8,8 @@ require 'daniel'
 describe Daniel::PasswordGenerator do
   [
     ["foobar", "abcdefg", "5cce7fa060352fd4", "password", "72eb36200800"],
+    ["foobar", "abcdefg", "41d62da57228248f609ad35fb44758d2d948c7d0726796",
+     "my!very?secret*passw0rd", "72eb36201700"],
   ].each do |items|
     master, code, mask, result, remroot = items
     rawmask = [mask].pack("H*")
