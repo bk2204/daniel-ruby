@@ -26,12 +26,14 @@ require 'optparse'
 require 'set'
 
 module Daniel
-  def self.to_hex(s)
-    s.unpack("H*")[0]
-  end
+  class Util
+    def self.to_hex(s)
+      s.unpack("H*")[0]
+    end
 
-  def self.from_hex(s)
-    [s].pack("H*").force_encoding("BINARY")
+    def self.from_hex(s)
+      [s].pack("H*").force_encoding("BINARY")
+    end
   end
 
   class Flags
@@ -202,12 +204,12 @@ module Daniel
       if reminder[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})
           (.*)\z/x
         hex_params, code = Regexp.last_match[1..2]
-        dparams = Daniel.from_hex(hex_params)
+        dparams = Util.from_hex(hex_params)
         flags, length, version = dparams.unpack("w3")
         if (flags & Flags::REPLICATE_EXISTING) != 0 &&
           code =~ /\A([0-9a-f]{#{2 * length}})(.*)\z/
           mask, code = Regexp.last_match[1..2]
-          mask = Daniel.from_hex(mask)
+          mask = Util.from_hex(mask)
         else
           mask = nil
         end
@@ -221,7 +223,7 @@ module Daniel
 
     def generate_from_reminder(reminder)
       pieces = self.class.parse_reminder(reminder)
-      computed = Daniel.to_hex(checksum)
+      computed = Util.to_hex(checksum)
       if pieces[:checksum] != computed
         raise "Checksum mismatch (#{pieces[:checksum]} != #{computed})"
       end
@@ -232,7 +234,7 @@ module Daniel
     def reminder(code, p, mask = nil)
       bytes = checksum + [p.flags, p.length, p.version].pack("w3")
       bytes << mask if mask
-      Daniel.to_hex(bytes) + code
+      Util.to_hex(bytes) + code
     end
 
     private
@@ -332,7 +334,7 @@ module Daniel
       pass = read_passphrase
       print "\n"
       generator = PasswordGenerator.new pass, 0
-      puts "# ok, checksum is #{Daniel.to_hex(generator.checksum)}"
+      puts "# ok, checksum is #{Util.to_hex(generator.checksum)}"
       if args.empty?
         begin
           code = nil
