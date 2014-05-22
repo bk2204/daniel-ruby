@@ -32,7 +32,8 @@ module Daniel
     end
 
     def self.from_hex(s)
-      [s].pack("H*").force_encoding("BINARY")
+      result = [s].pack("H*")
+      ::RUBY_VERSION.to_f <= 1.8 ? result : result.force_encoding("BINARY")
     end
   end
 
@@ -312,7 +313,7 @@ module Daniel
       rescue Errno::ENOTTY
         pass = STDIN.gets.chomp
       end
-      pass.encode("UTF-8")
+      ::RUBY_VERSION.to_f <= 1.8 ? pass : pass.encode("UTF-8")
     end
 
     def read_line
