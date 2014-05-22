@@ -312,7 +312,7 @@ module Daniel
       rescue Errno::ENOTTY
         pass = STDIN.gets.chomp
       end
-      pass
+      pass.encode("UTF-8")
     end
 
     def read_line
