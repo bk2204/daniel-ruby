@@ -12,7 +12,7 @@ describe Daniel::PasswordGenerator do
      "my!very?secret*passw0rd", "72eb36201700"],
   ].each do |items|
     master, code, mask, result, remroot = items
-    rawmask = [mask].pack("H*")
+    rawmask = Daniel::Util.from_hex(mask)
     reminder = [remroot, mask, code].join
 
     it "gives the expected password for #{master}, #{mask}, #{code}" do
