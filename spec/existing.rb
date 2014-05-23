@@ -17,12 +17,14 @@ describe Daniel::PasswordGenerator do
 
     it "gives the expected password for #{master}, #{mask}, #{code}" do
       gen = Daniel::PasswordGenerator.new master
-      params = Daniel::Parameters.new(0x20, result.length)
+      params = Daniel::Parameters.new(Daniel::Flags::REPLICATE_EXISTING,
+                                      result.length)
       expect(gen.generate(code, params, rawmask)).to eq(result)
     end
     it "gives the expected reminder for #{master}, #{mask}, #{code}" do
       gen = Daniel::PasswordGenerator.new master
-      params = Daniel::Parameters.new(0x20, result.length)
+      params = Daniel::Parameters.new(Daniel::Flags::REPLICATE_EXISTING,
+                                      result.length)
       expect(gen.reminder(code, params, rawmask)).to eq(reminder)
     end
     it "gives the expected password for #{master}, #{mask}, #{code} reminder" do
