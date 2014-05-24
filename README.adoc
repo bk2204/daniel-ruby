@@ -101,6 +101,15 @@ your password, but the default one that was generated does not contain such a
 character.  Simply bump the version number until a satisfactory password is
 generated.
 
+Do I need to protect the reminder?
+----------------------------------
+
+No.  You may store it completely publicly.  Without the master password, it
+cannot be used to regenerate your password.  Note, however, that if you choose
+to store reminders publicly, and they contain information about the site in
+question, you are disclosing to the public that you have an account on that
+site.
+
 Can I use this to remember a password I generated with a different program?
 ---------------------------------------------------------------------------
 
