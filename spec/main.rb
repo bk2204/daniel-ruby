@@ -151,6 +151,26 @@ describe Daniel::MainProgram do
     }.to raise_error(RuntimeError, /checksum mismatch/i)
   end
 
+  it "processes reminders for existing passwords properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ["example.tld"]
+    prog.passphrase = "foobar"
+    prog.main(['72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld'])
+    expect(prog.passwords).to eq ['verylongpassword']
+    expect(prog.output.flatten).to eq ["# ok, checksum is 72eb36"]
+  end
+
+  it "handles existing passwords properly" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ["!flags=32", "example.tld"]
+    prog.passphrase = ["foobar", "verylongpassword", "verylongpassword"]
+    prog.main([])
+    expect(prog.output.flatten).to eq [
+      "# ok, checksum is 72eb36",
+      "Reminder is: 72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld"
+    ]
+  end
+
   it "handles loading the clipboard gem properly" do
     prog = Daniel::MainProgram.new
     prog.lines = ["example.tld"]

@@ -351,8 +351,23 @@ module Daniel
             if code[0, 1] == "!"
               handle_command(code)
             else
-              output_password(generator.generate(code, @params))
-              puts "Reminder is: #{generator.reminder(code, @params)}"
+              if (@params.flags & Flags::REPLICATE_EXISTING) != 0
+                print "Enter existing passphrase: " if STDIN.isatty
+                current = read_passphrase
+                print "\nRepeat existing passphrase: " if STDIN.isatty
+                current2 = read_passphrase
+                if current != current2
+                  puts "\nPassphrases did not match."
+                  next
+                end
+                print "\n"
+                @params.length = current.length
+                mask = generator.generate(code, @params, current)
+              else
+                output_password(generator.generate(code, @params))
+                mask = nil
+              end
+              puts "Reminder is: #{generator.reminder(code, @params, mask)}"
             end
           end
         rescue EOFError
