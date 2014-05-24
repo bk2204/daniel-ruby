@@ -55,6 +55,19 @@ describe Daniel::MainProgram do
     expect(prog.params.flags).to eq 15
   end
 
+  it "parses -m correctly" do
+    prog = Daniel::MainProgram.new
+    prog.parse_args(%w(-m))
+    expect(prog.params.flags).to eq Daniel::Flags::REPLICATE_EXISTING
+  end
+
+  it "refuses to accept -f and -m together" do
+    prog = Daniel::MainProgram.new
+    expect {
+      prog.parse_args(%w(-m -f15))
+    }.to raise_error(RuntimeError, /can't.*both.*-m.*-f/i)
+  end
+
   it "generates reasonable output" do
     prog = Daniel::MainProgram.new
     prog.lines = ["example.tld"]
@@ -165,6 +178,17 @@ describe Daniel::MainProgram do
     prog.lines = ["!flags=32", "example.tld"]
     prog.passphrase = ["foobar", "verylongpassword", "verylongpassword"]
     prog.main([])
+    expect(prog.output.flatten).to eq [
+      "# ok, checksum is 72eb36",
+      "Reminder is: 72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld"
+    ]
+  end
+
+  it "handles existing passwords properly with -m" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ["example.tld"]
+    prog.passphrase = ["foobar", "verylongpassword", "verylongpassword"]
+    prog.main(%w(-m))
     expect(prog.output.flatten).to eq [
       "# ok, checksum is 72eb36",
       "Reminder is: 72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld"

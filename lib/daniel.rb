@@ -265,8 +265,10 @@ module Daniel
     def parse_args(args)
       @params = Parameters.new
       @clipboard = false
+      flags_set = false
+      existing_set = false
       OptionParser.new do |opts|
-        opts.banner = "Usage: daniel [-flv]"
+        opts.banner = "Usage: daniel [-flvm]"
 
         opts.on("-v PASSWORD-VERSION", "Set version") do |version|
           @params.version = version
@@ -274,10 +276,16 @@ module Daniel
 
         opts.on("-f FLAGS", "Set flags") do |flags|
           @params.flags = flags
+          flags_set = true
         end
 
         opts.on("-l LENGTH", "Set length") do |length|
           @params.length = length
+        end
+
+        opts.on("-m", "Generate reminders from existing passwords") do
+          @params.flags = Flags::REPLICATE_EXISTING
+          existing_set = true
         end
 
         opts.on("-p", "Store passwords to clipboard") do
@@ -289,6 +297,9 @@ module Daniel
           end
         end
       end.parse!(args)
+      if flags_set && existing_set
+        raise "Can't use both -m and -f"
+      end
     end
 
     def handle_command(code)
