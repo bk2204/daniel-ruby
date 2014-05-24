@@ -165,6 +165,8 @@ module Daniel
       @checksum = compute_checksum
     end
 
+    # Because of the way XOR works, if the mask argument is the password, this
+    # function will return the mask.
     def generate(code, parameters, mask = nil)
       flags = "Flags 0x%08x: " % parameters.flags
       version = "Version 0x%08x: " % parameters.version

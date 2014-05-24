@@ -23,6 +23,12 @@ describe Daniel::PasswordGenerator do
                                       result.length)
       expect(gen.generate(code, params, rawmask)).to eq(result)
     end
+    it "gives the expected mask for password for #{master}, #{mask}, #{code}" do
+      gen = Daniel::PasswordGenerator.new master
+      params = Daniel::Parameters.new(Daniel::Flags::REPLICATE_EXISTING,
+                                      result.length)
+      expect(gen.generate(code, params, result)).to eq(rawmask)
+    end
     it "gives the expected reminder for #{master}, #{mask}, #{code}" do
       gen = Daniel::PasswordGenerator.new master
       params = Daniel::Parameters.new(Daniel::Flags::REPLICATE_EXISTING,
