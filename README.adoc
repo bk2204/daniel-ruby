@@ -118,9 +118,6 @@ Instead of generating a new password, it will prompt you (twice) for an existing
 password, and generate a reminder from that.  These reminders are much longer
 than the standard kind, however.
 
-You _must not_ use the same code for regular mode and existing password mode, as
-this is insecure and can leak your password.
-
 Can I copy the password to the clipboard instead of printing it?
 ----------------------------------------------------------------
 
