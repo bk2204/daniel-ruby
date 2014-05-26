@@ -118,6 +118,9 @@ Instead of generating a new password, it will prompt you (twice) for an existing
 password, and generate a reminder from that.  These reminders are much longer
 than the standard kind, however.
 
+You should not use the same code for more than one password, as this will leak
+information about your password.
+
 Can I copy the password to the clipboard instead of printing it?
 ----------------------------------------------------------------
 
