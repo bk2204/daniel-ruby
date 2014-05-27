@@ -195,6 +195,17 @@ describe Daniel::MainProgram do
     ]
   end
 
+  it "handles mismatched passwords properly with -m" do
+    prog = Daniel::MainProgram.new
+    prog.lines = ["example.tld"]
+    prog.passphrase = ["foobar", "verylongpassword", "differentpasssword"]
+    prog.main(%w(-m))
+    expect(prog.output.flatten).to eq [
+      "# ok, checksum is 72eb36",
+      "\nPassphrases did not match."
+    ]
+  end
+
   it "handles loading the clipboard gem properly" do
     prog = Daniel::MainProgram.new
     prog.lines = ["example.tld"]
