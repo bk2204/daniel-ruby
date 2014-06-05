@@ -28,12 +28,12 @@ require 'set'
 module Daniel
   class Util
     def self.to_hex(s)
-      s.unpack("H*")[0]
+      s.unpack('H*')[0]
     end
 
     def self.from_hex(s)
-      result = [s].pack("H*")
-      ::RUBY_VERSION.to_f <= 1.8 ? result : result.force_encoding("BINARY")
+      result = [s].pack('H*')
+      ::RUBY_VERSION.to_f <= 1.8 ? result : result.force_encoding('BINARY')
     end
   end
 
@@ -59,15 +59,15 @@ module Daniel
       else
         value = SYMBOL_MASK
         masks = {
-          "0" => NO_NUMBERS,
-          "A" => NO_LETTERS,
-          "a" => NO_LETTERS,
-          "s" => NO_SPACES,
-          " " => NO_SPACES,
-          "!" => NO_SYMBOLS_TOP,
-          ":" => NO_SYMBOLS_OTHER,
-          "+" => NO_SYMBOLS_OTHER,
-          "-" => NO_SYMBOLS_OTHER
+          '0' => NO_NUMBERS,
+          'A' => NO_LETTERS,
+          'a' => NO_LETTERS,
+          's' => NO_SPACES,
+          ' ' => NO_SPACES,
+          '!' => NO_SYMBOLS_TOP,
+          ':' => NO_SYMBOLS_OTHER,
+          '+' => NO_SYMBOLS_OTHER,
+          '-' => NO_SYMBOLS_OTHER
         }
         masks.keys.each do |ch|
           if text[ch]
@@ -154,9 +154,8 @@ module Daniel
   class PasswordGenerator
     def initialize(pass, version = 0)
       @version = version
-      @prefix = "DrewPassChart: Version 0x%08x: " % version
-      @master_secret = process_strings([@prefix, "Master Secret: ", pass],
-                       "")
+      @prefix = 'DrewPassChart: Version 0x%08x: ' % version
+      @master_secret = process_strings([@prefix, 'Master Secret: ', pass], '')
       @checksum = nil
     end
 
@@ -168,29 +167,29 @@ module Daniel
     # Because of the way XOR works, if the mask argument is the password, this
     # function will return the mask.
     def generate(code, parameters, mask = nil)
-      flags = "Flags 0x%08x: " % parameters.flags
-      version = "Version 0x%08x: " % parameters.version
+      flags = 'Flags 0x%08x: ' % parameters.flags
+      version = 'Version 0x%08x: ' % parameters.version
       set = CharacterSet.new parameters.flags
 
       cipher = OpenSSL::Cipher::AES.new(256, :CTR)
       cipher.encrypt
       cipher.key = @master_secret
-      cipher.iv = process_strings([@prefix, "IV: ", flags, version, code],
+      cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
                     @master_secret)
 
       if (parameters.flags & Flags::REPLICATE_EXISTING) != 0
-        raise "Invalid mask length" if parameters.length != mask.length
+        raise 'Invalid mask length' if parameters.length != mask.length
 
-        keystream = cipher.update(([0] * parameters.length).pack("C*"))
+        keystream = cipher.update(([0] * parameters.length).pack('C*'))
         pairs = keystream.each_byte.zip(mask.each_byte)
-        result = pairs.map { |(x, y)| x ^ y }.pack("C*")
+        result = pairs.map { |(x, y)| x ^ y }.pack('C*')
       else
-        buffer = ([0] * 32).pack("C*")
-        result = ""
+        buffer = ([0] * 32).pack('C*')
+        result = ''
         while result.length < parameters.length
           result << cipher.update(buffer).bytes.select do |x|
             set.include?(x)
-          end.pack("C*")
+          end.pack('C*')
         end
         result[0, parameters.length]
       end
@@ -208,7 +207,7 @@ module Daniel
           (.*)\z/x
         hex_params, code = Regexp.last_match[1..2]
         dparams = Util.from_hex(hex_params)
-        flags, length, version = dparams.unpack("w3")
+        flags, length, version = dparams.unpack('w3')
         if (flags & Flags::REPLICATE_EXISTING) != 0 &&
           code =~ /\A([0-9a-f]{#{2 * length}})(.*)\z/
           mask, code = Regexp.last_match[1..2]
@@ -235,7 +234,7 @@ module Daniel
     end
 
     def reminder(code, p, mask = nil)
-      bytes = checksum + [p.flags, p.length, p.version].pack("w3")
+      bytes = checksum + [p.flags, p.length, p.version].pack('w3')
       bytes << mask if mask
       Util.to_hex(bytes) + code
     end
@@ -244,17 +243,17 @@ module Daniel
 
     def compute_checksum
       digest = OpenSSL::Digest::SHA256.new
-      [@prefix, "Quick Check: ", @master_secret].each do |s|
-        digest.update([s.bytesize].pack("N"))
+      [@prefix, 'Quick Check: ', @master_secret].each do |s|
+        digest.update([s.bytesize].pack('N'))
         digest.update(s)
       end
       digest.digest[0, 3]
     end
 
     def process_strings(strings, salt)
-      str = ""
+      str = ''
       strings.each do |s|
-        str << [s.bytesize].pack("N") << s
+        str << [s.bytesize].pack('N') << s
       end
       digest = OpenSSL::Digest::SHA256.new
       OpenSSL::PKCS5.pbkdf2_hmac(str, salt, 1024, 32, digest)
@@ -268,27 +267,27 @@ module Daniel
       flags_set = false
       existing_set = false
       OptionParser.new do |opts|
-        opts.banner = "Usage: daniel [-flvm]"
+        opts.banner = 'Usage: daniel [-flvm]'
 
-        opts.on("-v PASSWORD-VERSION", "Set version") do |version|
+        opts.on('-v PASSWORD-VERSION', 'Set version') do |version|
           @params.version = version
         end
 
-        opts.on("-f FLAGS", "Set flags") do |flags|
+        opts.on('-f FLAGS', 'Set flags') do |flags|
           @params.flags = flags
           flags_set = true
         end
 
-        opts.on("-l LENGTH", "Set length") do |length|
+        opts.on('-l LENGTH', 'Set length') do |length|
           @params.length = length
         end
 
-        opts.on("-m", "Generate reminders from existing passwords") do
+        opts.on('-m', 'Generate reminders from existing passwords') do
           @params.flags = Flags::REPLICATE_EXISTING
           existing_set = true
         end
 
-        opts.on("-p", "Store passwords to clipboard") do
+        opts.on('-p', 'Store passwords to clipboard') do
           begin
             require 'clipboard'
             @clipboard = true
@@ -313,7 +312,7 @@ module Daniel
     def output_password(pass)
       if @clipboard
         Clipboard.copy pass
-        puts "Password copied to clipboard."
+        puts 'Password copied to clipboard.'
       else
         puts "Password is: #{pass}"
       end
@@ -326,7 +325,7 @@ module Daniel
       rescue Errno::ENOTTY
         pass = STDIN.gets.chomp
       end
-      ::RUBY_VERSION.to_f <= 1.8 ? pass : pass.encode("UTF-8")
+      ::RUBY_VERSION.to_f <= 1.8 ? pass : pass.encode('UTF-8')
     end
 
     def read_line
@@ -344,7 +343,7 @@ module Daniel
     end
 
     def main_loop(args)
-      print "Please enter your master password: "
+      print 'Please enter your master password: '
       pass = read_passphrase
       print "\n"
       generator = PasswordGenerator.new pass, 0
@@ -353,17 +352,17 @@ module Daniel
         begin
           code = nil
           loop do
-            print "Enter code: " if STDIN.isatty
+            print 'Enter code: ' if STDIN.isatty
             lastcode = code
             code = read_line
-            if code == "!!"
+            if code == '!!'
               code = lastcode
             end
-            if code[0, 1] == "!"
+            if code[0, 1] == '!'
               handle_command(code)
             else
               if (@params.flags & Flags::REPLICATE_EXISTING) != 0
-                print "Enter existing passphrase: " if STDIN.isatty
+                print 'Enter existing passphrase: ' if STDIN.isatty
                 current = read_passphrase
                 print "\nRepeat existing passphrase: " if STDIN.isatty
                 current2 = read_passphrase
