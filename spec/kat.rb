@@ -11,7 +11,7 @@ describe Daniel::PasswordGenerator do
     ['foo', 'baz', 'Dp4iWIX26UwV55N(', '8244c50a1000baz'],
     # Test Unicode.
     ['La République française', 'la-france', 'w^O)Vl7V0O&eEa^H',
-     '55b1d40a1000la-france'],
+     '55b1d40a1000la-france']
   ].each do |items|
     master, code, result, reminder = items
     it "gives the expected password for #{master}, #{code}" do
@@ -58,7 +58,7 @@ describe Daniel::PasswordGenerator do
     '#)@(%%(%*^&)#@!*@@#(*#!!$($#@%@^$(!!$$*#',
     '265759709105 33264918869 8648005 1401773',
     '                                        ',
-    '2155580046452370263680868874450290219761',
+    '2155580046452370263680868874450290219761'
   ].each_with_index do |result, i|
     it "gives the expected password for length 40 flags set to #{i}" do
       gen = Daniel::PasswordGenerator.new 'master-password'
