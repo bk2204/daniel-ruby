@@ -175,7 +175,7 @@ module Daniel
                     @master_secret)
 
       if (parameters.flags & Flags::REPLICATE_EXISTING) != 0
-        raise 'Invalid mask length' if parameters.length != mask.length
+        fail 'Invalid mask length' if parameters.length != mask.length
 
         keystream = cipher.update(([0] * parameters.length).pack('C*'))
         pairs = keystream.each_byte.zip(mask.each_byte)
@@ -224,7 +224,7 @@ module Daniel
       pieces = self.class.parse_reminder(reminder)
       computed = Util.to_hex(checksum)
       if pieces[:checksum] != computed
-        raise "Checksum mismatch (#{pieces[:checksum]} != #{computed})"
+        fail "Checksum mismatch (#{pieces[:checksum]} != #{computed})"
       end
 
       generate(pieces[:code], pieces[:params], pieces[:mask])
@@ -294,7 +294,7 @@ module Daniel
         end
       end.parse!(args)
       if flags_set && existing_set
-        raise "Can't use both -m and -f"
+        fail "Can't use both -m and -f"
       end
     end
 
