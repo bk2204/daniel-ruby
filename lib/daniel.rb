@@ -21,6 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+require 'English'
 require 'openssl'
 require 'optparse'
 require 'set'
@@ -388,6 +389,4 @@ module Daniel
   end
 end
 
-if __FILE__ == $0
-  Daniel::MainProgram.new.main(ARGV)
-end
+Daniel::MainProgram.new.main(ARGV) if __FILE__ == $PROGRAM_NAME
