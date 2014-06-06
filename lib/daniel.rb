@@ -275,9 +275,7 @@ module Daniel
           end
         end
       end.parse!(args)
-      if flags_set && existing_set
-        fail "Can't use both -m and -f"
-      end
+      fail "Can't use both -m and -f" if flags_set && existing_set
     end
 
     def handle_command(code)
@@ -334,9 +332,7 @@ module Daniel
             print 'Enter code: ' if STDIN.isatty
             lastcode = code
             code = read_line
-            if code == '!!'
-              code = lastcode
-            end
+            code = lastcode if code == '!!'
             if code[0, 1] == '!'
               handle_command(code)
             else
