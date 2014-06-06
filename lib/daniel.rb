@@ -69,11 +69,7 @@ module Daniel
           '+' => NO_SYMBOLS_OTHER,
           '-' => NO_SYMBOLS_OTHER
         }
-        masks.keys.each do |ch|
-          if text[ch]
-            value &= ~masks[ch]
-          end
-        end
+        masks.keys.each { |ch| value &= ~masks[ch] if text[ch] }
         return value
       end
     end
