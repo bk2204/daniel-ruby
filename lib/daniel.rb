@@ -100,7 +100,7 @@ module Daniel
     end
 
     def self.from_characters(text)
-      return self.new Flags.mask_from_characters(text)
+      new Flags.mask_from_characters(text)
     end
   end
 
