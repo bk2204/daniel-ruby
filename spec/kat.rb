@@ -7,11 +7,11 @@ require 'daniel'
 
 describe Daniel::PasswordGenerator do
   [
-    ["foo", "bar", "3*Re7n*qcDDl9N6y", "8244c50a1000bar"],
-    ["foo", "baz", "Dp4iWIX26UwV55N(", "8244c50a1000baz"],
+    ['foo', 'bar', '3*Re7n*qcDDl9N6y', '8244c50a1000bar'],
+    ['foo', 'baz', 'Dp4iWIX26UwV55N(', '8244c50a1000baz'],
     # Test Unicode.
-    ["La République française", "la-france", "w^O)Vl7V0O&eEa^H",
-     "55b1d40a1000la-france"],
+    ['La République française', 'la-france', 'w^O)Vl7V0O&eEa^H',
+     '55b1d40a1000la-france'],
   ].each do |items|
     master, code, result, reminder = items
     it "gives the expected password for #{master}, #{code}" do
