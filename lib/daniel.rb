@@ -86,34 +86,16 @@ module Daniel
 
     def initialize(options = NO_SPACES | NO_SYMBOLS_OTHER)
       super([])
-      (0x20..0x7e).each do |x|
-        add(x)
-      end
-      if options & NO_NUMBERS != 0
-        (0x30..0x39).each do |x|
-          delete(x)
-        end
-      end
-      if options & NO_SPACES != 0
-        delete(0x20)
-      end
-      if options & NO_SYMBOLS_TOP != 0
-        '!@#$%^&*()'.each_byte do |x|
-          delete(x)
-        end
-      end
-      if options & NO_SYMBOLS_OTHER != 0
-        '"\'+,-./:;<=>?[\\]_`{|}~'.each_byte do |x|
-          delete(x)
-        end
-      end
-      if options & NO_LETTERS != 0
-        (0x41..0x5a).each do |x|
-          delete(x)
-        end
-        (0x61..0x7a).each do |x|
-          delete(x)
-        end
+      (0x20..0x7e).each { |x| add(x) }
+      m = {
+        NO_NUMBERS => 0x30..0x39,
+        NO_SPACES => [0x20],
+        NO_SYMBOLS_TOP => '!@#$%^&*()'.each_byte,
+        NO_SYMBOLS_OTHER => '"\'+,-./:;<=>?[\\]_`{|}~'.each_byte,
+        NO_LETTERS => [(0x41..0x5a).to_a, (0x61..0x7a).to_a].flatten
+      }
+      m.each do |k, v|
+        v.each { |x| delete(x) } if options & k != 0
       end
     end
 
