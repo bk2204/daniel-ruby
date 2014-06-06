@@ -161,7 +161,7 @@ module Daniel
 
         keystream = cipher.update(([0] * parameters.length).pack('C*'))
         pairs = keystream.each_byte.zip(mask.each_byte)
-        result = pairs.map { |(x, y)| x ^ y }.pack('C*')
+        pairs.map { |(x, y)| x ^ y }.pack('C*')
       else
         buffer = ([0] * 32).pack('C*')
         result = ''
