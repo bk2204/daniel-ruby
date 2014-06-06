@@ -139,7 +139,7 @@ module Daniel
     end
 
     def checksum
-      return @checksum if !@checksum.nil?
+      return @checksum unless @checksum.nil?
       @checksum = compute_checksum
     end
 
