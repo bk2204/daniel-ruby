@@ -30,7 +30,7 @@ module Daniel
     end
 
     def read_line
-      raise EOFError if @lines.empty?
+      fail EOFError if @lines.empty?
       @lines.shift
     end
 
