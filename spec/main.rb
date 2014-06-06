@@ -120,7 +120,7 @@ describe Daniel::MainProgram do
       '!pass',
       'bar'
     ]
-    prog.passphrase = ['foobar', 'foo']
+    prog.passphrase = %w(foobar foo)
     prog.main([])
     expect(prog.passwords).to eq [
       'nj&xzO@hz&QvuoGY',
@@ -138,7 +138,7 @@ describe Daniel::MainProgram do
     prog = Daniel::MainProgram.new
     prog.lines = ['example.tld']
     prog.passphrase = 'foobar'
-    prog.main(['-l8', '-v1', '-f15'])
+    prog.main(%w(-l8 -v1 -f15))
     expect(prog.passwords).to eq ['mJRUHjid']
     expect(prog.output.flatten).to eq [
       '# ok, checksum is 72eb36',
@@ -176,7 +176,7 @@ describe Daniel::MainProgram do
   it 'handles existing passwords properly' do
     prog = Daniel::MainProgram.new
     prog.lines = ['!flags=32', 'example.tld']
-    prog.passphrase = ['foobar', 'verylongpassword', 'verylongpassword']
+    prog.passphrase = %w(foobar verylongpassword verylongpassword)
     prog.main([])
     expect(prog.output.flatten).to eq [
       '# ok, checksum is 72eb36',
@@ -187,7 +187,7 @@ describe Daniel::MainProgram do
   it 'handles existing passwords properly with -m' do
     prog = Daniel::MainProgram.new
     prog.lines = ['example.tld']
-    prog.passphrase = ['foobar', 'verylongpassword', 'verylongpassword']
+    prog.passphrase = %w(foobar verylongpassword verylongpassword)
     prog.main(%w(-m))
     expect(prog.output.flatten).to eq [
       '# ok, checksum is 72eb36',
@@ -198,7 +198,7 @@ describe Daniel::MainProgram do
   it 'handles mismatched passwords properly with -m' do
     prog = Daniel::MainProgram.new
     prog.lines = ['example.tld']
-    prog.passphrase = ['foobar', 'verylongpassword', 'differentpasssword']
+    prog.passphrase = %w(foobar verylongpassword differentpasssword)
     prog.main(%w(-m))
     expect(prog.output.flatten).to eq [
       '# ok, checksum is 72eb36',
