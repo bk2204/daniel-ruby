@@ -133,7 +133,7 @@ module Daniel
   class PasswordGenerator
     def initialize(pass, version = 0)
       @version = version
-      @prefix = 'DrewPassChart: Version 0x%08x: ' % version
+      @prefix = format('DrewPassChart: Version 0x%08x: ', version)
       @master_secret = process_strings([@prefix, 'Master Secret: ', pass], '')
       @checksum = nil
     end
@@ -146,8 +146,8 @@ module Daniel
     # Because of the way XOR works, if the mask argument is the password, this
     # function will return the mask.
     def generate(code, parameters, mask = nil)
-      flags = 'Flags 0x%08x: ' % parameters.flags
-      version = 'Version 0x%08x: ' % parameters.version
+      flags = format('Flags 0x%08x: ', parameters.flags)
+      version = format('Version 0x%08x: ', parameters.version)
       set = CharacterSet.new parameters.flags
 
       cipher = OpenSSL::Cipher::AES.new(256, :CTR)
