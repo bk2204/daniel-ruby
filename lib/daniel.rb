@@ -154,7 +154,7 @@ module Daniel
       cipher.encrypt
       cipher.key = @master_secret
       cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
-                    @master_secret)
+                                  @master_secret)
 
       if (parameters.flags & Flags::REPLICATE_EXISTING) != 0
         fail 'Invalid mask length' if parameters.length != mask.length

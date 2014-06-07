@@ -20,7 +20,7 @@ module Daniel
       end
     end
 
-    def output_password(pass, _clipboard=false)
+    def output_password(pass, _clipboard = false)
       @passwords ||= []
       @passwords << pass
     end
