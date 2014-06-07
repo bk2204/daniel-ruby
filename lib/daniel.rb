@@ -198,8 +198,7 @@ module Daniel
       params.flags = flags
       params.length = length
       params.version = version
-      return {:params => params, :checksum => csum, :code => code,
-              :mask => mask}
+      { :params => params, :checksum => csum, :code => code, :mask => mask }
     end
 
     def generate_from_reminder(reminder)
