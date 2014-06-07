@@ -318,6 +318,30 @@ module Daniel
       end
     end
 
+    def dispatch_by_code(generator, code)
+      if code[0, 1] == '!'
+        handle_command(code)
+      else
+        if (@params.flags & Flags::REPLICATE_EXISTING) != 0
+          print 'Enter existing passphrase: ' if STDIN.isatty
+          current = read_passphrase
+          print "\nRepeat existing passphrase: " if STDIN.isatty
+          current2 = read_passphrase
+          if current != current2
+            puts "\nPassphrases did not match."
+            return
+          end
+          print "\n"
+          @params.length = current.length
+          mask = generator.generate(code, @params, current)
+        else
+          output_password(generator.generate(code, @params))
+          mask = nil
+        end
+        puts "Reminder is: #{generator.reminder(code, @params, mask)}"
+      end
+    end
+
     def main_loop(args)
       print 'Please enter your master password: '
       pass = read_passphrase
@@ -332,27 +356,7 @@ module Daniel
             lastcode = code
             code = read_line
             code = lastcode if code == '!!'
-            if code[0, 1] == '!'
-              handle_command(code)
-            else
-              if (@params.flags & Flags::REPLICATE_EXISTING) != 0
-                print 'Enter existing passphrase: ' if STDIN.isatty
-                current = read_passphrase
-                print "\nRepeat existing passphrase: " if STDIN.isatty
-                current2 = read_passphrase
-                if current != current2
-                  puts "\nPassphrases did not match."
-                  next
-                end
-                print "\n"
-                @params.length = current.length
-                mask = generator.generate(code, @params, current)
-              else
-                output_password(generator.generate(code, @params))
-                mask = nil
-              end
-              puts "Reminder is: #{generator.reminder(code, @params, mask)}"
-            end
+            dispatch_by_code(generator, code)
           end
         rescue EOFError
           return
