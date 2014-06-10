@@ -128,6 +128,10 @@ module Daniel
       version = version.to_i
       @version = version
     end
+
+    def existing_mode?
+      (@flags & Flags::REPLICATE_EXISTING) != 0
+    end
   end
 
   class PasswordGenerator
@@ -156,7 +160,7 @@ module Daniel
       cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
                                   @master_secret)
 
-      if (parameters.flags & Flags::REPLICATE_EXISTING) != 0
+      if parameters.existing_mode?
         fail 'Invalid mask length' if parameters.length != mask.length
 
         keystream = cipher.update(([0] * parameters.length).pack('C*'))
@@ -322,7 +326,7 @@ module Daniel
       if code[0, 1] == '!'
         handle_command(code)
       else
-        if (@params.flags & Flags::REPLICATE_EXISTING) != 0
+        if @params.existing_mode?
           print 'Enter existing passphrase: ' if STDIN.isatty
           current = read_passphrase
           print "\nRepeat existing passphrase: " if STDIN.isatty
