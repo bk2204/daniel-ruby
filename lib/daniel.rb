@@ -246,6 +246,7 @@ module Daniel
     def parse_args(args)
       @params = Parameters.new
       @clipboard = false
+      @mode = :password
       flags_set = false
       existing_set = false
       OptionParser.new do |opts|
@@ -267,6 +268,10 @@ module Daniel
         opts.on('-m', 'Generate reminders from existing passwords') do
           @params.flags = Flags::REPLICATE_EXISTING
           existing_set = true
+        end
+
+        opts.on('-e', 'Generate entropy estimates') do
+          @mode = :estimate
         end
 
         opts.on('-p', 'Store passwords to clipboard') do
@@ -312,8 +317,20 @@ module Daniel
       STDIN.readline.chomp
     end
 
+    def estimate
+      cs = CharacterSet.new @params.flags & Flags::SYMBOL_MASK
+      nchars = @params.length
+      possibles = cs.length
+      bits = Math.log2(possibles).round(3)
+      msg = "#{nchars} characters; "
+      msg << "#{possibles} possible (#{bits} bpc); "
+      msg << "#{nchars * bits} bits of entropy"
+      puts msg
+    end
+
     def main(args)
       parse_args(args)
+      return estimate if @mode == :estimate
       loop do
         catch(:restart) do
           main_loop(args)
