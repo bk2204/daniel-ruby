@@ -62,9 +62,8 @@ describe Daniel::MainProgram do
 
   it 'refuses to accept -f and -m together' do
     prog = Daniel::MainProgram.new
-    expect {
-      prog.parse_args(%w(-m -f15))
-    }.to raise_error(RuntimeError, /can't.*both.*-m.*-f/i)
+    expect { prog.parse_args(%w(-m -f15)) }
+      .to raise_error(RuntimeError, /can't.*both.*-m.*-f/i)
   end
 
   it 'generates reasonable output' do
@@ -158,9 +157,8 @@ describe Daniel::MainProgram do
     prog = Daniel::MainProgram.new
     prog.lines = ['example.tld']
     prog.passphrase = 'foobar'
-    expect {
-      prog.main(['ffffff0f0801example.tld'])
-    }.to raise_error(RuntimeError, /checksum mismatch/i)
+    expect { prog.main(['ffffff0f0801example.tld']) }
+      .to raise_error(RuntimeError, /checksum mismatch/i)
   end
 
   it 'processes reminders for existing passwords properly' do
@@ -211,9 +209,7 @@ describe Daniel::MainProgram do
     prog.passphrase = 'foobar'
     prog.main(['-p'])
     if prog.clipboard
-      expect {
-        Object.const_get('Clipboard')
-      }.not_to raise_error
+      expect { Object.const_get('Clipboard') }.not_to raise_error
     else
       expect(prog.warnings.flatten).to eq [
         "Can't load clipboard gem; passwords will be printed"
