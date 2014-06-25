@@ -132,6 +132,12 @@ module Daniel
     def existing_mode?
       (@flags & Flags::REPLICATE_EXISTING) != 0
     end
+
+    def ==(x)
+      @flags == x.flags && @length == x.length && @version == x.version
+    end
+
+    alias_method :eql?, :==
   end
 
   class PasswordGenerator
