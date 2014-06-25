@@ -62,7 +62,7 @@ describe Daniel::MainProgram do
 
   it 'refuses to accept -f and -m together' do
     prog = Daniel::MainProgram.new
-    expect { prog.parse_args(%w(-m -f15)) }
+    expect { prog.parse_args(%w(-m -f15)) } \
       .to raise_error(RuntimeError, /can't.*both.*-m.*-f/i)
   end
 
@@ -157,7 +157,7 @@ describe Daniel::MainProgram do
     prog = Daniel::MainProgram.new
     prog.lines = ['example.tld']
     prog.passphrase = 'foobar'
-    expect { prog.main(['ffffff0f0801example.tld']) }
+    expect { prog.main(['ffffff0f0801example.tld']) } \
       .to raise_error(RuntimeError, /checksum mismatch/i)
   end
 
