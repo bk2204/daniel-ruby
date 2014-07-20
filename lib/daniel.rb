@@ -254,6 +254,7 @@ module Daniel
       @params = Parameters.new
       @clipboard = false
       @mode = :password
+      @prompt = $stdin.isatty ? :interactive : :human
       flags_set = false
       existing_set = false
       OptionParser.new do |opts|
@@ -275,6 +276,10 @@ module Daniel
         opts.on('-m', 'Generate reminders from existing passwords') do
           @params.flags = Flags::REPLICATE_EXISTING
           existing_set = true
+        end
+
+        opts.on('-r', 'Produce machine-readable output') do
+          @prompt = :machine
         end
 
         opts.on('-e', 'Generate entropy estimates') do
@@ -324,6 +329,18 @@ module Daniel
       STDIN.readline.chomp
     end
 
+    def prompt(text, machine, *args)
+      nl = machine[-1] == '?' ? '' : "\n"
+      # This weirdness is required because Ruby 1.8 doesn't allow the splat in
+      # the middle of a function call.
+      args = [@prompt == :machine ? machine : text, ' '] << args << [nl]
+      print(*args)
+    end
+
+    def interactive(*args)
+      prompt(*args)
+    end
+
     def estimate
       cs = CharacterSet.new @params.flags & Flags::SYMBOL_MASK
       nchars = @params.length
@@ -351,7 +368,7 @@ module Daniel
         handle_command(code)
       else
         if @params.existing_mode?
-          print 'Enter existing passphrase: ' if STDIN.isatty
+          interactive 'Enter existing passphrase:', ':existing?'
           current = read_passphrase
           print "\nRepeat existing passphrase: " if STDIN.isatty
           current2 = read_passphrase
@@ -366,21 +383,22 @@ module Daniel
           output_password(generator.generate(code, @params))
           mask = nil
         end
-        puts "Reminder is: #{generator.reminder(code, @params, mask)}"
+        prompt('Reminder is:', ':reminder',
+               generator.reminder(code, @params, mask))
       end
     end
 
     def main_loop(args)
-      print 'Please enter your master password: '
+      prompt 'Please enter your master password:', ':master-password?'
       pass = read_passphrase
       print "\n"
       generator = PasswordGenerator.new pass, 0
-      puts "# ok, checksum is #{Util.to_hex(generator.checksum)}"
+      prompt '# ok, checksum is', ':checksum', Util.to_hex(generator.checksum)
       if args.empty?
         begin
           code = nil
           loop do
-            print 'Enter code: ' if STDIN.isatty
+            interactive 'Enter code:', ':code?'
             lastcode = code
             code = read_line
             code = lastcode if code == '!!'

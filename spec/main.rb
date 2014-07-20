@@ -10,7 +10,7 @@ require 'daniel'
 module Daniel
   class MainProgram
     attr_accessor :passphrase, :passwords, :lines, :output, :warnings
-    attr_accessor :params, :clipboard
+    attr_accessor :params, :clipboard, :prompt
 
     def read_passphrase
       if @passphrase.is_a? Array
@@ -41,6 +41,11 @@ module Daniel
     end
 
     def print(*)
+    end
+
+    def prompt(text, machine, *args)
+      @output ||= []
+      @output << [@prompt == :machine ? machine : text, ' ', *args].join('')
     end
   end
 end
@@ -73,8 +78,11 @@ describe Daniel::MainProgram do
     prog.main([])
     expect(prog.passwords).to eq ['nj&xzO@hz&QvuoGY']
     expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
       '# ok, checksum is 72eb36',
-      'Reminder is: 72eb360a1000example.tld'
+      'Enter code: ',
+      'Reminder is: 72eb360a1000example.tld',
+      'Enter code: '
     ]
   end
 
@@ -88,9 +96,13 @@ describe Daniel::MainProgram do
       'nj&xzO@hz&QvuoGY'
     ]
     expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
       '# ok, checksum is 72eb36',
+      'Enter code: ',
       'Reminder is: 72eb360a1000example.tld',
-      'Reminder is: 72eb360a1000example.tld'
+      'Enter code: ',
+      'Reminder is: 72eb360a1000example.tld',
+      'Enter code: '
     ]
   end
 
@@ -106,8 +118,14 @@ describe Daniel::MainProgram do
     prog.main([])
     expect(prog.passwords).to eq ['mJRUHjid']
     expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
       '# ok, checksum is 72eb36',
-      'Reminder is: 72eb360f0801example.tld'
+      'Enter code: ',
+      'Enter code: ',
+      'Enter code: ',
+      'Enter code: ',
+      'Reminder is: 72eb360f0801example.tld',
+      'Enter code: '
     ]
   end
 
@@ -125,10 +143,16 @@ describe Daniel::MainProgram do
       '3*Re7n*qcDDl9N6y'
     ]
     expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
       '# ok, checksum is 72eb36',
+      'Enter code: ',
       'Reminder is: 72eb360a1000example.tld',
+      'Enter code: ',
+      'Please enter your master password: ',
       '# ok, checksum is 8244c5',
-      'Reminder is: 8244c50a1000bar'
+      'Enter code: ',
+      'Reminder is: 8244c50a1000bar',
+      'Enter code: '
     ]
   end
 
@@ -139,8 +163,11 @@ describe Daniel::MainProgram do
     prog.main(%w(-l8 -v1 -f15))
     expect(prog.passwords).to eq ['mJRUHjid']
     expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
       '# ok, checksum is 72eb36',
-      'Reminder is: 72eb360f0801example.tld'
+      'Enter code: ',
+      'Reminder is: 72eb360f0801example.tld',
+      'Enter code: '
     ]
   end
 
@@ -150,7 +177,10 @@ describe Daniel::MainProgram do
     prog.passphrase = 'foobar'
     prog.main(['72eb360f0801example.tld', '72eb360a1000example.tld'])
     expect(prog.passwords).to eq ['mJRUHjid', 'nj&xzO@hz&QvuoGY']
-    expect(prog.output.flatten).to eq ['# ok, checksum is 72eb36']
+    expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
+      '# ok, checksum is 72eb36'
+    ]
   end
 
   it 'handles mismatched reminders properly' do
@@ -167,7 +197,10 @@ describe Daniel::MainProgram do
     prog.passphrase = 'foobar'
     prog.main(['72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld'])
     expect(prog.passwords).to eq ['verylongpassword']
-    expect(prog.output.flatten).to eq ['# ok, checksum is 72eb36']
+    expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
+      '# ok, checksum is 72eb36'
+    ]
   end
 
   it 'handles existing passwords properly' do
@@ -176,8 +209,13 @@ describe Daniel::MainProgram do
     prog.passphrase = %w(foobar verylongpassword verylongpassword)
     prog.main([])
     expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
       '# ok, checksum is 72eb36',
-      'Reminder is: 72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld'
+      'Enter code: ',
+      'Enter code: ',
+      'Enter existing passphrase: ',
+      'Reminder is: 72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld',
+      'Enter code: '
     ]
   end
 
@@ -187,8 +225,12 @@ describe Daniel::MainProgram do
     prog.passphrase = %w(foobar verylongpassword verylongpassword)
     prog.main(%w(-m))
     expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
       '# ok, checksum is 72eb36',
-      'Reminder is: 72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld'
+      'Enter code: ',
+      'Enter existing passphrase: ',
+      'Reminder is: 72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld',
+      'Enter code: '
     ]
   end
 
@@ -198,8 +240,12 @@ describe Daniel::MainProgram do
     prog.passphrase = %w(foobar verylongpassword differentpasssword)
     prog.main(%w(-m))
     expect(prog.output.flatten).to eq [
+      'Please enter your master password: ',
       '# ok, checksum is 72eb36',
-      "\nPassphrases did not match."
+      'Enter code: ',
+      'Enter existing passphrase: ',
+      "\nPassphrases did not match.",
+      'Enter code: '
     ]
   end
 
