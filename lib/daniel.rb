@@ -333,11 +333,12 @@ module Daniel
       nl = machine[-1] == '?' ? '' : "\n"
       # This weirdness is required because Ruby 1.8 doesn't allow the splat in
       # the middle of a function call.
-      args = [@prompt == :machine ? machine : text, ' '] << args << [nl]
+      args = [@prompt == :machine ? machine : text, ' '] + args + [nl]
       print(*args)
     end
 
     def interactive(*args)
+      return if @prompt == :human
       prompt(*args)
     end
 
@@ -353,6 +354,7 @@ module Daniel
     end
 
     def main(args)
+      args = args.dup
       parse_args(args)
       return estimate if @mode == :estimate
       loop do
