@@ -330,7 +330,7 @@ module Daniel
     end
 
     def prompt(text, machine, *args)
-      nl = machine[-1] == '?' ? '' : "\n"
+      nl = @prompt != :machine && machine[-1] == '?' ? '' : "\n"
       # This weirdness is required because Ruby 1.8 doesn't allow the splat in
       # the middle of a function call.
       args = [@prompt == :machine ? machine : text, ' '] + args + [nl]
