@@ -129,6 +129,16 @@ Note that on Linux, the xclip utility is required unless you are using a version
 of the clipboard gem newer than 1.0.5, as xsel support is broken in earlier
 versions.
 
+Can I script daniel?
+--------------------
+
+Yes.  You can use the +-r+ option to put daniel in machine-readable mode.
+Instead of the normal output, daniel will print a number of lines each beginning
+with a colon.  If the line is a prompt, it will end with a question mark.
+Otherwise, after the message type, a single space and a URL-encoded value will
+be output.  This ensures that all characters are represented properly and that a
+non-prompt line can never end in a question mark.
+
 What characters are above the digits on a US keyboard?
 ------------------------------------------------------
 
