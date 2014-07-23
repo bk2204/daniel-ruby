@@ -22,6 +22,7 @@
 # THE SOFTWARE.
 
 require 'English'
+require 'cgi'
 require 'openssl'
 require 'optparse'
 require 'set'
@@ -330,11 +331,17 @@ module Daniel
     end
 
     def prompt(text, machine, *args)
-      nl = @prompt != :machine && machine[-1] == '?' ? '' : "\n"
+      nl = !machine_readable? && machine[-1] == '?' ? '' : "\n"
+      args.map! { |s| CGI::escape(s) } if machine_readable?
       # This weirdness is required because Ruby 1.8 doesn't allow the splat in
       # the middle of a function call.
-      args = [@prompt == :machine ? machine : text, ' '] + args + [nl]
+      args = [machine_readable? ? machine : text, ' '] + args + [nl]
       print(*args)
+    end
+
+    # Is the output machine-readable?
+    def machine_readable?
+      @prompt == :machine
     end
 
     def interactive(*args)
