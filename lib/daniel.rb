@@ -311,7 +311,7 @@ module Daniel
         Clipboard.copy pass
         puts 'Password copied to clipboard.'
       else
-        puts "Password is: #{pass}"
+        prompt 'Password is:', ':password', pass
       end
     end
 
