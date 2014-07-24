@@ -354,10 +354,15 @@ module Daniel
       nchars = @params.length
       possibles = cs.length
       bits = Math.log2(possibles).round(3)
-      msg = "#{nchars} characters; "
-      msg << "#{possibles} possible (#{bits} bpc); "
-      msg << "#{nchars * bits} bits of entropy"
-      puts msg
+      if machine_readable?
+        puts ":char #{nchars}\n:possible-char #{possibles}"
+        puts ":bits-per-char #{bits}\n:bits-total #{nchars * bits}"
+      else
+        msg = "#{nchars} characters; "
+        msg << "#{possibles} possible (#{bits} bpc); "
+        msg << "#{nchars * bits} bits of entropy"
+        puts msg
+      end
     end
 
     def main(args)
