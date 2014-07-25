@@ -259,7 +259,7 @@ module Daniel
       flags_set = false
       existing_set = false
       OptionParser.new do |opts|
-        opts.banner = 'Usage: daniel [-flvm]'
+        opts.banner = 'Usage: daniel [-mrep] [-f FLAGS] [-l LENGTH] [-v VER]'
 
         opts.on('-v PASSWORD-VERSION', 'Set version') do |version|
           @params.version = version
