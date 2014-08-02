@@ -255,7 +255,7 @@ module Daniel
       @params = Parameters.new
       @clipboard = false
       @mode = :password
-      @prompt = $stdin.isatty ? :interactive : :human
+      @prompt = $stdin.isatty ? :interactive : :human unless @prompt
       flags_set = false
       existing_set = false
       OptionParser.new do |opts|
@@ -384,13 +384,15 @@ module Daniel
         if @params.existing_mode?
           interactive 'Enter existing passphrase:', ':existing?'
           current = read_passphrase
-          print "\nRepeat existing passphrase: " if STDIN.isatty
-          current2 = read_passphrase
-          if current != current2
-            puts "\nPassphrases did not match."
-            return
+          if @prompt == :interactive
+            print "\nRepeat existing passphrase: " if STDIN.isatty
+            current2 = read_passphrase
+            if current != current2
+              puts "\nPassphrases did not match."
+              return
+            end
+            print "\n"
           end
-          print "\n"
           @params.length = current.length
           mask = generator.generate(code, @params, current)
         else

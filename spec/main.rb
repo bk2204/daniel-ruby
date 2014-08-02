@@ -50,6 +50,10 @@ module Daniel
     end
 
     alias_method :interactive, :prompt
+
+    def prompt_type=(p)
+      @prompt = p
+    end
   end
 end
 
@@ -281,6 +285,7 @@ describe Daniel::MainProgram do
     prog = Daniel::MainProgram.new
     prog.lines = ['example.tld']
     prog.passphrase = %w(foobar verylongpassword differentpasssword)
+    prog.prompt_type = :interactive
     prog.main(%w(-m))
     expect(prog.output.flatten).to eq [
       'Please enter your master password: ',
