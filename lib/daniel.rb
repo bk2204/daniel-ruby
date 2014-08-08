@@ -28,6 +28,7 @@ require 'optparse'
 require 'set'
 
 module Daniel
+  # Utility functions.
   class Util
     def self.to_hex(s)
       s.unpack('H*')[0]
@@ -39,6 +40,7 @@ module Daniel
     end
   end
 
+  # Flag constants and conversion functions.
   class Flags
     NO_NUMBERS = 0x01
     NO_SPACES = 0x02
@@ -77,6 +79,7 @@ module Daniel
     end
   end
 
+  # A set of characters which are acceptable in a generated password.
   class CharacterSet < ::Set
     NO_NUMBERS = Flags::NO_NUMBERS
     NO_SPACES = Flags::NO_SPACES
@@ -105,6 +108,7 @@ module Daniel
     end
   end
 
+  # The parameters affecting generation of a password.
   class Parameters
     attr_reader :flags, :length, :version
 
@@ -144,6 +148,7 @@ module Daniel
     alias_method :eql?, :==
   end
 
+  # Generates a password or set of passwords.
   class PasswordGenerator
     def initialize(pass, version = 0)
       @version = version
@@ -253,6 +258,7 @@ module Daniel
     end
   end
 
+  # The main command-line interface.
   class MainProgram
     def initialize
       @params = Parameters.new
