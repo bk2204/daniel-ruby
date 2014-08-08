@@ -254,11 +254,14 @@ module Daniel
   end
 
   class MainProgram
-    def parse_args(args)
+    def initialize
       @params = Parameters.new
       @clipboard = false
       @mode = :password
       @prompt = $stdin.isatty ? :interactive : :human unless @prompt
+    end
+
+    def parse_args(args)
       flags_set = false
       existing_set = false
       OptionParser.new do |opts|
@@ -291,15 +294,20 @@ module Daniel
         end
 
         opts.on('-p', 'Store passwords to clipboard') do
-          begin
-            require 'clipboard'
-            @clipboard = true
-          rescue LoadError
-            warn "Can't load clipboard gem; passwords will be printed"
-          end
+          @clipboard = true
         end
       end.parse!(args)
       fail "Can't use both -m and -f" if flags_set && existing_set
+    end
+
+    def sanity_check
+      return unless @clipboard
+      begin
+        require 'clipboard'
+      rescue LoadError
+        @clipboard = false
+        warn "Can't load clipboard gem; passwords will be printed"
+      end
     end
 
     def handle_command(code)
@@ -371,6 +379,7 @@ module Daniel
     def main(args)
       args = args.dup
       parse_args(args)
+      sanity_check
       return estimate if @mode == :estimate
       loop do
         catch(:restart) do
