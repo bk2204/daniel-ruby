@@ -335,7 +335,7 @@ module Daniel
 
     def prompt(text, machine, *args)
       nl = !machine_readable? && machine[-1] == '?' ? '' : "\n"
-      args.map! { |s| CGI::escape(s) } if machine_readable?
+      args.map! { |s| CGI.escape(s) } if machine_readable?
       # This weirdness is required because Ruby 1.8 doesn't allow the splat in
       # the middle of a function call.
       args = [machine_readable? ? machine : text, ' '] + args + [nl]
