@@ -134,8 +134,11 @@ module Daniel
       (@flags & Flags::REPLICATE_EXISTING) != 0
     end
 
-    def ==(x)
-      @flags == x.flags && @length == x.length && @version == x.version
+    def ==(other)
+      [:flags, :length, :version].each do |m|
+        return false unless method(m).call == other.method(m).call
+      end
+      true
     end
 
     alias_method :eql?, :==
