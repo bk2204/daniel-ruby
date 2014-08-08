@@ -11,6 +11,7 @@ module Daniel
   class MainProgram
     attr_accessor :passphrase, :passwords, :lines, :output, :warnings
     attr_accessor :params, :clipboard
+    attr_writer :prompt
 
     def read_passphrase
       if @passphrase.is_a? Array
@@ -47,10 +48,6 @@ module Daniel
       msg = args.join('').chomp
       @output ||= []
       @output << msg unless msg.strip.empty?
-    end
-
-    def prompt_type=(p)
-      @prompt = p
     end
   end
 end
@@ -121,7 +118,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld']
       prog.passphrase = 'foobar'
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(args)
       expect(prog.passwords).to eq ['nj&xzO@hz&QvuoGY']
       expect(prog.output.flatten).to eq func.call [
@@ -137,7 +134,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld', '!!']
       prog.passphrase = 'foobar'
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(args)
       expect(prog.passwords).to eq [
         'nj&xzO@hz&QvuoGY',
@@ -163,7 +160,7 @@ describe Daniel::MainProgram do
         'example.tld'
       ]
       prog.passphrase = 'foobar'
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(args)
       expect(prog.passwords).to eq ['mJRUHjid']
       expect(prog.output.flatten).to eq func.call [
@@ -186,7 +183,7 @@ describe Daniel::MainProgram do
         'bar'
       ]
       prog.passphrase = %w(foobar foo)
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(args)
       expect(prog.passwords).to eq [
         'nj&xzO@hz&QvuoGY',
@@ -210,7 +207,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld']
       prog.passphrase = 'foobar'
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(%w(-l8 -v1 -f15) + args)
       expect(prog.passwords).to eq ['mJRUHjid']
       expect(prog.output.flatten).to eq func.call [
@@ -226,7 +223,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld']
       prog.passphrase = 'foobar'
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(args + ['72eb360f0801example.tld', '72eb360a1000example.tld'])
       expect(prog.passwords).to eq ['mJRUHjid', 'nj&xzO@hz&QvuoGY']
       expect(prog.output.flatten).to eq func.call [
@@ -239,7 +236,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld']
       prog.passphrase = 'foobar'
-      prog.prompt_type = type
+      prog.prompt = type
       expect { prog.main(args + ['ffffff0f0801example.tld']) } \
         .to raise_error(RuntimeError, /checksum mismatch/i)
     end
@@ -248,7 +245,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld']
       prog.passphrase = 'foobar'
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(args +
                 ['72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld'])
       expect(prog.passwords).to eq ['verylongpassword']
@@ -262,7 +259,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.lines = ['!flags=32', 'example.tld']
       prog.passphrase = %w(foobar verylongpassword verylongpassword)
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(args)
       expect(prog.output.flatten).to eq func.call [
         ':master-password?',
@@ -279,7 +276,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld']
       prog.passphrase = %w(foobar verylongpassword verylongpassword)
-      prog.prompt_type = type
+      prog.prompt = type
       prog.main(%w(-m) + args)
       expect(prog.output.flatten).to eq func.call [
         ':master-password?',
@@ -296,7 +293,7 @@ describe Daniel::MainProgram do
     prog = Daniel::MainProgram.new
     prog.lines = ['example.tld']
     prog.passphrase = %w(foobar verylongpassword differentpasssword)
-    prog.prompt_type = :interactive
+    prog.prompt = :interactive
     prog.main(%w(-m))
     expect(prog.output.flatten).to eq [
       'Please enter your master password: ',
