@@ -8,6 +8,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 require 'daniel'
 
 module Daniel
+  # The main program class, but slightly more open.
   class MainProgram
     attr_accessor :passphrase, :passwords, :lines, :output, :warnings
     attr_accessor :params, :clipboard
