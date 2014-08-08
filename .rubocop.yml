@@ -5,3 +5,7 @@ Style/FileName:
     Enabled: false
 Style/HashSyntax:
     EnforcedStyle: hash_rockets
+Style/MethodLength:
+    Max: 30
+Style/ClassLength:
+    Max: 200
