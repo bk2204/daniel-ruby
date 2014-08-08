@@ -228,7 +228,7 @@ describe Daniel::MainProgram do
       expect(prog.passwords).to eq ['mJRUHjid', 'nj&xzO@hz&QvuoGY']
       expect(prog.output.flatten).to eq func.call [
         ':master-password?',
-        ':checksum 72eb36',
+        ':checksum 72eb36'
       ]
     end
 
