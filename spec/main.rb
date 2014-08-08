@@ -91,7 +91,7 @@ end
 describe Daniel::MainProgram do
   it 'parses args correctly' do
     prog = Daniel::MainProgram.new
-    prog.parse_args(%w(-l8 -v1 -f15))
+    prog.send(:parse_args, %w(-l8 -v1 -f15))
     expect(prog.params.length).to eq 8
     expect(prog.params.version).to eq 1
     expect(prog.params.flags).to eq 15
@@ -99,13 +99,13 @@ describe Daniel::MainProgram do
 
   it 'parses -m correctly' do
     prog = Daniel::MainProgram.new
-    prog.parse_args(%w(-m))
+    prog.send(:parse_args, %w(-m))
     expect(prog.params.flags).to eq Daniel::Flags::REPLICATE_EXISTING
   end
 
   it 'refuses to accept -f and -m together' do
     prog = Daniel::MainProgram.new
-    expect { prog.parse_args(%w(-m -f15)) } \
+    expect { prog.send(:parse_args, %w(-m -f15)) } \
       .to raise_error(RuntimeError, /can't.*both.*-m.*-f/i)
   end
 

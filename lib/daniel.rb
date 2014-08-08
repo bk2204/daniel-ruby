@@ -267,6 +267,21 @@ module Daniel
       @prompt = $stdin.isatty ? :interactive : :human unless @prompt
     end
 
+    def main(args)
+      args = args.dup
+      parse_args(args)
+      sanity_check
+      return estimate if @mode == :estimate
+      loop do
+        catch(:restart) do
+          main_loop(args)
+          return
+        end
+      end
+    end
+
+    private
+
     def parse_args(args)
       flags_set = false
       existing_set = false
@@ -379,19 +394,6 @@ module Daniel
         msg << "#{possibles} possible (#{bits} bpc); "
         msg << "#{nchars * bits} bits of entropy"
         puts msg
-      end
-    end
-
-    def main(args)
-      args = args.dup
-      parse_args(args)
-      sanity_check
-      return estimate if @mode == :estimate
-      loop do
-        catch(:restart) do
-          main_loop(args)
-          return
-        end
       end
     end
 
