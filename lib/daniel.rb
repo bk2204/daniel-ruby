@@ -377,22 +377,28 @@ module Daniel
       end
     end
 
+    def query_existing
+      interactive 'Enter existing passphrase:', ':existing?'
+      current = read_passphrase
+      if @prompt == :interactive
+        print "\nRepeat existing passphrase: " if STDIN.isatty
+        current2 = read_passphrase
+        if current != current2
+          puts "\nPassphrases did not match."
+          return nil
+        end
+        print "\n"
+      end
+      current
+    end
+
     def dispatch_by_code(generator, code)
       if code[0, 1] == '!'
         handle_command(code)
       else
         if @params.existing_mode?
-          interactive 'Enter existing passphrase:', ':existing?'
-          current = read_passphrase
-          if @prompt == :interactive
-            print "\nRepeat existing passphrase: " if STDIN.isatty
-            current2 = read_passphrase
-            if current != current2
-              puts "\nPassphrases did not match."
-              return
-            end
-            print "\n"
-          end
+          current = query_existing
+          return unless current
           @params.length = current.length
           mask = generator.generate(code, @params, current)
         else
