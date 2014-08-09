@@ -290,6 +290,49 @@ describe Daniel::MainProgram do
     end
   end
 
+  it 'produces proper estimate output' do
+    prog = Daniel::MainProgram.new
+    prog.main(%w(-e))
+    expect(prog.output.flatten).to eq [
+      '16 characters; 72 possible (6.17 bpc); 98.72 bits of entropy'
+    ]
+  end
+
+  it 'produces proper estimate output (machine-readable)' do
+    prog = Daniel::MainProgram.new
+    prog.main(%w(-e -r))
+    expect(prog.output.flatten.map { |s| s.split("\n") }.flatten).to eq [
+      ':char 16',
+      ':possible-char 72',
+      ':bits-per-char 6.17',
+      ':bits-total 98.72'
+    ]
+  end
+
+  [
+    [16, 72, 6.17, 98.72, 0x0a],
+    [12, 95, 6.57, 78.84, 0x00]
+  ].each do |(len, possible, bpc, bits, flags)|
+    it 'produces proper estimates' do
+      prog = Daniel::MainProgram.new
+      prog.main(['-e', "-l#{len}", "-f#{flags}"])
+      res = "#{len} characters; #{possible} possible (#{bpc} bpc); \
+#{bits} bits of entropy"
+      expect(prog.output.flatten).to eq [res]
+    end
+
+    it 'produces proper estimates (machine-readable)' do
+      prog = Daniel::MainProgram.new
+      prog.main(['-e', '-r', "-l#{len}","-f#{flags}"])
+      expect(prog.output.flatten.map { |s| s.split("\n") }.flatten).to eq [
+        ":char #{len}",
+        ":possible-char #{possible}",
+        ":bits-per-char #{bpc}",
+        ":bits-total #{bits}"
+      ]
+    end
+  end
+
   it 'handles mismatched passwords properly with -m' do
     prog = Daniel::MainProgram.new
     prog.lines = ['example.tld']
