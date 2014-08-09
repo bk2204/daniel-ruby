@@ -1,8 +1,6 @@
 #!/usr/bin/ruby
 # encoding: UTF-8
 
-require 'English'
-
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'daniel'
