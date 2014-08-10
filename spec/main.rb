@@ -321,7 +321,7 @@ describe Daniel::MainProgram do
 
     it 'produces proper estimates (machine-readable)' do
       prog = Daniel::MainProgram.new
-      prog.main(['-e', '-r', "-l#{len}","-f#{flags}"])
+      prog.main(['-e', '-r', "-l#{len}", "-f#{flags}"])
       expect(prog.output.flatten.map { |s| s.split("\n") }.flatten).to eq [
         ":char #{len}",
         ":possible-char #{possible}",
