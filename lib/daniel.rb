@@ -28,6 +28,10 @@ require 'set'
 
 # A password generation tool.
 module Daniel
+  # The class from which all Daniel exceptions derive.
+  class Exception < ::Exception
+  end
+
   # Utility functions.
   class Util
     def self.to_hex(s)
@@ -212,7 +216,7 @@ module Daniel
                                   @master_secret)
 
       if parameters.existing_mode?
-        fail 'Invalid mask length' if parameters.length != mask.length
+        fail Exception, 'Invalid mask length' if parameters.length != mask.length
 
         keystream = cipher.update(([0] * parameters.length).pack('C*'))
         pairs = keystream.each_byte.zip(mask.each_byte)
@@ -233,7 +237,7 @@ module Daniel
       rem = Reminder.parse(reminder)
       computed = Util.to_hex(checksum)
       if rem.checksum != computed
-        fail "Checksum mismatch (#{rem.checksum} != #{computed})"
+        fail Exception, "Checksum mismatch (#{rem.checksum} != #{computed})"
       end
 
       generate(rem.code, rem.params, rem.mask)
@@ -324,7 +328,7 @@ module Daniel
           @clipboard = true
         end
       end.parse!(args)
-      fail "Can't use both -m and -f" if flags_set && existing_set
+      fail Exception, "Can't use both -m and -f" if flags_set && existing_set
     end
 
     def sanity_check

@@ -105,7 +105,7 @@ describe Daniel::MainProgram do
   it 'refuses to accept -f and -m together' do
     prog = Daniel::MainProgram.new
     expect { prog.send(:parse_args, %w(-m -f15)) } \
-      .to raise_error(RuntimeError, /can't.*both.*-m.*-f/i)
+      .to raise_error(Daniel::Exception, /can't.*both.*-m.*-f/i)
   end
 
   [
@@ -237,7 +237,7 @@ describe Daniel::MainProgram do
       prog.passphrase = 'foobar'
       prog.prompt = type
       expect { prog.main(args + ['ffffff0f0801example.tld']) } \
-        .to raise_error(RuntimeError, /checksum mismatch/i)
+        .to raise_error(Daniel::Exception, /checksum mismatch/i)
     end
 
     it "processes reminders for existing passwords properly#{msg}" do
