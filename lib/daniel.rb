@@ -147,6 +147,9 @@ module Daniel
     alias_method :eql?, :==
   end
 
+  # A parsed reminder value
+  Reminder = Struct.new(:params, :checksum, :code, :mask)
+
   # Generates a password or set of passwords.
   class PasswordGenerator
     def initialize(pass, version = 0)
@@ -195,8 +198,7 @@ module Daniel
     # Parse a reminder into its constituent parts.
     #
     # @param reminder [String] the complete reminder string
-    # @return [Hash] a hash containing a set of parameters (key :params),
-    #   hex-encoded checksum (:checksum), code (:code), and mask (:mask)
+    # @return [Reminder] the parsed set of parameters
     def self.parse_reminder(reminder)
       params = Parameters.new
       csum = reminder[0..5]
@@ -216,18 +218,17 @@ module Daniel
       params.flags = flags
       params.length = length
       params.version = version
-      { :params => params, :checksum => csum, :code => code, :mask => mask,
-        :reminder => reminder }
+      Reminder.new(params, csum, code, mask)
     end
 
     def generate_from_reminder(reminder)
-      pieces = self.class.parse_reminder(reminder)
+      rem = self.class.parse_reminder(reminder)
       computed = Util.to_hex(checksum)
-      if pieces[:checksum] != computed
-        fail "Checksum mismatch (#{pieces[:checksum]} != #{computed})"
+      if rem.checksum != computed
+        fail "Checksum mismatch (#{rem.checksum} != #{computed})"
       end
 
-      generate(pieces[:code], pieces[:params], pieces[:mask])
+      generate(rem.code, rem.params, rem.mask)
     end
 
     def reminder(code, p, mask = nil)
