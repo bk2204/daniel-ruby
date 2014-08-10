@@ -204,10 +204,9 @@ module Daniel
 
     # Because of the way XOR works, if the mask argument is the password, this
     # function will return the mask.
-    def generate(code, parameters, mask = nil)
-      flags = format('Flags 0x%08x: ', parameters.flags)
-      version = format('Version 0x%08x: ', parameters.version)
-      set = CharacterSet.new parameters.flags
+    def generate(code, params, mask = nil)
+      flags = format('Flags 0x%08x: ', params.flags)
+      version = format('Version 0x%08x: ', params.version)
 
       cipher = OpenSSL::Cipher::AES.new(256, :CTR)
       cipher.encrypt
@@ -215,18 +214,8 @@ module Daniel
       cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
                                   @master_secret)
 
-      if parameters.existing_mode?
-        generate_existing(cipher, parameters, mask)
-      else
-        buffer = ([0] * 32).pack('C*')
-        result = ''
-        while result.length < parameters.length
-          result << cipher.update(buffer).bytes.select do |x|
-            set.include?(x)
-          end.pack('C*')
-        end
-        result[0, parameters.length]
-      end
+      return generate_existing(cipher, params, mask) if params.existing_mode?
+      generate_default(cipher, params)
     end
 
     def generate_from_reminder(reminder)
@@ -250,6 +239,18 @@ module Daniel
       keystream = cipher.update(([0] * parameters.length).pack('C*'))
       pairs = keystream.each_byte.zip(mask.each_byte)
       pairs.map { |(x, y)| x ^ y }.pack('C*')
+    end
+
+    def generate_default(cipher, parameters)
+      set = CharacterSet.new parameters.flags
+      buffer = ([0] * 32).pack('C*')
+      result = ''
+      while result.length < parameters.length
+        result << cipher.update(buffer).bytes.select do |x|
+          set.include?(x)
+        end.pack('C*')
+      end
+      result[0, parameters.length]
     end
 
     def compute_checksum
