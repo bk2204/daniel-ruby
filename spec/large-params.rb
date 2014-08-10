@@ -16,7 +16,7 @@ describe Daniel::PasswordGenerator do
   ].each do |items|
     password, reminder, csum, flags, length, version, code = items
     it "gives the expected values for #{reminder}" do
-      pieces = Daniel::PasswordGenerator.parse_reminder(reminder)
+      pieces = Daniel::Reminder.parse(reminder)
       expect(pieces[:checksum]).to eq(csum)
       expect(pieces[:code]).to eq(code)
       expect(pieces[:params].flags).to eq(flags)

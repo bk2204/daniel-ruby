@@ -148,7 +148,33 @@ module Daniel
   end
 
   # A parsed reminder value
-  Reminder = Struct.new(:params, :checksum, :code, :mask)
+  Reminder = Struct.new(:params, :checksum, :code, :mask) do
+    # Parse a reminder into its constituent parts.
+    #
+    # @param reminder [String] the complete reminder string
+    # @return [Reminder] the parsed set of parameters
+    def self.parse(reminder)
+      params = Parameters.new
+      csum = reminder[0..5]
+      if reminder[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})
+          (.*)\z/x
+        hex_params, code = Regexp.last_match[1..2]
+        dparams = Util.from_hex(hex_params)
+        flags, length, version = dparams.unpack('w3')
+        if (flags & Flags::REPLICATE_EXISTING) != 0 &&
+          code =~ /\A([0-9a-f]{#{2 * length}})(.*)\z/
+          mask, code = Regexp.last_match[1..2]
+          mask = Util.from_hex(mask)
+        else
+          mask = nil
+        end
+      end
+      params.flags = flags
+      params.length = length
+      params.version = version
+      Reminder.new(params, csum, code, mask)
+    end
+  end
 
   # Generates a password or set of passwords.
   class PasswordGenerator
@@ -195,34 +221,8 @@ module Daniel
       end
     end
 
-    # Parse a reminder into its constituent parts.
-    #
-    # @param reminder [String] the complete reminder string
-    # @return [Reminder] the parsed set of parameters
-    def self.parse_reminder(reminder)
-      params = Parameters.new
-      csum = reminder[0..5]
-      if reminder[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})
-          (.*)\z/x
-        hex_params, code = Regexp.last_match[1..2]
-        dparams = Util.from_hex(hex_params)
-        flags, length, version = dparams.unpack('w3')
-        if (flags & Flags::REPLICATE_EXISTING) != 0 &&
-          code =~ /\A([0-9a-f]{#{2 * length}})(.*)\z/
-          mask, code = Regexp.last_match[1..2]
-          mask = Util.from_hex(mask)
-        else
-          mask = nil
-        end
-      end
-      params.flags = flags
-      params.length = length
-      params.version = version
-      Reminder.new(params, csum, code, mask)
-    end
-
     def generate_from_reminder(reminder)
-      rem = self.class.parse_reminder(reminder)
+      rem = Reminder.parse(reminder)
       computed = Util.to_hex(checksum)
       if rem.checksum != computed
         fail "Checksum mismatch (#{rem.checksum} != #{computed})"
