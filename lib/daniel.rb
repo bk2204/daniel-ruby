@@ -216,11 +216,7 @@ module Daniel
                                   @master_secret)
 
       if parameters.existing_mode?
-        fail Exception, 'Invalid mask length' if parameters.length != mask.length
-
-        keystream = cipher.update(([0] * parameters.length).pack('C*'))
-        pairs = keystream.each_byte.zip(mask.each_byte)
-        pairs.map { |(x, y)| x ^ y }.pack('C*')
+        generate_existing(cipher, parameters, mask)
       else
         buffer = ([0] * 32).pack('C*')
         result = ''
@@ -248,6 +244,13 @@ module Daniel
     end
 
     private
+
+    def generate_existing(cipher, parameters, mask)
+      fail Exception, 'Invalid mask length' if parameters.length != mask.length
+      keystream = cipher.update(([0] * parameters.length).pack('C*'))
+      pairs = keystream.each_byte.zip(mask.each_byte)
+      pairs.map { |(x, y)| x ^ y }.pack('C*')
+    end
 
     def compute_checksum
       digest = OpenSSL::Digest::SHA256.new
