@@ -174,6 +174,13 @@ module Daniel
       params.version = version
       Reminder.new(params, csum, code, mask)
     end
+
+    def to_s
+      p = params
+      bytes = checksum + [p.flags, p.length, p.version].pack('w3')
+      bytes << mask if mask
+      Util.to_hex(bytes) + code
+    end
   end
 
   # Generates a password or set of passwords.
@@ -232,9 +239,7 @@ module Daniel
     end
 
     def reminder(code, p, mask = nil)
-      bytes = checksum + [p.flags, p.length, p.version].pack('w3')
-      bytes << mask if mask
-      Util.to_hex(bytes) + code
+      Reminder.new(p, checksum, code, mask).to_s
     end
 
     private
