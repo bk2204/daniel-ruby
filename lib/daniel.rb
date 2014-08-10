@@ -384,7 +384,8 @@ module Daniel
       cs = CharacterSet.new @params.flags & Flags::SYMBOL_MASK
       nchars = @params.length
       possibles = cs.length
-      bits = Math.log2(possibles).round(3)
+      # Ruby 1.8 doesn't implement Math#log2 or Float#round with an argument.
+      bits = (Math.log(possibles) / Math.log(2) * 1000).round / 1000.0
       if machine_readable?
         puts ":char #{nchars}\n:possible-char #{possibles}"
         puts ":bits-per-char #{bits}\n:bits-total #{nchars * bits}"
