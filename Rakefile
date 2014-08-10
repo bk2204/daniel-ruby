@@ -5,10 +5,14 @@ RSpec::Core::RakeTask.new(:spec) do |t|
   t.pattern = 'spec/*.rb'
 end
 
+possible = []
+
 begin
   require 'rubocop/rake_task'
   RuboCop::RakeTask.new
-rescue LoadError
+  possible << :rubocop
+rescue LoadError # rubocop:disable Lint/HandleExceptions
 end
 
+task :all => [:spec] + possible
 task :default => :spec
