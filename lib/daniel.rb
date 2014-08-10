@@ -26,6 +26,7 @@ require 'openssl'
 require 'optparse'
 require 'set'
 
+# A password generation tool.
 module Daniel
   # Utility functions.
   class Util
