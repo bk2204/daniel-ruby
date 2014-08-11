@@ -350,7 +350,11 @@ module Daniel
       name, value = code[1..-1].split(/=/)
       throw :restart if name =~ /\Apass(word|phrase)?\z/
       sym = "#{name}=".to_sym
-      @params.method(sym).call(value)
+      begin
+        @params.method(sym).call(value)
+      rescue NameError
+        prompt "Not a valid command: '#{name}'", ':invalid-command'
+      end
     end
 
     def output_password(pass)
