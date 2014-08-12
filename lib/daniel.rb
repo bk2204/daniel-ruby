@@ -353,7 +353,7 @@ module Daniel
       begin
         @params.method(sym).call(value)
       rescue NameError
-        prompt "Not a valid command: '#{name}'", ':invalid-command'
+        prompt "Not a valid command: '#{name}'", ':invalid-command!'
       end
     end
 
