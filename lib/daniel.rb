@@ -236,9 +236,7 @@ module Daniel
 
     def generate_existing(cipher, parameters, mask)
       fail Exception, 'Invalid mask length' if parameters.length != mask.length
-      keystream = cipher.update(([0] * parameters.length).pack('C*'))
-      pairs = keystream.each_byte.zip(mask.each_byte)
-      pairs.map { |(x, y)| x ^ y }.pack('C*')
+      cipher.update(mask)
     end
 
     def generate_default(cipher, parameters)
