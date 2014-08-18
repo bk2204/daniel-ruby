@@ -204,6 +204,10 @@ module Daniel
 
     # Because of the way XOR works, if the mask argument is the password, this
     # function will return the mask.
+    def generate_mask(code, params, password)
+      generate(code, params, password)
+    end
+
     def generate(code, params, mask = nil)
       flags = format('Flags 0x%08x: ', params.flags)
       version = format('Version 0x%08x: ', params.version)
@@ -437,7 +441,7 @@ module Daniel
           current = query_existing
           return unless current
           @params.length = current.length
-          mask = generator.generate(code, @params, current)
+          mask = generator.generate_mask(code, @params, current)
         else
           output_password(generator.generate(code, @params))
           mask = nil
