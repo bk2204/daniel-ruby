@@ -153,7 +153,8 @@ version in the lib directory (since it has an '.rb' extension).  The tests use
 this technique.
 
 It's also designed to be a single, standalone script so that people can copy it
-wherever they might need it.
+wherever they might need it.  I will probably make it a gem at some point,
+though.
 
 Why is daniel written in Ruby?
 ------------------------------
