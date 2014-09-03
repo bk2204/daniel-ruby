@@ -166,10 +166,13 @@ module Daniel
         hex_params, code = Regexp.last_match[1..2]
         dparams = Util.from_hex(hex_params)
         flags, length, version = dparams.unpack('w3')
-        if (flags & Flags::REPLICATE_EXISTING) != 0 &&
-          code =~ /\A([0-9a-f]{#{2 * length}})(.*)\z/
-          mask, code = Regexp.last_match[1..2]
-          mask = Util.from_hex(mask)
+        if (flags & Flags::REPLICATE_EXISTING) != 0
+          if code =~ /\A([0-9a-f]{#{2 * length}})(.*)\z/
+            mask, code = Regexp.last_match[1..2]
+            mask = Util.from_hex(mask)
+          else
+            fail Exception, 'Flags set to existing but code mismatch'
+          end
         else
           mask = nil
         end
