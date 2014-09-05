@@ -191,6 +191,46 @@ module Daniel
     end
   end
 
+  # Format a password or other text.
+  class Formatter
+    def self.plain(s)
+      s
+    end
+
+    def self.bubblebabble(s)
+      vo = %w(a e i o u y)
+      co = %w(b c d f g h k l m n p r s t v z x)
+      s = ::RUBY_VERSION.to_f <= 1.8 ? s : s.force_encoding('BINARY')
+      r = s.each_byte.to_a
+      len = r.length / 2
+      k = []
+      (len+1).times do |i|
+        k[i] = i == 0 ? 1 : (((k[i-1] * 5) + (r[i*2-2] * 7 + r[i*2-1])) % 36)
+      end
+      t = []
+      len.times do |i|
+        t[i] = [
+          (((r[i*2] >> 6) & 3) + k[i]) % 6,
+          (r[i*2] >> 2) & 15,
+          ((r[i*2] & 3) + (k[i]/6)) % 6,
+          (r[i*2+1] >> 4) & 15,
+          (r[i*2+1] & 15)
+        ]
+      end
+      lastr = r.length - 1
+      p = r.length.even? ?
+        [k[len] % 6, 16, k[len] / 6] :
+        [(((r[lastr] >> 6) & 3) + k[len]) % 6,
+         (r[lastr] >> 2) & 15,
+         ((r[lastr] & 3) + k[len] / 6) % 6
+        ]
+      res = t.map do |(a, b, c, d, e)|
+        [vo[a], co[b], vo[c], co[d], '-', co[e]].join('')
+      end
+      'x' + res.join('') + vo[p[0]] + co[p[1]] + vo[p[2]] + 'x'
+    end
+  end
+
   # Generates a password or set of passwords.
   class PasswordGenerator
     def initialize(pass, version = 0)
@@ -284,6 +324,7 @@ module Daniel
       @clipboard = false
       @mode = :password
       @prompt = $stdin.isatty ? :interactive : :human unless @prompt
+      @format = :plain
     end
 
     def main(args)
@@ -335,6 +376,13 @@ module Daniel
 
         opts.on('-p', 'Store passwords to clipboard') do
           @clipboard = true
+        end
+
+        opts.on('-P FORMAT', 'Output passwords in another form') do |format|
+          if !%w(plain bubblebabble).include? format
+            fail Exception, "not a valid format '#{format}'"
+          end
+          @format = format.to_sym
         end
       end.parse!(args)
       fail Exception, "Can't use both -m and -f" if flags_set && existing_set
@@ -404,6 +452,10 @@ module Daniel
       prompt(*args)
     end
 
+    def encode(pass)
+      Formatter.method(@format).call(pass)
+    end
+
     def estimate
       cs = CharacterSet.new @params.flags & Flags::SYMBOL_MASK
       nchars = @params.length
@@ -446,7 +498,7 @@ module Daniel
           @params.length = current.length
           mask = generator.generate_mask(code, @params, current)
         else
-          output_password(generator.generate(code, @params))
+          output_password(encode(generator.generate(code, @params)))
           mask = nil
         end
         prompt('Reminder is:', ':reminder',
@@ -475,7 +527,7 @@ module Daniel
         end
       else
         args.each do |reminder|
-          output_password(generator.generate_from_reminder(reminder))
+          output_password(encode(generator.generate_from_reminder(reminder)))
         end
       end
     end
