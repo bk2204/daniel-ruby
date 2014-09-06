@@ -171,7 +171,7 @@ module Daniel
             mask, code = Regexp.last_match[1..2]
             mask = Util.from_hex(mask)
           else
-            fail Exception, 'Flags set to existing but code mismatch'
+            fail Exception, 'Flags set to existing but mask missing'
           end
         else
           mask = nil

@@ -5,7 +5,7 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'daniel'
 
-describe Daniel::PasswordGenerator do
+describe Daniel::Reminder do
   [
     ['foo', '8244c50a1000bar', '8244c5', 10, 16, 0, 'bar'],
     ['foo', '8244c50a1000baz', '8244c5', 10, 16, 0, 'baz'],
@@ -31,5 +31,10 @@ describe Daniel::PasswordGenerator do
       params = Daniel::Parameters.new(flags, length, version)
       expect(gen.reminder(code, params, mask)).to eq(reminder)
     end
+  end
+
+  it 'raises an exception for reminder missing mask' do
+    expect { Daniel::Reminder.parse('8244c520810001la-france') } \
+      .to raise_error(Daniel::Exception, /mask missing/)
   end
 end
