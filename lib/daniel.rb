@@ -204,22 +204,22 @@ module Daniel
       r = s.each_byte.to_a
       len = r.length / 2
       k = []
-      (len+1).times do |i|
-        k[i] = i == 0 ? 1 : (((k[i-1] * 5) + (r[i*2-2] * 7 + r[i*2-1])) % 36)
+      (len + 1).times do |i|
+        k[i] = i == 0 ? 1 : (((k[i - 1] * 5) +
+                              (r[i * 2 - 2] * 7 + r[i * 2 - 1])) % 36)
       end
       t = []
       len.times do |i|
         t[i] = [
-          (((r[i*2] >> 6) & 3) + k[i]) % 6,
-          (r[i*2] >> 2) & 15,
-          ((r[i*2] & 3) + (k[i]/6)) % 6,
-          (r[i*2+1] >> 4) & 15,
-          (r[i*2+1] & 15)
+          (((r[i * 2] >> 6) & 3) + k[i]) % 6,
+          (r[i * 2] >> 2) & 15,
+          ((r[i * 2] & 3) + (k[i] / 6)) % 6,
+          (r[i * 2 + 1] >> 4) & 15,
+          (r[i * 2 + 1] & 15)
         ]
       end
       lastr = r.length - 1
-      p = r.length.even? ?
-        [k[len] % 6, 16, k[len] / 6] :
+      p = r.length.even? ?  [k[len] % 6, 16, k[len] / 6] :
         [(((r[lastr] >> 6) & 3) + k[len]) % 6,
          (r[lastr] >> 2) & 15,
          ((r[lastr] & 3) + k[len] / 6) % 6
@@ -342,7 +342,7 @@ module Daniel
 
     private
 
-    def parse_args(args)
+    def parse_args(args)  # rubocop:disable Style/MethodLength
       flags_set = false
       existing_set = false
       OptionParser.new do |opts|
@@ -379,7 +379,7 @@ module Daniel
         end
 
         opts.on('-P FORMAT', 'Output passwords in another form') do |format|
-          if !%w(plain bubblebabble).include? format
+          unless %w(plain bubblebabble).include? format
             fail Exception, "not a valid format '#{format}'"
           end
           @format = format.to_sym
