@@ -81,6 +81,16 @@ module Daniel
         return value
       end
     end
+
+    def self.explain(value)
+      flags = ['no-numbers', 'no-spaces', 'no-symbols-top', 'no-symbols-other',
+               'no-letters', 'replicate-existing', 'explicit-version']
+      result = []
+      flags.each_with_index do |item, index|
+        result << item if (value & (1 << index)) != 0
+      end
+      result
+    end
   end
 
   # A set of characters which are acceptable in a generated password.
@@ -332,6 +342,7 @@ module Daniel
       parse_args(args)
       sanity_check
       return estimate if @mode == :estimate
+      return parse(args) if @mode == :parse
       loop do
         catch(:restart) do
           main_loop(args)
@@ -376,6 +387,10 @@ module Daniel
 
         opts.on('-p', 'Store passwords to clipboard') do
           @clipboard = true
+        end
+
+        opts.on('-a', 'Parse reminders from the command line') do
+          @mode = :parse
         end
 
         opts.on('-P FORMAT', 'Output passwords in another form') do |format|
@@ -435,11 +450,9 @@ module Daniel
 
     def prompt(text, machine, *args)
       nl = !machine_readable? && machine[-1] == '?' ? '' : "\n"
-      args.map! { |s| CGI.escape(s) } if machine_readable?
-      # This weirdness is required because Ruby 1.8 doesn't allow the splat in
-      # the middle of a function call.
-      args = [machine_readable? ? machine : text, ' '] + args + [nl]
-      print(*args)
+      args.map! { |s| CGI.escape(s.to_s) } if machine_readable?
+      argtext = args.join(' ')
+      print(machine_readable? ? machine : text, ' ', argtext, nl)
     end
 
     # Is the output machine-readable?
@@ -470,6 +483,22 @@ module Daniel
         msg << "#{possibles} possible (#{bits} bpc); "
         msg << "#{nchars * bits} bits of entropy"
         puts msg
+      end
+    end
+
+    def parse(args)
+      args.each do |reminder|
+        rem = Reminder.parse(reminder)
+        params = rem.params
+        flags = Flags.explain(params.flags)
+        prompt 'Reminder:', ':reminder', reminder
+        prompt 'Version:', ':version', 0
+        prompt 'Length:', ':length', params.length
+        prompt 'Password version:', ':password-version', params.version
+        prompt 'Flags:', ':flags', params.flags, *flags
+        prompt 'Checksum:', ':checksum', rem.checksum
+        prompt 'Mask:', ':mask', rem.mask if rem.mask
+        prompt 'Code:', ':code', rem.code
       end
     end
 
