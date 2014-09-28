@@ -60,6 +60,18 @@ def human_readable(msgs)
       "# ok, checksum is #{Regexp.last_match[1]}"
     when /\A:reminder (.*)\z/
       "Reminder is: #{Regexp.last_match[1]}"
+    when /\A:version (.*)\z/
+      "Version: #{Regexp.last_match[1]}"
+    when /\A:length (.*)\z/
+      "Length: #{Regexp.last_match[1]}"
+    when /\A:password-version (.*)\z/
+      "Password version: #{Regexp.last_match[1]}"
+    when /\A:flags (.*)\z/
+      "Flags: #{Regexp.last_match[1]}"
+    when /\A:mask (.*)\z/
+      "Mask: #{Daniel::Util.to_hex(CGI.unescape(Regexp.last_match[1]))}"
+    when /\A:code (.*)\z/
+      "Code: #{Regexp.last_match[1]}"
     end
   end
   result.select { |m| !m.nil? }
@@ -74,6 +86,18 @@ def interactive(msgs)
       "# ok, checksum is #{Regexp.last_match[1]}"
     when /\A:reminder (.*)\z/
       "Reminder is: #{Regexp.last_match[1]}"
+    when /\A:version (.*)\z/
+      "Version: #{Regexp.last_match[1]}"
+    when /\A:length (.*)\z/
+      "Length: #{Regexp.last_match[1]}"
+    when /\A:password-version (.*)\z/
+      "Password version: #{Regexp.last_match[1]}"
+    when /\A:flags (.*)\z/
+      "Flags: #{Regexp.last_match[1]}"
+    when /\A:mask (.*)\z/
+      "Mask: #{Daniel::Util.to_hex(CGI.unescape(Regexp.last_match[1]))}"
+    when /\A:code (.*)\z/
+      "Code: #{Regexp.last_match[1]}"
     when ':code?'
       'Enter code: '
     when ':existing?'
@@ -85,6 +109,12 @@ end
 
 def machine_readable(msgs)
   msgs.flatten.map { |m| m.gsub('?', '? ') }
+end
+
+def parse_human(msgs)
+  msgs.map do |msg|
+    msg.sub(/# ok, checksum is (.*)/, 'Checksum: \1')
+  end
 end
 
 describe Daniel::MainProgram do
@@ -284,6 +314,40 @@ describe Daniel::MainProgram do
         ':existing?',
         ':reminder 72eb3620100095fb1346e2bec1670fb782fd51c8ac09example.tld',
         ':code?'
+      ]
+    end
+
+    it "parses existing-password reminders correctly" do
+      reminder = '72eb36200f045ed8d92f9309c10059ee79f5d50266example.tld'
+      prog = Daniel::MainProgram.new
+      prog.prompt = type
+      prog.main(%w(-a) + args + [reminder])
+      expect(prog.output.flatten).to eq parse_human func.call [
+        ":reminder #{reminder}",
+        ':version 0',
+        ':length 15',
+        ':password-version 4',
+        ':flags 32 replicate-existing',
+        ':checksum 72eb36',
+        ':mask %5E%D8%D9%2F%93%09%C1%00Y%EEy%F5%D5%02f',
+        ':code example.tld'
+      ]
+    end
+
+    # Master password is 'barbaz'.
+    it "parses generated-password reminders correctly" do
+      reminder = 'd90403050d816ddefault.example.com'
+      prog = Daniel::MainProgram.new
+      prog.prompt = type
+      prog.main(%w(-a) + args + [reminder])
+      expect(prog.output.flatten).to eq parse_human func.call [
+        ":reminder #{reminder}",
+        ':version 0',
+        ':length 13',
+        ':password-version 237',
+        ':flags 5 no-numbers no-symbols-top',
+        ':checksum d90403',
+        ':code default.example.com'
       ]
     end
   end

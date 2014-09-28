@@ -491,13 +491,14 @@ module Daniel
         rem = Reminder.parse(reminder)
         params = rem.params
         flags = Flags.explain(params.flags)
-        prompt 'Reminder:', ':reminder', reminder
+        mask = rem.mask && !machine_readable? ? Util.to_hex(rem.mask) : rem.mask
+        prompt 'Reminder is:', ':reminder', reminder
         prompt 'Version:', ':version', 0
         prompt 'Length:', ':length', params.length
         prompt 'Password version:', ':password-version', params.version
         prompt 'Flags:', ':flags', params.flags, *flags
         prompt 'Checksum:', ':checksum', rem.checksum
-        prompt 'Mask:', ':mask', rem.mask if rem.mask
+        prompt 'Mask:', ':mask', mask if mask
         prompt 'Code:', ':code', rem.code
       end
     end
