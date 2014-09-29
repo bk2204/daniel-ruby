@@ -5,6 +5,8 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'daniel'
 
+FC = Daniel::Flags
+
 describe Daniel::Flags do
   it "returns an identical mask if it's a number" do
     (0x00..0x7f).each do |x|
@@ -31,15 +33,18 @@ describe Daniel::Flags do
   end
 
   [
-    ['-', 0x17],
-    ['as', 0x0d],
-    ['A ', 0x0d],
-    ['!:', 0x13],
-    ['0as!+', 0x00],
-    ['A -', 0x05],
-  ].each do |(mask, value)|
+    ['-', 0x17, FC::NO_NUMBERS | FC::NO_SPACES | FC::NO_SYMBOLS_TOP |
+     FC::NO_LETTERS],
+    ['as', 0x0d, FC::NO_NUMBERS | FC::NO_SYMBOLS_TOP | FC::NO_SYMBOLS_OTHER],
+    ['A ', 0x0d, FC::NO_NUMBERS | FC::NO_SYMBOLS_TOP | FC::NO_SYMBOLS_OTHER],
+    ['!:', 0x13, FC::NO_NUMBERS | FC::NO_SPACES | FC::NO_LETTERS],
+    ['0as!+', 0x00, 0],
+    ['A -', 0x05, FC::NO_NUMBERS | FC::NO_SYMBOLS_TOP],
+  ].each do |(mask, value, fvalue)|
     it "returns the correct mask for '#{mask}'" do
-      expect(Daniel::Flags.mask_from_characters(mask)).to eq value
+      computed = Daniel::Flags.mask_from_characters(mask)
+      expect(computed).to eq value
+      expect(computed).to eq fvalue
     end
   end
 end
