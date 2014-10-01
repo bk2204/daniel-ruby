@@ -52,56 +52,64 @@ module Daniel
 end
 
 def human_readable(msgs)
+  strings = {
+    ':checksum' => '# ok, checksum is',
+    ':reminder' => 'Reminder is:',
+    ':version' => 'Version:',
+    ':length' => 'Length:',
+    ':password-version' => 'Password version:',
+    ':flags' => 'Flags:',
+    ':code' => 'Code:'
+  }
   result = msgs.flatten.map do |m|
-    case m.rstrip
+    s = m.rstrip
+    case s
     when ':master-password?'
       'Please enter your master password: '
-    when /\A:checksum (.*)\z/
-      "# ok, checksum is #{Regexp.last_match[1]}"
-    when /\A:reminder (.*)\z/
-      "Reminder is: #{Regexp.last_match[1]}"
-    when /\A:version (.*)\z/
-      "Version: #{Regexp.last_match[1]}"
-    when /\A:length (.*)\z/
-      "Length: #{Regexp.last_match[1]}"
-    when /\A:password-version (.*)\z/
-      "Password version: #{Regexp.last_match[1]}"
-    when /\A:flags (.*)\z/
-      "Flags: #{Regexp.last_match[1]}"
     when /\A:mask (.*)\z/
       "Mask: #{Daniel::Util.to_hex(CGI.unescape(Regexp.last_match[1]))}"
-    when /\A:code (.*)\z/
-      "Code: #{Regexp.last_match[1]}"
+    when ':code?'
+      nil
+    else
+      if s.start_with?(*(strings.keys))
+        s.sub(/\A(:[a-z-]+) (.*)\z/) do
+          str, rest = Regexp.last_match[1..2]
+          "#{strings[str]} #{rest}"
+        end
+      end
     end
   end
   result.select { |m| !m.nil? }
 end
 
 def interactive(msgs)
+  strings = {
+    ':checksum' => '# ok, checksum is',
+    ':reminder' => 'Reminder is:',
+    ':version' => 'Version:',
+    ':length' => 'Length:',
+    ':password-version' => 'Password version:',
+    ':flags' => 'Flags:',
+    ':code' => 'Code:'
+  }
   result = msgs.flatten.map do |m|
-    case m.rstrip
+    s = m.rstrip
+    case s
     when ':master-password?'
       'Please enter your master password: '
-    when /\A:checksum (.*)\z/
-      "# ok, checksum is #{Regexp.last_match[1]}"
-    when /\A:reminder (.*)\z/
-      "Reminder is: #{Regexp.last_match[1]}"
-    when /\A:version (.*)\z/
-      "Version: #{Regexp.last_match[1]}"
-    when /\A:length (.*)\z/
-      "Length: #{Regexp.last_match[1]}"
-    when /\A:password-version (.*)\z/
-      "Password version: #{Regexp.last_match[1]}"
-    when /\A:flags (.*)\z/
-      "Flags: #{Regexp.last_match[1]}"
     when /\A:mask (.*)\z/
       "Mask: #{Daniel::Util.to_hex(CGI.unescape(Regexp.last_match[1]))}"
-    when /\A:code (.*)\z/
-      "Code: #{Regexp.last_match[1]}"
     when ':code?'
       'Enter code: '
     when ':existing?'
       'Enter existing passphrase: '
+    else
+      if s.start_with?(*(strings.keys))
+        s.sub(/\A(:[a-z-]+) (.*)\z/) do
+          str, rest = Regexp.last_match[1..2]
+          "#{strings[str]} #{rest}"
+        end
+      end
     end
   end
   result.select { |m| !m.nil? }
