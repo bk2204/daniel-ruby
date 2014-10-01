@@ -317,7 +317,7 @@ describe Daniel::MainProgram do
       ]
     end
 
-    it "parses existing-password reminders correctly" do
+    it 'parses existing-password reminders correctly' do
       reminder = '72eb36200f045ed8d92f9309c10059ee79f5d50266example.tld'
       prog = Daniel::MainProgram.new
       prog.prompt = type
@@ -335,7 +335,7 @@ describe Daniel::MainProgram do
     end
 
     # Master password is 'barbaz'.
-    it "parses generated-password reminders correctly" do
+    it 'parses generated-password reminders correctly' do
       reminder = 'd90403050d816ddefault.example.com'
       prog = Daniel::MainProgram.new
       prog.prompt = type
