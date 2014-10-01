@@ -40,6 +40,7 @@ describe Daniel::Flags do
     ['!:', 0x13, FC::NO_NUMBERS | FC::NO_SPACES | FC::NO_LETTERS],
     ['0as!+', 0x00, 0],
     ['A -', 0x05, FC::NO_NUMBERS | FC::NO_SYMBOLS_TOP],
+    ['A0-', 0x06, FC::NO_SPACES | FC::NO_SYMBOLS_TOP]
   ].each do |(mask, value, fvalue)|
     it "returns the correct mask for '#{mask}'" do
       computed = Daniel::Flags.mask_from_characters(mask)
