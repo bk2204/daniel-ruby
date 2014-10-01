@@ -461,8 +461,7 @@ module Daniel
     end
 
     def interactive(*args)
-      return if @prompt == :human
-      prompt(*args)
+      prompt(*args) unless @prompt == :human
     end
 
     def encode(pass)
@@ -479,8 +478,7 @@ module Daniel
         puts ":char #{nchars}\n:possible-char #{possibles}"
         puts ":bits-per-char #{bits}\n:bits-total #{nchars * bits}"
       else
-        msg = "#{nchars} characters; "
-        msg << "#{possibles} possible (#{bits} bpc); "
+        msg = "#{nchars} characters; #{possibles} possible (#{bits} bpc); "
         msg << "#{nchars * bits} bits of entropy"
         puts msg
       end
@@ -519,21 +517,18 @@ module Daniel
     end
 
     def dispatch_by_code(generator, code)
-      if code[0, 1] == '!'
-        handle_command(code)
+      return handle_command(code) if code[0, 1] == '!'
+      if @params.existing_mode?
+        current = query_existing
+        return unless current
+        @params.length = current.length
+        mask = generator.generate_mask(code, @params, current)
       else
-        if @params.existing_mode?
-          current = query_existing
-          return unless current
-          @params.length = current.length
-          mask = generator.generate_mask(code, @params, current)
-        else
-          output_password(encode(generator.generate(code, @params)))
-          mask = nil
-        end
-        prompt('Reminder is:', ':reminder',
-               generator.reminder(code, @params, mask))
+        output_password(encode(generator.generate(code, @params)))
+        mask = nil
       end
+      prompt('Reminder is:', ':reminder',
+             generator.reminder(code, @params, mask))
     end
 
     def main_loop(args)
