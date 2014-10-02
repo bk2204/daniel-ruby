@@ -51,7 +51,7 @@ module Daniel
   end
 end
 
-def human_readable(msgs)
+def process_message_human(msg)
   strings = {
     ':checksum' => '# ok, checksum is',
     ':reminder' => 'Reminder is:',
@@ -61,58 +61,41 @@ def human_readable(msgs)
     ':flags' => 'Flags:',
     ':code' => 'Code:'
   }
-  result = msgs.flatten.map do |m|
-    s = m.rstrip
-    case s
-    when ':master-password?'
-      'Please enter your master password: '
-    when /\A:mask (.*)\z/
-      "Mask: #{Daniel::Util.to_hex(CGI.unescape(Regexp.last_match[1]))}"
-    when ':code?'
-      nil
-    else
-      if s.start_with?(*(strings.keys))
-        s.sub(/\A(:[a-z-]+) (.*)\z/) do
-          str, rest = Regexp.last_match[1..2]
-          "#{strings[str]} #{rest}"
-        end
+  s = msg.rstrip
+  case s
+  when ':master-password?'
+    'Please enter your master password: '
+  when /\A:mask (.*)\z/
+    "Mask: #{Daniel::Util.to_hex(CGI.unescape(Regexp.last_match[1]))}"
+  when ':code?'
+    nil
+  else
+    if s.start_with?(*(strings.keys))
+      s.sub(/\A(:[a-z-]+) (.*)\z/) do
+        str, rest = Regexp.last_match[1..2]
+        "#{strings[str]} #{rest}"
       end
     end
   end
-  result.select { |m| !m.nil? }
+end
+
+def process_message_interactive(msg)
+  case msg.rstrip
+  when ':code?'
+    'Enter code: '
+  when ':existing?'
+    'Enter existing passphrase: '
+  else
+    process_message_human(msg)
+  end
+end
+
+def human_readable(msgs)
+  msgs.flatten.map { |m| process_message_human(m) }.select { |m| !m.nil? }
 end
 
 def interactive(msgs)
-  strings = {
-    ':checksum' => '# ok, checksum is',
-    ':reminder' => 'Reminder is:',
-    ':version' => 'Version:',
-    ':length' => 'Length:',
-    ':password-version' => 'Password version:',
-    ':flags' => 'Flags:',
-    ':code' => 'Code:'
-  }
-  result = msgs.flatten.map do |m|
-    s = m.rstrip
-    case s
-    when ':master-password?'
-      'Please enter your master password: '
-    when /\A:mask (.*)\z/
-      "Mask: #{Daniel::Util.to_hex(CGI.unescape(Regexp.last_match[1]))}"
-    when ':code?'
-      'Enter code: '
-    when ':existing?'
-      'Enter existing passphrase: '
-    else
-      if s.start_with?(*(strings.keys))
-        s.sub(/\A(:[a-z-]+) (.*)\z/) do
-          str, rest = Regexp.last_match[1..2]
-          "#{strings[str]} #{rest}"
-        end
-      end
-    end
-  end
-  result.select { |m| !m.nil? }
+  msgs.flatten.map { |m| process_message_interactive(m) }.select { |m| !m.nil? }
 end
 
 def machine_readable(msgs)
