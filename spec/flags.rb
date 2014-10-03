@@ -60,4 +60,9 @@ describe Daniel::Flags do
       expect(Daniel::Flags.explain(flags)).to eq array
     end
   end
+
+  it 'throws an exception for invalid flags' do
+    expect { Daniel::Flags.explain(0x80) }.to raise_error(Daniel::Exception,
+                                                          /invalid/i)
+  end
 end

@@ -85,6 +85,9 @@ module Daniel
     def self.explain(value)
       flags = ['no-numbers', 'no-spaces', 'no-symbols-top', 'no-symbols-other',
                'no-letters', 'replicate-existing', 'explicit-version']
+      if value < 0 || value > ((1 << flags.length) - 1)
+        fail Exception, 'Invalid flags value'
+      end
       result = []
       flags.each_with_index do |item, index|
         result << item if (value & (1 << index)) != 0
