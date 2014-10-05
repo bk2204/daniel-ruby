@@ -106,8 +106,7 @@ module Daniel
     SYMBOL_MASK = Flags::SYMBOL_MASK
 
     def initialize(options = NO_SPACES | NO_SYMBOLS_OTHER)
-      super([])
-      (0x20..0x7e).each { |x| add(x) }
+      super(0x20..0x7e)
       m = {
         NO_NUMBERS => 0x30..0x39,
         NO_SPACES => [0x20],
