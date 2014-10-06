@@ -46,15 +46,6 @@ module Daniel
 
   # Flag constants and conversion functions.
   class Flags
-    NO_NUMBERS = 0x01
-    NO_SPACES = 0x02
-    NO_SYMBOLS_TOP = 0x04
-    NO_SYMBOLS_OTHER = 0x08
-    NO_LETTERS = 0x10
-    SYMBOL_MASK = 0x1f
-    REPLICATE_EXISTING = 0x20
-    EXPLICIT_VERSION = 0x40
-
     def self.mask_from_characters(text)
       if text.is_a?(Fixnum)
         return text
@@ -83,8 +74,7 @@ module Daniel
     end
 
     def self.explain(value)
-      flags = ['no-numbers', 'no-spaces', 'no-symbols-top', 'no-symbols-other',
-               'no-letters', 'replicate-existing', 'explicit-version']
+      flags = flag_names
       if value < 0 || value > ((1 << flags.length) - 1)
         fail Exception, 'Invalid flags value'
       end
@@ -94,6 +84,35 @@ module Daniel
       end
       result
     end
+
+    private
+
+    def self.metaclass
+      class << self
+        self
+      end
+    end
+
+    def self.setup
+      flags = {
+        :no_numbers => 0x01,
+        :no_spaces => 0x02,
+        :no_symbols_top => 0x04,
+        :no_symbols_other => 0x08,
+        :no_letters => 0x10,
+        :symbol_mask => 0x1f,
+        :replicate_existing => 0x20,
+        :explicit_version => 0x40
+      }
+      flags.each_pair { |k, v| const_set(k.to_s.upcase, v) }
+      pairs = flags.select { |_, v| (v & (v - 1)) == 0 }.sort_by { |_, v| v }
+      bits = pairs.map { |k, _| k.to_s.gsub('_', '-') }
+      metaclass.instance_eval do
+        define_method(:flag_names) { bits }
+      end
+    end
+
+    setup
   end
 
   # A set of characters which are acceptable in a generated password.
