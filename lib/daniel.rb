@@ -82,6 +82,10 @@ module Daniel
       end
     end
 
+    # Provide a human-readable description of a flags value.
+    #
+    # @param value [Integer] the flags value
+    # @returns [Array<String>] the list of strings representing the value
     def self.explain(value)
       flags = flag_names
       if value < 0 || value > ((1 << flags.length) - 1)
@@ -94,6 +98,15 @@ module Daniel
       result
     end
 
+    private
+
+    # Provide a human-readable list of possible flag values.
+    #
+    # @return [Array<String>] an ordered list of valid flag names.
+    #
+    # Transforms the constants in this class into an array of strings such that
+    # the string with index i represents a flag with value 1 << i.  Constants
+    # whose values are not a power of two are ignored.
     def self.flag_names
       flags = {}
       constants.each { |k| flags[k] = const_get(k) }
