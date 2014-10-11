@@ -92,7 +92,7 @@ What if a site forces me to change my password frequently?
 
 There is a version field that can be incremented to produce a completely
 different password.  Use -v or enter +!version=_<value>_+ at the "Enter code:"
-prompt.  The default version is 0, and values up to 127 are accepted.  The
+prompt.  The default version is 0, and values up to 2^32^-1 are accepted.  The
 version is encoded as part of the reminder.
 
 This feature was written with the corporate and academic worlds in mind, but it
