@@ -160,13 +160,11 @@ module Daniel
     end
 
     def length=(length)
-      length = length.to_i
-      @length = length
+      @length = length.to_i
     end
 
     def version=(version)
-      version = version.to_i
-      @version = version
+      @version = version.to_i
     end
 
     def existing_mode?
