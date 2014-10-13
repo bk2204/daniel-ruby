@@ -98,8 +98,6 @@ module Daniel
       result
     end
 
-    private
-
     # Provide a human-readable list of possible flag values.
     #
     # @return [Array<String>] an ordered list of valid flag names.
