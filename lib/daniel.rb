@@ -55,6 +55,16 @@ module Daniel
     REPLICATE_EXISTING = 0x20
     EXPLICIT_VERSION = 0x40
 
+    # Compute a flag value from a number or string.
+    #
+    # @param text [String, Fixnum] the value to convert to a flags value
+    # @returns [Fixnum] the computed value.
+    #
+    # Accepts a value either as an existing integer; a string containing a
+    # decimal, octal, or hexadecimal number in C/Ruby format; or a string
+    # containing characters representing the allowed symbols.
+    #
+    # This function computes only values that are part of {Flags::SYMBOL_MASK}.
     def self.mask_from_characters(text)
       if text.is_a?(Fixnum)
         return text
