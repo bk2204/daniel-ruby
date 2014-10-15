@@ -125,21 +125,14 @@ module Daniel
 
   # A set of characters which are acceptable in a generated password.
   class CharacterSet < ::Set
-    NO_NUMBERS = Flags::NO_NUMBERS
-    NO_SPACES = Flags::NO_SPACES
-    NO_SYMBOLS_TOP = Flags::NO_SYMBOLS_TOP
-    NO_SYMBOLS_OTHER = Flags::NO_SYMBOLS_OTHER
-    NO_LETTERS = Flags::NO_LETTERS
-    SYMBOL_MASK = Flags::SYMBOL_MASK
-
-    def initialize(options = NO_SPACES | NO_SYMBOLS_OTHER)
+    def initialize(options = Flags::NO_SPACES | Flags::NO_SYMBOLS_OTHER)
       super(0x20..0x7e)
       m = {
-        NO_NUMBERS => 0x30..0x39,
-        NO_SPACES => [0x20],
-        NO_SYMBOLS_TOP => '!@#$%^&*()'.each_byte,
-        NO_SYMBOLS_OTHER => '"\'+,-./:;<=>?[\\]_`{|}~'.each_byte,
-        NO_LETTERS => [(0x41..0x5a).to_a, (0x61..0x7a).to_a].flatten
+        Flags::NO_NUMBERS => 0x30..0x39,
+        Flags::NO_SPACES => [0x20],
+        Flags::NO_SYMBOLS_TOP => '!@#$%^&*()'.each_byte,
+        Flags::NO_SYMBOLS_OTHER => '"\'+,-./:;<=>?[\\]_`{|}~'.each_byte,
+        Flags::NO_LETTERS => [(0x41..0x5a).to_a, (0x61..0x7a).to_a].flatten
       }
       m.each do |k, v|
         v.each { |x| delete(x) } if options & k != 0
