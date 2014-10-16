@@ -275,6 +275,14 @@ module Daniel
       @checksum = compute_checksum
     end
 
+    # Generate a mask for an existing password.
+    #
+    # @param code [String] the code to generate the mask for
+    # @param params [Daniel::Parameters] the parameters
+    # @param password [String] the existing password to generate the mask for
+    #
+    # The REPLICATE_EXISTING flag should be set in params.flags.
+    #
     # Because of the way XOR works, if the mask argument is the password, this
     # function will return the mask.
     def generate_mask(code, params, password)
