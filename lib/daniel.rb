@@ -286,6 +286,7 @@ module Daniel
     # Because of the way XOR works, if the mask argument is the password, this
     # function will return the mask.
     def generate_mask(code, params, password)
+      fail Exception, 'Invalid flags' unless params.existing_mode?
       generate(code, params, password)
     end
 
