@@ -292,6 +292,34 @@ describe Daniel::MainProgram do
       ]
     end
 
+    it "handles printing passwords in plain format correctly#{msg}" do
+      prog = Daniel::MainProgram.new
+      prog.lines = ['example.tld']
+      prog.passphrase = %w(foobar)
+      prog.prompt = type
+      prog.main(%w(-P plain) + args +
+                %w(72eb36200900b3f70f5aefa1df6c1aexample.tld))
+      expect(prog.output.flatten).to eq func.call [
+        ':master-password?',
+        ':checksum 72eb36'
+      ]
+      expect(prog.passwords).to eq %w(Pineapple)
+    end
+
+    it "handles printing passwords in bubblebabble format correctly#{msg}" do
+      prog = Daniel::MainProgram.new
+      prog.lines = ['example.tld']
+      prog.passphrase = %w(foobar)
+      prog.prompt = type
+      prog.main(%w(-P bubblebabble) + args +
+                %w(72eb36200900b3f70f5aefa1df6c1aexample.tld))
+      expect(prog.output.flatten).to eq func.call [
+        ':master-password?',
+        ':checksum 72eb36'
+      ]
+      expect(prog.passwords).to eq %w(xigak-nyryk-humil-bosek-sonax)
+    end
+
     it "handles existing passwords properly with -m#{msg}" do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld']
@@ -384,6 +412,12 @@ describe Daniel::MainProgram do
         ":bits-total #{bits}"
       ]
     end
+  end
+
+  it 'throws an exception with an invalid password format' do
+    prog = Daniel::MainProgram.new
+    expect { prog.main(%w(-P bizarre)) }.to \
+      raise_error(Daniel::Exception, /not.*valid/)
   end
 
   it 'handles mismatched passwords properly with -m' do
