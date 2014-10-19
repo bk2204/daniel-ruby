@@ -32,34 +32,34 @@ unable to reproduce them.
 daniel then prompts you for a code.  This code is used to generate a unique
 password.  One common technique is to use an abbreviated form of the domain
 name, so if you wanted to generate a password for GitHub, you could use
-"github.com" (without the quotes).
+``github.com'' (without the quotes).
 
 Finally, daniel produces the password and a reminder.  If you run daniel with
 the reminder on the command line, it will print out the same password as before
 once you enter your master password.
 
 -----
-% ./daniel
+% daniel
 Please enter your master password:
 # ok, checksum is 72eb36
 Enter code: example.tld
 Password is: nj&xzO@hz&QvuoGY
 Reminder is: 72eb360a1000example.tld
 
-% ./daniel 72eb360a1000example.tld
+% daniel 72eb360a1000example.tld
 Please enter your master password:
 # ok, checksum is 72eb36
 Password is: nj&xzO@hz&QvuoGY
 -----
 
-The master password in this case was "foobar".  Please use something more
+The master password in this case was ``foobar''.  Please use something more
 secure.
 
 Can I adjust the set of characters that are generated?
 ------------------------------------------------------
 
 Yes.  The flags parameter can be adjusted on the command line with -f, or by
-entering +!flags=_<value>_+ at the "Enter code:" prompt.  When the flags are set
+entering +!flags=_value_+ at the "Enter code:" prompt.  When the flags are set
 to 0, all characters from hex 20 to hex 7E are included.  The different bits
 mean:
 
@@ -80,8 +80,8 @@ be generated.
 Can I adjust the length of the password?
 ----------------------------------------
 
-Yes.  The length can be adjusted using the -l parameter, or by entering
-+!length=_<value>_+ at the "Enter code:" prompt.  The length is encoded as part
+Yes.  The length can be adjusted using the `-l` parameter, or by entering
++!length=_value_+ at the "Enter code:" prompt.  The length is encoded as part
 of the reminder, but it does not cause the generated password to be any
 different other than in length.  That is, truncating a 16-character password to
 8 characters is exactly the same as generating an 8-character password with the
@@ -91,7 +91,7 @@ What if a site forces me to change my password frequently?
 ----------------------------------------------------------
 
 There is a version field that can be incremented to produce a completely
-different password.  Use -v or enter +!version=_<value>_+ at the "Enter code:"
+different password.  Use `-v` or enter +!version=_value_+ at the "Enter code:"
 prompt.  The default version is 0, and values up to 2^32^-1 are accepted.  The
 version is encoded as part of the reminder.
 
@@ -113,7 +113,7 @@ site.
 Can I use this to remember a password I generated with a different program?
 ---------------------------------------------------------------------------
 
-Yes.  You can use the -m flag to put daniel into existing password mode.
+Yes.  You can use the `-m` flag to put daniel into existing password mode.
 Instead of generating a new password, it will prompt you (twice) for an existing
 password, and generate a reminder from that.  These reminders are much longer
 than the standard kind, however.
@@ -125,14 +125,14 @@ Can I copy the password to the clipboard instead of printing it?
 ----------------------------------------------------------------
 
 Yes.  Install the clipboard gem and its dependencies and use the +-p+ option.
-Note that on Linux, the xclip utility is required unless you are using a version
-of the clipboard gem newer than 1.0.5, as xsel support is broken in earlier
-versions.
+Note that on Linux, the `xclip` utility is required unless you are using a
+version of the clipboard gem newer than 1.0.5, as `xsel` support is broken in
+earlier versions.
 
 Can I script daniel?
 --------------------
 
-Yes.  You can use the +-r+ option to put daniel in machine-readable mode.
+Yes.  You can use the `-r` option to put daniel in machine-readable mode.
 Instead of the normal output, daniel will print a number of lines each beginning
 with a colon.  If the line is a prompt, it will end with a question mark.  If
 the line is an error, it will end with an exclamation point.  Otherwise, after
