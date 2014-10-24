@@ -1,0 +1,124 @@
+daniel(1)
+=========
+
+NAME
+----
+daniel - easy-to-use password generator
+
+SYNOPSIS
+--------
+[verse]
+'daniel' [-r] [-p] [-v <version>] [-f <flags>] [-l <length>] [-P <format>]
+'daniel' [-r] [-p] [-v <version>] [-P <format>] -m
+'daniel' [-r] [-f <flags>] [-l <length>] -e
+'daniel' [-r] [-p] [-P <format>] <reminder>...
+'daniel' [-r] -a <reminder>...
+
+DESCRIPTION
+-----------
+daniel produces passwords based on a master password, a set of parameters
+(password version, length, and flags), and a code which identifies the
+particular password.  As part of the password generation process, a short
+reminder is produces that encodes the parameters and code; with this reminder
+and the master password, the generated password can be reproduced.
+
+
+'daniel' [-r] [-p] [-v <version>] [-f <flags>] [-l <length>] [-P <format>]::
+	Generate one or more passwords and their corresponding reminders.
++
+The user is prompted for the master password on startup, and can change it using
+the `!password` command at any code prompt.  After the password is entered,
+daniel produces a 6-character checksum to reassure the user that the password is
+correct.
++
+After this, daniel prompts for a code that indicates the purpose of the
+password.  For web site passwords, this is traditionally a shortened form of the
+domain name (e.g. _github.com_ for GitHub), although an UTF-8 input is
+acceptable.  Once the code is entered, a password is generated and output either
+to standard output or, with `-p`, to the clipboard.  This is followed by a
+reminder that can be used to recreate the password only with the correct master
+password.
++
+If the provided code starts with an exclamation point, it is taken as a bang
+command. `!!` repeats the last non-command code.
+
+'daniel' [-r] [-p] [-v <version>] [-P <format>] -m::
+	Similar to the first form, but after the code prompt, the user is prompted to
+	enter an existing password.  This password is encoded into the reminder, which
+	is then output.  As with the first form, the reminder is useless without the
+	correct master password.
++
+This form is useful to encode existing credentials.
+
+'daniel' [-r] [-f <flags>] [-l <length>] -e::
+  Instead of generating a password, output statistics about the entropy of a
+	password generated with those parameters.
+
+'daniel' [-r] [-p] [-P <format>] <reminder>...::
+  Use the specified reminders to regenerate and output their corresponding
+	passwords.
++
+After the user enters their master password, each password is output without
+pausing.
+
+'daniel' [-r] -a <reminder>...::
+	Parse the given reminders and display the parameters and code encoded in them.
+
+OPTIONS
+-------
+-f <flags>::
+	Specify the set of characters permitted in the password.  A flags value of 0
+	permits all printable ASCII characters (ASCII 32–ASCII 126).  The default, 10,
+	is to exclude spaces and most punctuation marks, as these are forbidden by
+	many sites.
++
+The flags value can be specified in decimal, octal, or hexadecimal (using
+standard C notation), or by using a string indicating the permitted symbols.
+Numerical interpretations have priority.  The bits have the following meaning:
++
+|===
+|Flag |Meaning
+|1    |Exclude all digits
+|2    |Exclude spaces
+|4    |Exclude those punctuation marks above the digits on a US keyboard
+|8    |Exclude other symbols
+|16   |Exclude letters
+|===
++
+Alternately, the string can be composed of the following:
++
+|===
+|Character                  |Meaning
+|`0`                        |Include digits
+|`A` or `a`                 |Include letters
+|`s` or the space character |Include spaces
+|`!`												|Include punctuation marks above the digits on a US
+keyboard
+|`:`, `+`, or `-`           |Include other symbols
+|===
+
+-l <length>::
+	Specify the length of the password to be generated in characters.  The default
+	is 16.  If two passwords are generated with identical parameters except for
+	their length, one will start with the other.  That is, changing only the
+	length does not produce a completely different password.
+
+-P <format>::
+	Produce output in an alternate format.  Besides the default format, _plain_,
+	_bubblebabble_ is also accepted (for BubbleBabble format).
+
+-p::
+	If the clipboard gem is installed, copy the passwords to the clipboard instead
+	of printing them to standard output.
+
+-r::
+	Produce machine-readable output.  Each non-empty line output starts with a
+	colon, a message, a space, and one or more space-separated URI-encoded values.
+	Messages ending with question marks are prompts for information; those with
+	exclamation marks, an error; and the unmarked, a statement.
+
+-v <version>::
+	Specify a particular password version.  The default is 0.  This can be useful
+	for institutions or websites that require frequently changing passwords.
+	Changing the version number produces a completely different password unrelated
+	to any others.

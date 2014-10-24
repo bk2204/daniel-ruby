@@ -1,4 +1,5 @@
 README.html
 coverage/
 .yardoc
-doc/
+doc/*
+!doc/*.adoc
