@@ -70,7 +70,8 @@ OPTIONS
 	Specify the set of characters permitted in the password.  A flags value of 0
 	permits all printable ASCII characters (ASCII 32–ASCII 126).  The default, 10,
 	is to exclude spaces and most punctuation marks, as these are forbidden by
-	many sites.
+	many sites.  Changing the flags value results in a completely different
+	password.  To change the password at the code prompt, use `!flags=<flags>`.
 +
 The flags value can be specified in decimal, octal, or hexadecimal (using
 standard C notation), or by using a string indicating the permitted symbols.
@@ -96,12 +97,19 @@ Alternately, the string can be composed of the following:
 keyboard
 |`:`, `+`, or `-`           |Include other symbols
 |===
++
+Since daniel employs a cryptographically-secure PRNG to generate bytes and
+selects the first bytes that match, a generated password might not contain a
+particular type of character needed as part of a site's security policy.  In
+this case, simply increase the version number until a suitable password is
+chosen.
 
 -l <length>::
 	Specify the length of the password to be generated in characters.  The default
 	is 16.  If two passwords are generated with identical parameters except for
 	their length, one will start with the other.  That is, changing only the
-	length does not produce a completely different password.
+	length does not produce a completely different password.  To change the length
+	at the code prompt, use `!length=<length>`.
 
 -P <format>::
 	Produce output in an alternate format.  Besides the default format, _plain_,
@@ -121,4 +129,5 @@ keyboard
 	Specify a particular password version.  The default is 0.  This can be useful
 	for institutions or websites that require frequently changing passwords.
 	Changing the version number produces a completely different password unrelated
-	to any others.
+	to any others.  To change the password version at the code prompt, use
+	`!version=<version>`.
