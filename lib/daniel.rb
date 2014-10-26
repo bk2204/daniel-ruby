@@ -53,6 +53,7 @@ module Daniel
     NO_LETTERS = 0x10
     SYMBOL_MASK = 0x1f
     REPLICATE_EXISTING = 0x20
+    IMPLEMENTED_MASK = 0x3f
     EXPLICIT_VERSION = 0x40
 
     # Compute a flag value from a number or string.
@@ -156,6 +157,9 @@ module Daniel
 
     def flags=(flags)
       flags = Flags.mask_from_characters(flags)
+      if (flags & ~Flags::IMPLEMENTED_MASK) != 0
+        fail Exception, format('Not a valid flags value %08x', flags)
+      end
       flags &= ~Flags::SYMBOL_MASK if (flags & Flags::REPLICATE_EXISTING) != 0
       @flags = flags
     end
