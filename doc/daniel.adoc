@@ -64,19 +64,13 @@ pausing.
 'daniel' [-r] -a <reminder>...::
 	Parse the given reminders and display the parameters and code encoded in them.
 
-OPTIONS
--------
--f <flags>::
-	Specify the set of characters permitted in the password.  A flags value of 0
-	permits all printable ASCII characters (ASCII 32–ASCII 126).  The default, 10,
-	is to exclude spaces and most punctuation marks, as these are forbidden by
-	many sites.  Changing the flags value results in a completely different
-	password.  To change the password at the code prompt, use `!flags=<flags>`.
-+
-The flags value can be specified in decimal, octal, or hexadecimal (using
-standard C notation), or by using a string indicating the permitted symbols.
-Numerical interpretations have priority.  The bits have the following meaning:
-+
+FLAG VALUES
+~~~~~~~~~~~
+Flags values are specified using the `-f` option.  The flags value can be
+specified in decimal, octal, or hexadecimal (using standard C notation), or by
+using a string indicating the permitted symbols.  Numerical interpretations have
+priority.  The bits have the following meaning:
+
 |===
 |Flag |Meaning
 |1    |Exclude all digits
@@ -85,9 +79,9 @@ Numerical interpretations have priority.  The bits have the following meaning:
 |8    |Exclude other symbols
 |16   |Exclude letters
 |===
-+
+
 Alternately, the string can be composed of the following:
-+
+
 |===
 |Character                  |Meaning
 |`0`                        |Include digits
@@ -97,6 +91,17 @@ Alternately, the string can be composed of the following:
 keyboard
 |`:`, `+`, or `-`           |Include other symbols
 |===
+
+The `-m` option is represented using a flags value of exactly 32 (0x20).
+
+OPTIONS
+-------
+-f <flags>::
+	Specify the set of characters permitted in the password.  A flags value of 0
+	permits all printable ASCII characters (ASCII 32–ASCII 126).  The default, 10,
+	is to exclude spaces and most punctuation marks, as these are forbidden by
+	many sites.  Changing the flags value results in a completely different
+	password.  To change the password at the code prompt, use `!flags=<flags>`.
 +
 Since daniel employs a cryptographically-secure PRNG to generate bytes and
 selects the first bytes that match, a generated password might not contain a
