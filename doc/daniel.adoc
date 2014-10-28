@@ -94,6 +94,23 @@ keyboard
 
 The `-m` option is represented using a flags value of exactly 32 (0x20).
 
+COMMANDS
+~~~~~~~~
+Any string starting with an exclamation point that is entered at the code prompt
+is considered a command.
+
+|===
+|Command              | Meaning
+|`!!`                 | Repeat the previous code entry
+|`!passphrase`        | Enter a new master password
+|+!flags=_<value>_+   | Set a new flags value
+|+!version=_<value>_+ | Change the password version
+|+!length=_<value>_+  | Change the password length
+|===
+
+The `!!` command can be useful with the `-p` option if something else has been
+copied to the clipboard in the mean time.
+
 OPTIONS
 -------
 -f <flags>::
