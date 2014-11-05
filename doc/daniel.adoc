@@ -111,6 +111,37 @@ is considered a command.
 The `!!` command can be useful with the `-p` option if something else has been
 copied to the clipboard in the mean time.
 
+MACHINE-READABLE FORMAT
+~~~~~~~~~~~~~~~~~~~~~~~
+In the machine-readable format, each non-empty line output starts with a colon,
+a message, a space, and one or more space-separated URI-encoded values.
+Messages ending with question marks are prompts for information; those with
+exclamation marks, an error; and the unmarked, a statement.
+
+The prompts are as follows:
+|===
+|Prompt              | Response
+|`:code?`            | Enter the code
+|`:existing?`        | Enter an existing password
+|`:master-password?` | Enter the master password
+|===
+
+The statements are as follows:
+|===
+| Statement          | Meaning
+|`:bits-per-char`    | The number of bits of entropy per character
+|`:bits-total`       | Total number of bits of entropy
+|`:checksum`         | The checksum
+|`:code`             | The code from a reminder
+|`:flags`            | The flags in decimal and described in text
+|`:length`           | The password length
+|`:mask`             | The mask used to encode an existing password
+|`:password-version` | The reminder's password version
+|`:possible-char`    | The number of possible characters
+|`:reminder`         | The reminder
+|`:version`          | The password algorithm version (always 0)
+|===
+
 OPTIONS
 -------
 -f <flags>::
@@ -142,10 +173,7 @@ chosen.
 	of printing them to standard output.
 
 -r::
-	Produce machine-readable output.  Each non-empty line output starts with a
-	colon, a message, a space, and one or more space-separated URI-encoded values.
-	Messages ending with question marks are prompts for information; those with
-	exclamation marks, an error; and the unmarked, a statement.
+	Produce machine-readable output.
 
 -v <version>::
 	Specify a particular password version.  The default is 0.  This can be useful
