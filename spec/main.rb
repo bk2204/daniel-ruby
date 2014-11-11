@@ -383,7 +383,7 @@ describe Daniel::MainProgram do
     prog = Daniel::MainProgram.new
     prog.main(%w(-e -r))
     expect(prog.output.flatten.map { |s| s.split("\n") }.flatten).to eq [
-      ':char 16',
+      ':length 16',
       ':possible-char 72',
       ':bits-per-char 6.17',
       ':bits-total 98.72'
@@ -406,7 +406,7 @@ describe Daniel::MainProgram do
       prog = Daniel::MainProgram.new
       prog.main(['-e', '-r', "-l#{len}", "-f#{flags}"])
       expect(prog.output.flatten.map { |s| s.split("\n") }.flatten).to eq [
-        ":char #{len}",
+        ":length #{len}",
         ":possible-char #{possible}",
         ":bits-per-char #{bpc}",
         ":bits-total #{bits}"
