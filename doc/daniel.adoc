@@ -142,6 +142,12 @@ The statements are as follows:
 |`:version`          | The password algorithm version (always 0)
 |===
 
+The errors are as follows:
+|===
+|Error               | Meaning
+|`:invalid-command!` | The command that was entered was invalid.
+|===
+
 OPTIONS
 -------
 -f <flags>::
