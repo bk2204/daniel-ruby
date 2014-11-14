@@ -32,6 +32,12 @@ module Daniel
   class Exception < ::Exception
   end
 
+  class Version
+    def self.to_s
+      return '0.1.0'
+    end
+  end
+
   # Utility functions.
   class Util
     def self.to_hex(s)
