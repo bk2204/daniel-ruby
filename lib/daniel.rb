@@ -32,9 +32,10 @@ module Daniel
   class Exception < ::Exception
   end
 
+  # The version number of Daniel.
   class Version
     def self.to_s
-      return '0.1.0'
+      '0.1.0'
     end
   end
 
