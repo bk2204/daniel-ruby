@@ -378,7 +378,7 @@ module Daniel
   end
 
   # The main command-line interface.
-  class MainProgram
+  class MainProgram   # rubocop:disable Style/ClassLength
     def initialize
       @params = Parameters.new
       @clipboard = false
@@ -534,17 +534,23 @@ module Daniel
       end
     end
 
+    def humanify(text)
+      text && !machine_readable? ? Util.to_hex(text) : text
+    end
+
     def parse(args)
       args.each do |reminder|
         rem = Reminder.parse(reminder)
         params = rem.params
         flags = Flags.explain(params.flags)
-        mask = rem.mask && !machine_readable? ? Util.to_hex(rem.mask) : rem.mask
+        mask = humanify(rem.mask)
+        salt = humanify(params.salt)
         prompt 'Reminder is:', ':reminder', reminder
-        prompt 'Version:', ':version', 0
+        prompt 'Version:', ':version', params.format_version
         prompt 'Length:', ':length', params.length
         prompt 'Password version:', ':password-version', params.version
         prompt 'Flags:', ':flags', params.flags, *flags
+        prompt 'Salt:', ':salt', salt if salt
         prompt 'Checksum:', ':checksum', rem.checksum
         prompt 'Mask:', ':mask', mask if mask
         prompt 'Code:', ':code', rem.code
