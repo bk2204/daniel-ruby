@@ -49,6 +49,10 @@ module Daniel
       result = [s].pack('H*')
       ::RUBY_VERSION.to_f <= 1.8 ? result : result.force_encoding('BINARY')
     end
+
+    def self.to_binary(s)
+      ::RUBY_VERSION.to_f <= 1.8 ? s : s.force_encoding('BINARY')
+    end
   end
 
   # Flag constants and conversion functions.
@@ -154,12 +158,14 @@ module Daniel
 
   # The parameters affecting generation of a password.
   class Parameters
-    attr_reader :flags, :length, :version
+    attr_reader :flags, :length, :version, :salt, :format_version
 
-    def initialize(flags = 10, length = 16, version = 0)
+    def initialize(flags = 10, length = 16, version = 0, options = {})
       self.flags = flags
       @length = length
       @version = version
+      self.salt = options[:salt]
+      @format_version = options[:format_version] || 0
     end
 
     def flags=(flags)
@@ -179,12 +185,16 @@ module Daniel
       @version = version.to_i
     end
 
+    def salt=(salt)
+      @salt = salt.nil? || salt.empty? ? nil : Util.to_binary(salt)
+    end
+
     def existing_mode?
       (@flags & Flags::REPLICATE_EXISTING) != 0
     end
 
     def ==(other)
-      [:flags, :length, :version].each do |m|
+      [:flags, :length, :version, :salt, :format_version].each do |m|
         return false unless method(m).call == other.method(m).call
       end
       true
