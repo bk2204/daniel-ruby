@@ -47,7 +47,7 @@ module Daniel
 
     def self.from_hex(s)
       result = [s].pack('H*')
-      ::RUBY_VERSION.to_f <= 1.8 ? result : result.force_encoding('BINARY')
+      self.to_binary(result)
     end
 
     def self.to_binary(s)
@@ -251,7 +251,7 @@ module Daniel
     def self.bubblebabble(s)
       vo = %w(a e i o u y)
       co = %w(b c d f g h k l m n p r s t v z x)
-      s = ::RUBY_VERSION.to_f <= 1.8 ? s : s.force_encoding('BINARY')
+      s = Util.to_binary(s)
       r = s.each_byte.to_a
       len = r.length / 2
       k = []
