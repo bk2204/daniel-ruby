@@ -21,7 +21,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'cgi'
 require 'openssl'
 require 'optparse'
 require 'set'
@@ -499,6 +498,7 @@ module Daniel
     end
 
     def prompt(text, machine, *args)
+      require 'cgi'
       nl = !machine_readable? && machine[-1] == '?' ? '' : "\n"
       args.map! { |s| CGI.escape(s.to_s) } if machine_readable?
       argtext = args.join(' ')
