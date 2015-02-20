@@ -21,8 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-require 'openssl'
-require 'optparse'
+Kernel.send :require, 'openssl'
 require 'set'
 
 # A password generation tool.
@@ -211,8 +210,7 @@ module Daniel
     def self.parse(reminder)
       params = Parameters.new
       csum = reminder[0..5]
-      if reminder[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})
-          (.*)\z/x
+      if reminder[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)\z/
         hex_params, code = Regexp.last_match[1..2]
         dparams = Util.from_hex(hex_params)
         flags, length, version = dparams.unpack('w3')
@@ -403,6 +401,8 @@ module Daniel
     private
 
     def parse_args(args)  # rubocop:disable Style/MethodLength
+      Kernel.send :require, 'optparse'
+
       flags_set = false
       existing_set = false
       OptionParser.new do |opts|
@@ -455,7 +455,7 @@ module Daniel
     def sanity_check
       return unless @clipboard
       begin
-        require 'clipboard'
+        Kernel.send :require, 'clipboard'
       rescue LoadError
         @clipboard = false
         warn "Can't load clipboard gem; passwords will be printed"
@@ -485,7 +485,7 @@ module Daniel
 
     def read_passphrase
       begin
-        require 'io/console'
+        Kernel.send :require, 'io/console'
         pass = STDIN.noecho(&:gets).chomp
       rescue Errno::ENOTTY
         pass = STDIN.gets.chomp
@@ -498,7 +498,7 @@ module Daniel
     end
 
     def prompt(text, machine, *args)
-      require 'cgi'
+      Kernel.send :require, 'cgi'
       nl = !machine_readable? && machine[-1] == '?' ? '' : "\n"
       args.map! { |s| CGI.escape(s.to_s) } if machine_readable?
       argtext = args.join(' ')
