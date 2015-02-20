@@ -45,7 +45,7 @@ module Daniel
 
     def self.from_hex(s)
       result = [s].pack('H*')
-      self.to_binary(result)
+      to_binary(result)
     end
 
     def self.to_binary(s)
@@ -205,12 +205,12 @@ module Daniel
   Reminder = Struct.new(:params, :checksum, :code, :mask) do
     # Parse a reminder into its constituent parts.
     #
-    # @param reminder [String] the complete reminder string
+    # @param rem [String] the complete reminder string
     # @return [Reminder] the parsed set of parameters
-    def self.parse(reminder)
+    def self.parse(rem)
       params = Parameters.new
-      csum = reminder[0..5]
-      if reminder[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)\z/
+      csum = rem[0..5]
+      if rem[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)\z/
         hex_params, code = Regexp.last_match[1..2]
         dparams = Util.from_hex(hex_params)
         flags, length, version = dparams.unpack('w3')
