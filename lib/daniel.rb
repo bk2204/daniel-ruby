@@ -401,7 +401,7 @@ module Daniel
     private
 
     def parse_args(args)  # rubocop:disable Style/MethodLength
-      Kernel.send :require, 'optparse'
+      Object.send :require, 'optparse'
 
       flags_set = false
       existing_set = false
@@ -455,7 +455,7 @@ module Daniel
     def sanity_check
       return unless @clipboard
       begin
-        Kernel.send :require, 'clipboard'
+        Object.send :require, 'clipboard'
       rescue LoadError
         @clipboard = false
         warn "Can't load clipboard gem; passwords will be printed"
@@ -485,7 +485,7 @@ module Daniel
 
     def read_passphrase
       begin
-        Kernel.send :require, 'io/console'
+        Object.send :require, 'io/console'
         pass = STDIN.noecho(&:gets).chomp
       rescue Errno::ENOTTY
         pass = STDIN.gets.chomp
@@ -498,7 +498,7 @@ module Daniel
     end
 
     def prompt(text, machine, *args)
-      Kernel.send :require, 'cgi'
+      Object.send :require, 'cgi'
       nl = !machine_readable? && machine[-1] == '?' ? '' : "\n"
       args.map! { |s| CGI.escape(s.to_s) } if machine_readable?
       argtext = args.join(' ')
