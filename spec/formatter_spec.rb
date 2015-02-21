@@ -1,9 +1,7 @@
 #!/usr/bin/ruby
 # encoding: UTF-8
 
-$LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
-
-require 'daniel'
+require_relative 'spec_helper'
 
 describe Daniel::Formatter do
   [
