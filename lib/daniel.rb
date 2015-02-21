@@ -240,7 +240,7 @@ module Daniel
     def to_s
       p = params
       bytes = checksum + [p.flags, p.length, p.version].pack('w3')
-      bytes << mask if mask
+      bytes += mask if mask
       Util.to_hex(bytes) + code
     end
   end
@@ -354,7 +354,7 @@ module Daniel
       buffer = ([0] * 32).pack('C*')
       result = ''
       while result.length < parameters.length
-        result << cipher.update(buffer).bytes.select do |x|
+        result += cipher.update(buffer).bytes.select do |x|
           set.include?(x)
         end.pack('C*')
       end
@@ -373,7 +373,7 @@ module Daniel
     def process_strings(strings, salt)
       str = ''
       strings.each do |s|
-        str << [s.bytesize].pack('N') << s
+        str += [s.bytesize].pack('N') + s
       end
       digest = OpenSSL::Digest::SHA256.new
       OpenSSL::PKCS5.pbkdf2_hmac(str, salt, 1024, 32, digest)
@@ -535,7 +535,7 @@ module Daniel
         puts ":bits-per-char #{bits}\n:bits-total #{nchars * bits}"
       else
         msg = "#{nchars} characters; #{possibles} possible (#{bits} bpc); "
-        msg << "#{nchars * bits} bits of entropy"
+        msg += "#{nchars * bits} bits of entropy"
         puts msg
       end
     end
