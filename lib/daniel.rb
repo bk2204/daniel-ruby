@@ -35,6 +35,12 @@ module Daniel
     def self.to_s
       '0.1.0'
     end
+
+    # Are we dealing with a reasonably modern and feature-complete
+    # implementation?
+    def self.smart_implementation?
+      return ::RUBY_ENGINE != 'opal' && ::RUBY_VERSION.to_f > 1.8
+    end
   end
 
   # Utility functions.
@@ -49,7 +55,7 @@ module Daniel
     end
 
     def self.to_binary(s)
-      ::RUBY_VERSION.to_f <= 1.8 ? s : s.force_encoding('BINARY')
+      Version.smart_implementation? ? s.force_encoding('BINARY') : s
     end
   end
 
@@ -490,7 +496,7 @@ module Daniel
       rescue Errno::ENOTTY
         pass = STDIN.gets.chomp
       end
-      ::RUBY_VERSION.to_f <= 1.8 ? pass : pass.encode('UTF-8')
+      Version.smart_implementation? ? pass.encode('UTF-8') : pass
     end
 
     def read_line
