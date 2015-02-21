@@ -84,11 +84,11 @@ module Daniel
     def self.mask_from_characters(text)
       if text.is_a?(Fixnum)
         return text
-      elsif text =~ /\A0[0-7]+\z/
+      elsif text =~ /^0[0-7]+$/
         return text.to_i(8)
-      elsif text =~ /\A\d+\z/
+      elsif text =~ /^\d+$/
         return text.to_i
-      elsif text =~ /\A0[xX][A-Fa-f0-9]+\z/
+      elsif text =~ /^0[xX][A-Fa-f0-9]+$/
         return text.to_i(16)
       else
         value = SYMBOL_MASK
@@ -103,7 +103,7 @@ module Daniel
           '+' => NO_SYMBOLS_OTHER,
           '-' => NO_SYMBOLS_OTHER
         }
-        masks.keys.each { |ch| value &= ~masks[ch] if text[ch] }
+        masks.keys.each { |ch| value &= ~masks[ch] if text.include? ch }
         return value
       end
     end
