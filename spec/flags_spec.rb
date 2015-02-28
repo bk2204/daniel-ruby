@@ -14,19 +14,19 @@ describe Daniel::Flags do
 
   it "returns the correct mask if it's an octal string" do
     (0x00..0x7f).each do |x|
-      expect(Daniel::Flags.mask_from_characters(format('%#o', x))).to eq x
+      expect(Daniel::Flags.mask_from_characters(format('0%o', x))).to eq x
     end
   end
 
   it "returns the correct mask if it's a lowercase hex string" do
     (0x00..0x7f).each do |x|
-      expect(Daniel::Flags.mask_from_characters(format('%#x', x))).to eq x
+      expect(Daniel::Flags.mask_from_characters(format('0x%x', x))).to eq x
     end
   end
 
   it "returns the correct mask if it's an uppercase hex string" do
     (0x00..0x7f).each do |x|
-      expect(Daniel::Flags.mask_from_characters(format('%#X', x))).to eq x
+      expect(Daniel::Flags.mask_from_characters(format('0X%X', x))).to eq x
     end
   end
 
