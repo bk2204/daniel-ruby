@@ -10,3 +10,7 @@ if RUBY_ENGINE != 'opal'
     SimpleCov.start 'rails'
   end
 end
+
+RSpec.configure do |c|
+  c.full_backtrace = true
+end
