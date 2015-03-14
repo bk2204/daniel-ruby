@@ -39,7 +39,7 @@ module Daniel
     # Are we dealing with a reasonably modern and feature-complete
     # implementation?
     def self.smart_implementation?
-      return ::RUBY_ENGINE != 'opal' && ::RUBY_VERSION.to_f > 1.8
+      ::RUBY_ENGINE != 'opal' && ::RUBY_VERSION.to_f > 1.8
     end
   end
 
