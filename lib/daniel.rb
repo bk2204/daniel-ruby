@@ -256,7 +256,7 @@ module Daniel
       co = %w(b c d f g h k l m n p r s t v z x)
       s = Util.to_binary(s)
       r = s.each_byte.to_a
-      len = r.length / 2
+      len = (r.length / 2).to_i
       k = []
       (len + 1).times do |i|
         k[i] = i == 0 ? 1 : (((k[i - 1] * 5) +
