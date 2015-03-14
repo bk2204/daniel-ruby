@@ -371,7 +371,7 @@ module Daniel
     end
 
     def process_strings(strings, salt)
-      str = ''
+      str = Daniel::Util.to_binary('')
       strings.each do |s|
         str += [s.bytesize].pack('N') + s
       end
