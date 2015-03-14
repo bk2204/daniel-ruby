@@ -1,7 +1,8 @@
 #!/usr/bin/ruby
 # encoding: UTF-8
 
-require_relative 'spec_helper'
+# Ruby 1.8 doesn't have require_relative.
+require File.join(File.dirname(__FILE__), 'spec_helper')
 
 FC = Daniel::Flags
 
