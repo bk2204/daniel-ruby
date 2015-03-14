@@ -216,12 +216,12 @@ module Daniel
     def self.parse(rem)
       params = Parameters.new
       csum = rem[0..5]
-      if rem[6..-1] =~ /\A((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)\z/
+      if rem[6..-1] =~ /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
         hex_params, code = Regexp.last_match[1..2]
         dparams = Util.from_hex(hex_params)
         flags, length, version = dparams.unpack('w3')
         if (flags & Flags::REPLICATE_EXISTING) != 0
-          if code =~ /\A([0-9a-f]{#{2 * length}})(.*)\z/
+          if code =~ /^([0-9a-f]{#{2 * length}})(.*)$/
             mask, code = Regexp.last_match[1..2]
             mask = Util.from_hex(mask)
           else
