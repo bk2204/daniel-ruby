@@ -21,7 +21,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-Kernel.send :require, 'openssl'
+RUBY_ENGINE = 'unknown' unless defined? RUBY_ENGINE
+if RUBY_ENGINE == 'opal'
+  require 'daniel/opal'
+else
+  require 'openssl'
+end
 require 'set'
 
 # A password generation tool.

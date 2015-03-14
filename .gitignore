@@ -4,3 +4,4 @@ coverage/
 doc/*
 !doc/*.adoc
 *.gem
+lib/daniel/opal/*.js
