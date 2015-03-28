@@ -26,5 +26,16 @@ rescue LoadError => e
   $stderr.puts e
 end
 
+begin
+  require 'opal'
+  task :"opal:build" do
+    Opal.append_path 'lib'
+    File.binwrite 'bin/daniel.js', Opal::Builder.build('daniel').to_s
+  end
+  possible << :"opal:build"
+rescue LoadError => e
+  $stderr.puts e
+end
+
 task :all => [:spec] + possible
 task :default => :spec
