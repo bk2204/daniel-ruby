@@ -5,4 +5,4 @@ doc/*
 !doc/*.adoc
 *.gem
 lib/daniel/opal/*.js
-bin/daniel.js
+html/daniel.js

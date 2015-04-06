@@ -30,7 +30,7 @@ begin
   require 'opal'
   task :"opal:build" do
     Opal.append_path 'lib'
-    File.binwrite 'bin/daniel.js', Opal::Builder.build('daniel').to_s
+    File.binwrite 'html/daniel.js', Opal::Builder.build('daniel').to_s
   end
   possible << :"opal:build"
 rescue LoadError => e
