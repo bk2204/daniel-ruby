@@ -1,0 +1,34 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<title>Daniel Password Generation Tool</title>
+	<script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+	<link rel="stylesheet" href="daniel.css"/>
+</head>
+<body>
+	<script src="daniel-page.js"></script>
+	<form action="javascript:">
+		<p>
+			<label for="master-password">Master Password:</label>
+			<input id="master-password" type="password"/>
+			<br/>
+			<input id="master-password-button" type="button" value="Enter"/>
+			<p id="checksum-text"
+				class="hidden">Checksum is <span id="checksum"/></p>
+		</p>
+		<p>
+			<label for="reminder">Reminder:</label>
+			<input id="reminder" type="text" disabled="disabled"/>
+			<input id="reminder-button" type="button"
+				disabled="disabled" value="Generate"/>
+			<div id="clipboard-area" class="invisible">
+				<input id="generated-password" type="text"/>
+			</div>
+			<div id="password-helper" class="hidden">
+				<p>Press Ctrl-C or ⌘C to copy to the clipboard.</p>
+				<input id="show-hide-password-button" type="button"
+					value="Show Password" />
+			</div>
+		</p>
+	</form>
+</body>
+</html>

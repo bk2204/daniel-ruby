@@ -28,14 +28,30 @@ end
 
 begin
   require 'opal'
-  task :"opal:build" do
+  task :"opal:build" => :build_setup do
     Opal.append_path 'lib'
-    File.binwrite 'html/daniel.js', Opal::Builder.build('daniel').to_s
+    Opal.use_gem 'opal-jquery'
+    File.binwrite 'build/html/daniel.js', Opal::Builder.build('daniel').to_s
+    builder = Opal::Builder.new
+    File.binwrite 'build/html/daniel-page.js', builder.build('daniel/opal/page').to_s
   end
   possible << :"opal:build"
 rescue LoadError => e
   $stderr.puts e
 end
 
+task :build_setup do
+  %w(build build/html).each do |dir|
+    Dir.mkdir dir unless Dir.exists? dir
+  end
+end
+
+task :html => [:build_setup, :"opal:build"] do
+  %w(daniel.xhtml daniel.css).each do |file|
+    cp "html/#{file}", 'build/html'
+  end
+end
+
+task :build => [:"opal:build", :html]
 task :all => [:spec] + possible
 task :default => :spec

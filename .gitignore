@@ -1,8 +1,8 @@
 README.html
+build/
 coverage/
 .yardoc
 doc/*
 !doc/*.adoc
 *.gem
 lib/daniel/opal/*.js
-html/daniel.js
