@@ -23,6 +23,7 @@
 
 RUBY_ENGINE = 'unknown' unless defined? RUBY_ENGINE
 if RUBY_ENGINE == 'opal'
+  require 'opal'
   require 'daniel/opal'
 else
   require 'openssl'
