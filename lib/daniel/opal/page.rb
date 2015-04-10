@@ -2,6 +2,7 @@ require 'opal'
 require 'opal-jquery'
 require 'daniel'
 
+# The built-in jQuery element selector.
 class Element
   alias_native :select
 end
@@ -9,6 +10,7 @@ end
 def to_id(id)
   id = id.gsub('_', '-')
   id = '#' + id unless id[0] == '#'
+  id
 end
 
 def element(id)
