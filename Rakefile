@@ -31,9 +31,11 @@ begin
   task :"opal:build" => :build_setup do
     Opal.append_path 'lib'
     Opal.use_gem 'opal-jquery'
-    File.binwrite 'build/html/daniel.js', Opal::Builder.build('daniel').to_s
-    builder = Opal::Builder.new
-    File.binwrite 'build/html/daniel-page.js', builder.build('daniel/opal/page').to_s
+    dest = 'build/html'
+    files = { 'daniel' => 'daniel', 'daniel-page' => 'daniel/opal/page' }
+    files.each do |js, ruby|
+      File.binwrite "#{dest}/#{js}.js", Opal::Builder.build(ruby).to_s
+    end
   end
   possible << :"opal:build"
 rescue LoadError => e
