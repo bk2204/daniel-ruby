@@ -44,7 +44,7 @@ end
 
 task :build_setup do
   %w(build build/html).each do |dir|
-    Dir.mkdir dir unless Dir.exists? dir
+    Dir.mkdir dir unless Dir.exist? dir
   end
 end
 
