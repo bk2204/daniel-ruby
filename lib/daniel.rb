@@ -387,7 +387,7 @@ module Daniel
   end
 
   # The main command-line interface.
-  class MainProgram   # rubocop:disable Style/ClassLength
+  class MainProgram   # rubocop:disable Metrics/ClassLength
     def initialize
       @params = Parameters.new
       @clipboard = false
@@ -412,7 +412,7 @@ module Daniel
 
     private
 
-    def parse_args(args)  # rubocop:disable Style/MethodLength
+    def parse_args(args)  # rubocop:disable Metrics/MethodLength
       Object.send :require, 'optparse'
 
       flags_set = false
