@@ -11,29 +11,52 @@
 </head>
 <body>
 	<script src="daniel-page.js"></script>
-	<form action="javascript:">
-		<p>
-			<label for="master-password">Master Password:</label>
-			<input id="master-password" type="password"/>
-			<br/>
-			<input id="master-password-button" type="button" value="Enter"/>
-			<p id="checksum-text"
-				class="hidden">Checksum is <span id="checksum"/></p>
-		</p>
-		<p>
-			<label for="reminder">Reminder:</label>
-			<input id="reminder" type="text" disabled="disabled"/>
-			<input id="reminder-button" type="button"
-				disabled="disabled" value="Generate"/>
-			<div id="clipboard-area" class="invisible">
-				<input id="generated-password" type="text"/>
+	<div class="container">
+		<h1>Password Generator</h1>
+		<form action="javascript:">
+			<div class="container">
+				<div class="row">
+					<label class="col-xs-2 col-sm-2 col-md-2"
+						for="master-password">Master Password:</label>
+					<input class="col-xs-2 col-sm-2 col-md-2 col-md-offset-1"
+						id="master-password" type="password"/>
+					<input class="btn btn-primary col-md-offset-1"
+						id="master-password-button" type="button"
+						value="Enter"/>
+				</div>
+				<div class="row">
+					<div>
+						<p class="invisible col-xs-2 col-sm-2 col-md-2"
+							id="checksum-text">Checksum is <strong
+								id="checksum"/></p>
+					</div>
+				</div>
 			</div>
-			<div id="password-helper" class="hidden">
-				<p>Press Ctrl-C or ⌘C to copy to the clipboard.</p>
-				<input id="show-hide-password-button" type="button"
-					value="Show Password" />
+			<div class="container">
+				<div class="row">
+					<label class="col-xs-2 col-sm-2 col-md-2"
+						for="reminder">Reminder:</label>
+					<input class="col-xs-2 col-sm-2 col-md-2 col-md-offset-1"
+						id="reminder" type="text" disabled="disabled"/>
+					<input class="btn btn-default col-md-offset-1"
+						id="reminder-button" type="button"
+						disabled="disabled" value="Generate"/>
+				</div>
+				<div id="clipboard-area" class="invisible row">
+					<label class="col-xs-2 col-sm-2 col-md-2"
+						for="generated-password">Password:</label>
+					<input id="generated-password"
+						class="col-md-offset-1"
+						type="text"/>
+				</div>
+				<div id="password-helper" class="hidden">
+					<p>Press Ctrl-C or ⌘C to copy to the clipboard.</p>
+					<input id="show-hide-password-button"
+						type="button" class="btn btn-success"
+						value="Show Password" />
+				</div>
 			</div>
-		</p>
-	</form>
+		</form>
+	</div>
 </body>
 </html>

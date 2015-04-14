@@ -27,6 +27,10 @@ def unhide(id)
   element(id).remove_class(:hidden)
 end
 
+def show(id)
+  element(id).remove_class(:invisible)
+end
+
 def enable(id)
   element(id).prop(:disabled, false)
 end
@@ -42,7 +46,7 @@ def main
     element(:checksum).text = Daniel::Util.to_hex(pwobj.checksum)
 
     [:reminder, :reminder_button].each { |id| enable(id) }
-    unhide(:checksum_text)
+    show(:checksum_text)
   end
 
   element(:reminder_button).on :click do
