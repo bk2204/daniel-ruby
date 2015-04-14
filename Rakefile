@@ -27,28 +27,32 @@ rescue LoadError => e
 end
 
 begin
-  require 'opal'
-  task :"opal:build" => :build_setup do
-    Opal.append_path 'lib'
-    Opal.use_gem 'opal-jquery'
-    dest = 'build/html'
-    files = { 'daniel' => 'daniel', 'daniel-page' => 'daniel/opal/page' }
-    files.each do |js, ruby|
-      File.binwrite "#{dest}/#{js}.js", Opal::Builder.build(ruby).to_s
+
+  opal_dest = 'build/html'
+  opal_files = { 'daniel' => 'daniel', 'daniel-page' => 'daniel/opal/page' }
+  opal_files.each do |js, ruby|
+    file "#{opal_dest}/#{js}.js" => ['build/html', "lib/#{ruby}.rb"] do |t|
+      require 'opal'
+
+      next unless t.needed?
+      Opal.append_path 'lib'
+      Opal.use_gem 'opal-jquery'
+      File.binwrite "#{opal_dest}/#{js}.js", Opal::Builder.build(ruby).to_s
     end
   end
+  task :"opal:build" => opal_files.keys.map { |f| "#{opal_dest}/#{f}.js" }
   possible << :"opal:build"
 rescue LoadError => e
   $stderr.puts e
 end
 
-task :build_setup do
+file 'build/html' do
   %w(build build/html).each do |dir|
     Dir.mkdir dir unless Dir.exist? dir
   end
 end
 
-task :html => [:build_setup, :"opal:build"] do
+task :html => ['build/html', :"opal:build"] do
   %w(daniel.xhtml daniel.css).each do |file|
     cp "html/#{file}", 'build/html'
   end
