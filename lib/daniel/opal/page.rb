@@ -7,6 +7,12 @@ class Element
   alias_native :select
 end
 
+class Event
+  def originalEvent
+    Native(`#{@native}.originalEvent`)
+  end
+end
+
 def to_id(id)
   id = id.gsub('_', '-')
   id = '#' + id unless id[0] == '#'
@@ -55,6 +61,15 @@ def main
     text = visible ? 'Hide Password' : 'Show Password'
     clipboard_area.toggle_class :invisible
     show_button.attr(:value, text)
+  end
+
+  Document.on :copy do |e|
+    pass = element(:generated_password).value
+    if pass && !pass.empty?
+      cd = e.originalEvent.clipboardData
+      cd.setData('text/plain', pass)
+      e.prevent
+    end
   end
 end
 
