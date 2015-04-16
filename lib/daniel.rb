@@ -236,6 +236,8 @@ module Daniel
         else
           mask = nil
         end
+      else
+        fail Exception, 'Invalid reminder'
       end
       params.flags = flags
       params.length = length
