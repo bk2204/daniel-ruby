@@ -279,7 +279,7 @@ module Daniel
         ]
       end
       lastr = r.length - 1
-      p = r.length.even? ?  [k[len] % 6, 16, k[len] / 6] :
+      p = r.length.even? ? [k[len] % 6, 16, k[len] / 6] :
         [(((r[lastr] >> 6) & 3) + k[len]) % 6,
          (r[lastr] >> 2) & 15,
          ((r[lastr] & 3) + k[len] / 6) % 6
