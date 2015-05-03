@@ -67,8 +67,6 @@ module Daniel
         s = reminders.map do |r|
           if r[:checksum] == csum && r[:code] =~ pat
             [Regexp.last_match[1..2], r].flatten
-          else
-            nil
           end
         end
         result = s.select { |r| r }.sort do |a, b|
