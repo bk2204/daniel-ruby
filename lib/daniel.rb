@@ -281,7 +281,7 @@ module Daniel
         ]
       end
       lastr = r.length - 1
-      p = r.length.even? ?  [k[len] % 6, 16, k[len] / 6] :
+      p = r.length.even? ? [k[len] % 6, 16, k[len] / 6] :
         [(((r[lastr] >> 6) & 3) + k[len]) % 6,
          (r[lastr] >> 2) & 15,
          ((r[lastr] & 3) + k[len] / 6) % 6
@@ -389,7 +389,7 @@ module Daniel
   end
 
   # The main command-line interface.
-  class MainProgram   # rubocop:disable Style/ClassLength
+  class MainProgram   # rubocop:disable Metrics/ClassLength
     def initialize
       @params = Parameters.new
       @clipboard = false
@@ -414,7 +414,7 @@ module Daniel
 
     private
 
-    def parse_args(args)  # rubocop:disable Style/MethodLength
+    def parse_args(args)  # rubocop:disable Metrics/MethodLength
       Object.send :require, 'optparse'
 
       flags_set = false

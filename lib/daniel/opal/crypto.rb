@@ -53,7 +53,7 @@ module Daniel
         iv[offset] = 0
         offset += 1
       end
-      @iv = iv.reverse.map { |b| b.chr }.join('')
+      @iv = iv.reverse.map(&:chr).join('')
     end
 
     def xor(a, b)
