@@ -35,6 +35,42 @@
 				</div>
 			</div>
 			<div class="container">
+				<div>
+					<input id="flags-numbers" type="checkbox"
+						checked="checked"/>
+					<label for="flags-numbers">Numbers</label>
+				</div>
+				<div>
+					<input id="flags-letters" type="checkbox"
+						checked="checked"/>
+					<label for="flags-letters">Letters</label>
+				</div>
+				<div>
+					<input id="flags-spaces" type="checkbox"/>
+					<label for="flags-spaces">Spaces</label>
+				</div>
+				<div>
+					<input id="flags-symbols-top" type="checkbox"
+						checked="checked"/>
+					<label for="flags-symbols-top">Common Symbols</label>
+				</div>
+				<div>
+					<input id="flags-symbols-other" type="checkbox"/>
+					<label for="flags-symbols-other">Less Common Symbols</label>
+				</div>
+				<div class="row">
+					<label class="col-xs-2 col-sm-2 col-md-2"
+						for="code">Code:</label>
+					<input class="col-xs-4 col-sm-4 col-md-2
+							col-xs-offset-1 col-sm-offset-1 col-md-offset-1"
+						id="code" type="text" disabled="disabled"/>
+					<input class="btn btn-default
+							col-xs-offset-1 col-sm-offset-1 col-md-offset-1"
+						id="code-button" type="button"
+						disabled="disabled" value="Generate"/>
+				</div>
+			</div>
+			<div class="container">
 				<div class="row">
 					<label class="col-xs-2 col-sm-2 col-md-2"
 						for="reminder">Reminder:</label>
@@ -46,6 +82,8 @@
 						id="reminder-button" type="button"
 						disabled="disabled" value="Generate"/>
 				</div>
+			</div>
+			<div class="container">
 				<div id="clipboard-area" class="invisible row">
 					<label class="col-xs-2 col-sm-2 col-md-2"
 						for="generated-password">Password:</label>

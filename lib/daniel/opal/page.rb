@@ -35,6 +35,19 @@ def enable(id)
   element(id).prop(:disabled, false)
 end
 
+def flags
+  value = 0
+  names = Daniel::Flags.flag_names
+  names.each_with_index do |name, i|
+    next unless name.start_with? 'no-'
+    name = name.gsub(/^no-/, 'flags-')
+    # Intermediate variable required due to Opal bug #599
+    flagval = 1 << i
+    value |= flagval if element(name).is ':checked'
+  end
+  value ^ Daniel::Flags::SYMBOL_MASK
+end
+
 def main
   pwobj = nil
 
@@ -45,7 +58,7 @@ def main
     pwobj = Daniel::PasswordGenerator.new pass
     element(:checksum).text = Daniel::Util.to_hex(pwobj.checksum)
 
-    [:reminder, :reminder_button].each { |id| enable(id) }
+    [:reminder, :reminder_button, :code, :code_button].each { |id| enable(id) }
     show(:checksum_text)
   end
 
@@ -53,6 +66,15 @@ def main
     reminder = element(:reminder).value
     pass = pwobj.generate_from_reminder(reminder)
     password_box.value = pass
+    unhide(:password_helper)
+  end
+
+  element(:code_button).on :click do
+    params = Daniel::Parameters.new(flags)
+    code = element(:code).value
+    pass = pwobj.generate(code, params)
+    password_box.value = pass
+    element(:reminder).value = pwobj.reminder(code, params)
     unhide(:password_helper)
   end
 
