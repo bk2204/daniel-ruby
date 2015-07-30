@@ -354,7 +354,7 @@ module Daniel
 
     def generate_existing(cipher, parameters, mask)
       fail Exception, 'Invalid mask length' if parameters.length != mask.length
-      cipher.update(mask)
+      (cipher.update(mask) + cipher.final)[0...parameters.length]
     end
 
     def generate_default(cipher, parameters)

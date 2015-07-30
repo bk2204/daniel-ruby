@@ -87,6 +87,10 @@ module OpenSSL
       def update(input)
         @ctr.encrypt(input)[0, input.length]
       end
+
+      def final
+        ''
+      end
     end
   end
 
