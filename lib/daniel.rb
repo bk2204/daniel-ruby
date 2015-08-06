@@ -147,6 +147,9 @@ module Daniel
 
   # A set of characters which are acceptable in a generated password.
   class CharacterSet < ::Set
+    # Create a new set of characters which are valid in a password
+    #
+    # @param options [Integer] a set of bit flags
     def initialize(options = Flags::NO_SPACES | Flags::NO_SYMBOLS_OTHER)
       super(0x20..0x7e)
       m = {
@@ -161,6 +164,12 @@ module Daniel
       end
     end
 
+    # Create a new CharacterSet from a text string representing valid flags.
+    #
+    # @return [CharacterSet] the set of valid characters
+    #
+    # Valid strings are those which can be passed to
+    # {Flags.mask_from_characters}.
     def self.from_characters(text)
       new Flags.mask_from_characters(text)
     end
@@ -245,6 +254,10 @@ module Daniel
       Reminder.new(params, csum, code, mask)
     end
 
+    # Convert this reminder to a string form.
+    #
+    # Calling {Reminder.parse} will convert the stringified form back into an
+    # object.
     def to_s
       p = params
       bytes = checksum + [p.flags, p.length, p.version].pack('w3')
