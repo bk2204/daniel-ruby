@@ -80,7 +80,7 @@ module Daniel
     # Compute a flag value from a number or string.
     #
     # @param text [String, Fixnum] the value to convert to a flags value
-    # @returns [Fixnum] the computed value.
+    # @return [Fixnum] the computed value.
     #
     # Accepts a value either as an existing integer; a string containing a
     # decimal, octal, or hexadecimal number in C/Ruby format; or a string
@@ -117,7 +117,7 @@ module Daniel
     # Provide a human-readable description of a flags value.
     #
     # @param value [Integer] the flags value
-    # @returns [Array<String>] the list of strings representing the value
+    # @return [Array<String>] the list of strings representing the value
     def self.explain(value)
       flags = flag_names
       if value < 0 || value > ((1 << flags.length) - 1)
