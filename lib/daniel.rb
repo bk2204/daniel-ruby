@@ -268,10 +268,22 @@ module Daniel
 
   # Format a password or other text.
   class Formatter
+    # Format a password in plain text.
+    #
+    # @return [String] the original string
+    #
+    # This function performs the identity transformation on the string.
     def self.plain(s)
       s
     end
 
+    # Format a password in the Bubble Babble format.
+    #
+    # @return [String] the string converted to Bubble Babble format
+    #
+    # This function converts the string into the Bubble Babble encoding.  This
+    # encoding provides the password in a human-pronounceable that provides a
+    # small amount of redundancy against accidental corruption.
     def self.bubblebabble(s)
       vo = %w(a e i o u y)
       co = %w(b c d f g h k l m n p r s t v z x)
