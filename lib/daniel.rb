@@ -500,12 +500,15 @@ module Daniel
 
         opts.on('-P FORMAT', 'Output passwords in another form') do |format|
           unless %w(plain bubblebabble).include? format
-            fail Exception, "not a valid format '#{format}'"
+            fail OptionParser::InvalidArgument, "not a valid format '#{format}'"
           end
           @format = format.to_sym
         end
       end.parse!(args)
-      fail Exception, "Can't use both -m and -f" if flags_set && existing_set
+
+      if flags_set && existing_set # rubocop:disable Style/GuardClause
+        fail OptionParser::InvalidArgument, "Can't use both -m and -f"
+      end
     end
 
     def sanity_check

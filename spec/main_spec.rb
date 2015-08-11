@@ -126,7 +126,7 @@ if RUBY_ENGINE != 'opal'
     it 'refuses to accept -f and -m together' do
       prog = Daniel::MainProgram.new
       expect { prog.send(:parse_args, %w(-m -f15)) } \
-        .to raise_error(Daniel::Exception, /can't.*both.*-m.*-f/i)
+        .to raise_error(OptionParser::InvalidArgument, /can't.*both.*-m.*-f/i)
     end
 
     [
@@ -417,7 +417,7 @@ if RUBY_ENGINE != 'opal'
     it 'throws an exception with an invalid password format' do
       prog = Daniel::MainProgram.new
       expect { prog.main(%w(-P bizarre)) }.to \
-        raise_error(Daniel::Exception, /not.*valid/)
+        raise_error(OptionParser::InvalidArgument, /not.*valid/)
     end
 
     it 'handles mismatched passwords properly with -m' do
