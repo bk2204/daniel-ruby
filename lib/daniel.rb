@@ -40,6 +40,10 @@ module Daniel
   class InvalidParametersError < Exception
   end
 
+  # An exception indicating an invalid reminder string.
+  class InvalidReminderError < Exception
+  end
+
   # The version number of Daniel.
   class Version
     def self.to_s
@@ -244,13 +248,13 @@ module Daniel
             mask, code = Regexp.last_match[1..2]
             mask = Util.from_hex(mask)
           else
-            fail Exception, 'Flags set to existing but mask missing'
+            fail InvalidReminderError, 'Flags set to existing but mask missing'
           end
         else
           mask = nil
         end
       else
-        fail Exception, 'Invalid reminder'
+        fail InvalidReminderError, 'Invalid reminder'
       end
       params.flags = flags
       params.length = length
