@@ -33,7 +33,7 @@ require 'set'
 # A password generation tool.
 module Daniel
   # The class from which all Daniel exceptions derive.
-  class Exception < ::Exception
+  class Exception < StandardError
   end
 
   # The version number of Daniel.
