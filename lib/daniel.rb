@@ -36,6 +36,10 @@ module Daniel
   class Exception < StandardError
   end
 
+  # An exception indicating an invalid parameter value.
+  class InvalidParametersError < Exception
+  end
+
   # The version number of Daniel.
   class Version
     def self.to_s
@@ -121,7 +125,7 @@ module Daniel
     def self.explain(value)
       flags = flag_names
       if value < 0 || value > ((1 << flags.length) - 1)
-        fail Exception, 'Invalid flags value'
+        fail InvalidParametersError, 'Invalid flags value'
       end
       result = []
       flags.each_with_index do |item, index|
@@ -190,7 +194,7 @@ module Daniel
     def flags=(flags)
       flags = Flags.mask_from_characters(flags)
       if (flags & ~Flags::IMPLEMENTED_MASK) != 0
-        fail Exception, format('Not a valid flags value %08x', flags)
+        fail InvalidParametersError, format('Invalid flags value %08x', flags)
       end
       flags &= ~Flags::SYMBOL_MASK if (flags & Flags::REPLICATE_EXISTING) != 0
       @flags = flags
@@ -343,7 +347,7 @@ module Daniel
     # Because of the way XOR works, if the mask argument is the password, this
     # function will return the mask.
     def generate_mask(code, params, password)
-      fail Exception, 'Invalid flags' unless params.existing_mode?
+      fail InvalidParametersError, 'Invalid flags' unless params.existing_mode?
       generate(code, params, password)
     end
 
@@ -378,7 +382,9 @@ module Daniel
     private
 
     def generate_existing(cipher, parameters, mask)
-      fail Exception, 'Invalid mask length' if parameters.length != mask.length
+      if parameters.length != mask.length
+        fail InvalidParametersError, 'Invalid mask length'
+      end
       (cipher.update(mask) + cipher.final)[0...parameters.length]
     end
 
