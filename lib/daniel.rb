@@ -44,6 +44,13 @@ module Daniel
   class InvalidReminderError < Exception
   end
 
+  # An exception indicating a checksum mismatch.
+  class ChecksumMismatchError < Exception
+    def initialize(actual, expected)
+      super("Checksum mismatch (#{actual} != #{expected})")
+    end
+  end
+
   # The version number of Daniel.
   class Version
     def self.to_s
@@ -373,7 +380,7 @@ module Daniel
       rem = Reminder.parse(reminder)
       computed = Util.to_hex(checksum)
       if rem.checksum != computed
-        fail Exception, "Checksum mismatch (#{rem.checksum} != #{computed})"
+        fail ChecksumMismatchError.new(rem.checksum, computed)
       end
 
       generate(rem.code, rem.params, rem.mask)
