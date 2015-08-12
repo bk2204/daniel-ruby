@@ -258,7 +258,7 @@ if RUBY_ENGINE != 'opal'
         prog.passphrase = 'foobar'
         prog.prompt = type
         expect { prog.main(args + ['ffffff0f0801example.tld']) } \
-          .to raise_error(Daniel::Exception, /checksum mismatch/i)
+          .to raise_error(Daniel::ChecksumMismatchError, /checksum mismatch/i)
       end
 
       it "processes reminders for existing passwords properly#{msg}" do

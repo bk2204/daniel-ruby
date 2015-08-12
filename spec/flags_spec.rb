@@ -61,7 +61,8 @@ describe Daniel::Flags do
   end
 
   it 'throws an exception for invalid flags' do
-    expect { Daniel::Flags.explain(0x80) }.to raise_error(Daniel::Exception,
-                                                          /invalid/i)
+    expect do
+      Daniel::Flags.explain(0x80)
+    end.to raise_error(Daniel::InvalidParametersError, /invalid/i)
   end
 end

@@ -34,6 +34,6 @@ describe Daniel::Reminder do
 
   it 'raises an exception for reminder missing mask' do
     expect { Daniel::Reminder.parse('8244c520810001la-france') } \
-      .to raise_error(Daniel::Exception, /mask missing/)
+      .to raise_error(Daniel::InvalidReminderError, /mask missing/)
   end
 end
