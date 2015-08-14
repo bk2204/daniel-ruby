@@ -42,5 +42,29 @@ describe Daniel::PasswordGenerator do
       gen = Daniel::PasswordGenerator.new master
       expect(gen.generate_from_reminder(reminder)).to eq(result)
     end
+
+    it "gives an all-NUL mask for password ^ mask for #{testname}" do
+      gen = Daniel::PasswordGenerator.new master
+      params = Daniel::Parameters.new(Daniel::Flags::REPLICATE_EXISTING,
+                                      result.length)
+      xorout = result.bytes.zip(rawmask.bytes).map do |a|
+        (a[0] ^ a[1]).chr
+      end.join
+      nuls = "\x00" * result.length
+      expect(gen.generate_mask(code, params, xorout)).to eq(nuls)
+      expect(gen.generate_mask(code, params, nuls)).to eq(xorout)
+    end
+
+    it "gives an all-NUL password for password ^ mask for #{testname}" do
+      gen = Daniel::PasswordGenerator.new master
+      params = Daniel::Parameters.new(Daniel::Flags::REPLICATE_EXISTING,
+                                      result.length)
+      xorout = result.bytes.zip(rawmask.bytes).map do |a|
+        (a[0] ^ a[1]).chr
+      end.join
+      nuls = "\x00" * result.length
+      expect(gen.generate(code, params, xorout)).to eq(nuls)
+      expect(gen.generate(code, params, nuls)).to eq(xorout)
+    end
   end
 end
