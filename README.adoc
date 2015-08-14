@@ -77,6 +77,12 @@ want to accept those characters.  The flags parameter is encoded as part of the
 reminder, and changing the flags will cause a completely different password to
 be generated.
 
+To generate an arbitrary byte sequence, such as a shared secret for
+https://tools.ietf.org/html/rfc4226[HOTP] or
+https://tools.ietf.org/html/rfc6238[TOTP], set the flags to 128.
+The sequence is printed in hexadecimal, or URL-encoded in machine-readable
+format.
+
 Can I adjust the length of the password?
 ----------------------------------------
 
