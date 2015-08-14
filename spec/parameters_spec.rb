@@ -24,6 +24,11 @@ describe Daniel::Parameters do
     expect(p).not_to eq Daniel::Parameters.new(20, 8, 5, :salt => 'bob')
   end
 
+  it 'allows setting arbitrary bytes and existing passwords together' do
+    p = Daniel::Parameters.new(0xa0, 16, 0)
+    expect(p.flags).to eq 0xa0
+  end
+
   it 'defaults to having a version of 0' do
     expect(Daniel::Parameters.new.version).to eq 0
   end

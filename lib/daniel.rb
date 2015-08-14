@@ -209,7 +209,9 @@ module Daniel
       if (flags & ~Flags::IMPLEMENTED_MASK) != 0
         fail InvalidParametersError, format('Invalid flags value %08x', flags)
       end
-      flags &= ~Flags::SYMBOL_MASK if (flags & Flags::REPLICATE_EXISTING) != 0
+      if (flags & Flags::REPLICATE_EXISTING) != 0
+        flags &= ~Flags::SYMBOL_MASK_NEGATED
+      end
       if (flags & Flags::ARBITRARY_BYTES) != 0
         flags = (flags & ~Flags::SYMBOL_MASK) | Flags::ARBITRARY_BYTES
       end
