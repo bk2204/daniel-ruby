@@ -9,7 +9,7 @@ module Daniel
   class MainProgram
     attr_accessor :passphrase, :passwords, :lines, :output, :warnings
     attr_accessor :params, :clipboard
-    attr_writer :prompt
+    attr_writer :prompt, :format
 
     def read_passphrase
       if @passphrase.is_a? Array
@@ -353,6 +353,29 @@ if RUBY_ENGINE != 'opal'
         ]
       end
 
+      it "produces expected output type for arbitrary bytes#{msg}" do
+        prog = Daniel::MainProgram.new
+        prog.lines = ['!flags=0x80', 'example.tld']
+        prog.passphrase = 'foobar'
+        prog.prompt = type
+        prog.main(args)
+        expect(prog.output.flatten).to eq func.call [
+          ':master-password?',
+          ':checksum 72eb36',
+          ':code?',
+          ':code?',
+          ':reminder 72eb3681001000example.tld',
+          ':code?'
+        ]
+        output = if type
+                   %w(0e187863b62ca736f75c84a6265985f5)
+                 else
+                   [Daniel::Util.to_binary(
+                     "\x0E\x18xc\xB6\x2C\xA76\xF7\x5C\x84\xA6\x26Y\x85\xF5")]
+                 end
+        expect(prog.passwords).to eq output
+      end
+
       # Master password is 'barbaz'.
       it 'parses generated-password reminders correctly' do
         reminder = 'd90403050d816ddefault.example.com'
@@ -388,6 +411,31 @@ if RUBY_ENGINE != 'opal'
         ':bits-per-char 6.17',
         ':bits-total 98.72'
       ]
+    end
+
+    it 'encodes text properly with format plain and non-binary data' do
+      prog = Daniel::MainProgram.new
+      prog.format = :plain
+      ['te?xt', 'La langue française', "\x00hello, world!\x80"].each do |s|
+        expect(prog.send(:encode, s, false)).to eq s
+      end
+    end
+
+    it 'hex encodes text properly with format plain and binary data' do
+      prog = Daniel::MainProgram.new
+      prog.format = :plain
+      ['te?xt', 'La langue française', "\x00hello, world!\x80"].each do |s|
+        expect(prog.send(:encode, s, true)).to eq Daniel::Util.to_hex(s)
+      end
+    end
+
+    it 'does not encode text properly with non-plain format and binary data' do
+      prog = Daniel::MainProgram.new
+      prog.format = :bubblebabble
+      ['te?xt', 'La langue française', "\x00hello, world!\x80"].each do |s|
+        expected = Daniel::Formatter.bubblebabble(s)
+        expect(prog.send(:encode, s, true)).to eq expected
+      end
     end
 
     [

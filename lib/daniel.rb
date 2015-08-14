@@ -87,10 +87,12 @@ module Daniel
     NO_SYMBOLS_TOP = 0x04
     NO_SYMBOLS_OTHER = 0x08
     NO_LETTERS = 0x10
-    SYMBOL_MASK = 0x1f
+    SYMBOL_MASK_NEGATED = 0x1f
+    SYMBOL_MASK = 0x9f
     REPLICATE_EXISTING = 0x20
-    IMPLEMENTED_MASK = 0x3f
     EXPLICIT_VERSION = 0x40
+    ARBITRARY_BYTES = 0x80
+    IMPLEMENTED_MASK = 0xbf
 
     # Compute a flag value from a number or string.
     #
@@ -112,7 +114,7 @@ module Daniel
       elsif text =~ /^0[xX][A-Fa-f0-9]+$/
         return text.to_i(16)
       else
-        value = SYMBOL_MASK
+        value = SYMBOL_MASK_NEGATED
         masks = {
           '0' => NO_NUMBERS,
           'A' => NO_LETTERS,
@@ -166,7 +168,7 @@ module Daniel
     #
     # @param options [Integer] a set of bit flags
     def initialize(options = Flags::NO_SPACES | Flags::NO_SYMBOLS_OTHER)
-      super(0x20..0x7e)
+      super((options & Flags::ARBITRARY_BYTES) != 0 ? 0x00..0xff : 0x20..0x7e)
       m = {
         Flags::NO_NUMBERS => 0x30..0x39,
         Flags::NO_SPACES => [0x20],
@@ -208,6 +210,9 @@ module Daniel
         fail InvalidParametersError, format('Invalid flags value %08x', flags)
       end
       flags &= ~Flags::SYMBOL_MASK if (flags & Flags::REPLICATE_EXISTING) != 0
+      if (flags & Flags::ARBITRARY_BYTES) != 0
+        flags = (flags & ~Flags::SYMBOL_MASK) | Flags::ARBITRARY_BYTES
+      end
       @flags = flags
     end
 
@@ -225,6 +230,10 @@ module Daniel
 
     def existing_mode?
       (@flags & Flags::REPLICATE_EXISTING) != 0
+    end
+
+    def binary?
+      (@flags & Flags::ARBITRARY_BYTES) != 0
     end
 
     def ==(other)
@@ -573,8 +582,9 @@ module Daniel
       prompt(*args) unless @prompt == :human
     end
 
-    def encode(pass)
-      Formatter.method(@format).call(pass)
+    def encode(pass, binary = false)
+      encoded = Formatter.method(@format).call(pass)
+      binary && @format == :plain ? humanify(encoded) : encoded
     end
 
     def estimate
@@ -639,7 +649,8 @@ module Daniel
         @params.length = current.length
         mask = generator.generate_mask(code, @params, current)
       else
-        output_password(encode(generator.generate(code, @params)))
+        output_password(encode(generator.generate(code, @params),
+                               @params.binary?))
         mask = nil
       end
       prompt('Reminder is:', ':reminder',
@@ -667,7 +678,9 @@ module Daniel
         end
       else
         args.each do |reminder|
-          output_password(encode(generator.generate_from_reminder(reminder)))
+          binary = Reminder.parse(reminder).params.binary?
+          output_password(encode(generator.generate_from_reminder(reminder),
+                                 binary))
         end
       end
     end
