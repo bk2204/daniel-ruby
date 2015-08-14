@@ -29,6 +29,21 @@ describe Daniel::Parameters do
     expect(p.flags).to eq 0xa0
   end
 
+  it 'clears other symbol bits with arbitrary bytes flag' do
+    p = Daniel::Parameters.new(0x84, 16, 0)
+    expect(p.flags).to eq 0x80
+  end
+
+  it 'clears negated symbol bits with existing passwords flag' do
+    p = Daniel::Parameters.new(0x24, 16, 0)
+    expect(p.flags).to eq 0x20
+  end
+
+  it 'clears negated symbol bits with bytes and existing flags' do
+    p = Daniel::Parameters.new(0xa4, 16, 0)
+    expect(p.flags).to eq 0xa0
+  end
+
   it 'defaults to having a version of 0' do
     expect(Daniel::Parameters.new.version).to eq 0
   end
