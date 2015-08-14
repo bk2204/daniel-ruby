@@ -327,11 +327,14 @@ module Daniel
         ]
       end
       lastr = r.length - 1
-      p = r.length.even? ? [k[len] % 6, 16, k[len] / 6] :
-        [(((r[lastr] >> 6) & 3) + k[len]) % 6,
-         (r[lastr] >> 2) & 15,
-         ((r[lastr] & 3) + k[len] / 6) % 6
-        ]
+      p = if r.length.even?
+            [k[len] % 6, 16, k[len] / 6]
+          else
+            [(((r[lastr] >> 6) & 3) + k[len]) % 6,
+             (r[lastr] >> 2) & 15,
+             ((r[lastr] & 3) + k[len] / 6) % 6
+            ]
+          end
       res = t.map do |(a, b, c, d, e)|
         [vo[a], co[b], vo[c], co[d], '-', co[e]].join('')
       end
