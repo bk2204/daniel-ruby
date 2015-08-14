@@ -78,6 +78,7 @@ priority.  The bits have the following meaning:
 |4    |Exclude those punctuation marks above the digits on a US keyboard
 |8    |Exclude other symbols
 |16   |Exclude letters
+|128  |Permit arbitrary byte sequences
 |===
 
 Alternately, the string can be composed of the following:
