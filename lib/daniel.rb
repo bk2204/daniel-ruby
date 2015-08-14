@@ -317,9 +317,8 @@ module Daniel
         k[i] = i == 0 ? 1 : (((k[i - 1] * 5) +
                               (r[i * 2 - 2] * 7 + r[i * 2 - 1])) % 36)
       end
-      t = []
-      len.times do |i|
-        t[i] = [
+      t = len.times.map do |i|
+        [
           (((r[i * 2] >> 6) & 3) + k[i]) % 6,
           (r[i * 2] >> 2) & 15,
           ((r[i * 2] & 3) + (k[i] / 6)) % 6,
