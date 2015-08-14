@@ -310,8 +310,7 @@ module Daniel
     def self.bubblebabble(s)
       vo = %w(a e i o u y)
       co = %w(b c d f g h k l m n p r s t v z x)
-      s = Util.to_binary(s)
-      r = s.each_byte.to_a
+      r = Util.to_binary(s).bytes.to_a
       len = (r.length / 2).to_i
       k = []
       (len + 1).times do |i|
