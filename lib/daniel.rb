@@ -335,10 +335,8 @@ module Daniel
              ((r[lastr] & 3) + k[len] / 6) % 6
             ]
           end
-      res = t.map do |(a, b, c, d, e)|
-        [vo[a], co[b], vo[c], co[d], '-', co[e]].join('')
-      end
-      'x' + res.join('') + vo[p[0]] + co[p[1]] + vo[p[2]] + 'x'
+      res = t.map { |(a, b, c, d, e)| [vo[a], co[b], vo[c], co[d], '-', co[e]] }
+      'x' + res.flatten.join('') + vo[p[0]] + co[p[1]] + vo[p[2]] + 'x'
     end
   end
 
