@@ -10,6 +10,8 @@ if RUBY_ENGINE != 'opal'
 
     SimpleCov.start 'rails'
   end
+
+  require 'daniel/converter'
 end
 
 require 'daniel'
