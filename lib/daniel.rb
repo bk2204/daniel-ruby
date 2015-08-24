@@ -384,7 +384,7 @@ module Daniel
     end
 
     def generate_from_reminder(reminder)
-      rem = Reminder.parse(reminder)
+      rem = reminder.is_a?(String) ? Reminder.parse(reminder) : reminder
       computed = Util.to_hex(checksum)
       if rem.checksum != computed
         fail ChecksumMismatchError.new(rem.checksum, computed)

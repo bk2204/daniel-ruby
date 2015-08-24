@@ -26,6 +26,15 @@ describe Daniel::PasswordGenerator do
       expect(gen.generate_from_reminder(reminder)).to eq(result)
     end
   end
+
+  it 'accepts reminder objects in generate_from_reminder' do
+    gen = Daniel::PasswordGenerator.new 'foo'
+    rem = Daniel::Reminder.parse('8244c50a1000bar')
+    result = nil
+    expect { result = gen.generate_from_reminder(rem) }.not_to raise_error
+    expect(result).to eq('3*Re7n*qcDDl9N6y')
+  end
+
   [
     'XJjdn !@DHdWnaG4mDx="rrhKP0o3/:VrRs=YkT[',
     '`+iNJmlUtFA-h$ArK}XdQx$RGzF`X>gz!g\dNolZ',
