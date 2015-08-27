@@ -23,15 +23,16 @@ module Daniel
       protected
 
       def do_prompt
-        print "Enter old passphrase: "
-        old = read_passphrase
-        generator = PasswordGenerator.new old
-        puts "\n# ok, checksum is #{Daniel::Util.to_hex(generator.checksum)}"
-        print "Enter new passphrase: "
-        new = read_passphrase
-        generator = PasswordGenerator.new new
-        puts "\n# ok, checksum is #{Daniel::Util.to_hex(generator.checksum)}"
-        [old, new]
+        res = []
+        # Use full phrases to allow for future translation
+        ["Enter old passphrase: ", "Enter new passphrase: "].each do |msg|
+          print msg
+          pass = read_passphrase
+          generator = PasswordGenerator.new pass
+          puts "\n# ok, checksum is #{Daniel::Util.to_hex(generator.checksum)}"
+          res << pass
+        end
+        res
       end
 
       def read_passphrase
