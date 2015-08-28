@@ -25,7 +25,7 @@ module Daniel
       def do_prompt
         res = []
         # Use full phrases to allow for future translation
-        ["Enter old passphrase: ", "Enter new passphrase: "].each do |msg|
+        ['Enter old passphrase: ', 'Enter new passphrase: '].each do |msg|
           print msg
           pass = read_passphrase
           generator = PasswordGenerator.new pass
