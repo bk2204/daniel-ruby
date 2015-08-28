@@ -437,8 +437,23 @@ module Daniel
     end
   end
 
+  # A base class for daniel-related command-line interface.
+  class Program
+    protected
+
+    def read_passphrase
+      begin
+        Object.send :require, 'io/console'
+        pass = STDIN.noecho(&:gets).chomp
+      rescue Errno::ENOTTY
+        pass = STDIN.gets.chomp
+      end
+      Version.smart_implementation? ? pass.encode('UTF-8') : pass
+    end
+  end
+
   # The main command-line interface.
-  class MainProgram   # rubocop:disable Metrics/ClassLength
+  class MainProgram < Program   # rubocop:disable Metrics/ClassLength
     def initialize
       @params = Parameters.new
       @clipboard = false
@@ -547,16 +562,6 @@ module Daniel
       else
         prompt 'Password is:', ':password', pass
       end
-    end
-
-    def read_passphrase
-      begin
-        Object.send :require, 'io/console'
-        pass = STDIN.noecho(&:gets).chomp
-      rescue Errno::ENOTTY
-        pass = STDIN.gets.chomp
-      end
-      Version.smart_implementation? ? pass.encode('UTF-8') : pass
     end
 
     def read_line

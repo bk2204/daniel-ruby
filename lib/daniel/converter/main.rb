@@ -5,7 +5,7 @@ module Daniel
   # Converts passwords from one master password to another.
   class Converter
     # Main program for daniel-convert.
-    class MainProgram
+    class MainProgram < Daniel::Program
       def main(args)
         oldpass, newpass = do_prompt
         converter = Daniel::Converter.new(oldpass, newpass)
@@ -33,16 +33,6 @@ module Daniel
           res << pass
         end
         res
-      end
-
-      def read_passphrase
-        begin
-          require 'io/console'
-          pass = STDIN.noecho(&:gets).chomp
-        rescue Errno::ENOTTY
-          pass = STDIN.gets.chomp
-        end
-        Daniel::Version.smart_implementation? ? pass.encode('UTF-8') : pass
       end
 
       def read_line
