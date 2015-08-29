@@ -444,9 +444,9 @@ module Daniel
     def read_passphrase
       begin
         Object.send :require, 'io/console'
-        pass = STDIN.noecho(&:gets).chomp
+        pass = $stdin.noecho(&:gets).chomp
       rescue Errno::ENOTTY
-        pass = STDIN.gets.chomp
+        pass = $stdin.gets.chomp
       end
       Version.smart_implementation? ? pass.encode('UTF-8') : pass
     end
@@ -565,7 +565,7 @@ module Daniel
     end
 
     def read_line
-      STDIN.readline.chomp
+      $stdin.readline.chomp
     end
 
     def prompt(text, machine, *args)
@@ -633,7 +633,7 @@ module Daniel
       interactive 'Enter existing passphrase:', ':existing?'
       current = read_passphrase
       if @prompt == :interactive
-        print "\nRepeat existing passphrase: " if STDIN.isatty
+        print "\nRepeat existing passphrase: " if $stdin.isatty
         current2 = read_passphrase
         if current != current2
           puts "\nPassphrases did not match."
