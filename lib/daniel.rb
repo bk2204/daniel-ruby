@@ -439,7 +439,29 @@ module Daniel
 
   # A base class for daniel-related command-line interface.
   class Program
+    def initialize
+      @stdin = $stdin unless @stdin
+      @prompt = @stdin.isatty ? :interactive : :human unless @prompt
+    end
+
     protected
+
+    def prompt(text, machine, *args)
+      Object.send :require, 'cgi'
+      nl = !machine_readable? && machine[-1] == '?' ? '' : "\n"
+      args.map! { |s| CGI.escape(s.to_s) } if machine_readable?
+      argtext = args.join(' ')
+      print(machine_readable? ? machine : text, ' ', argtext, nl)
+    end
+
+    # Is the output machine-readable?
+    def machine_readable?
+      @prompt == :machine
+    end
+
+    def interactive(*args)
+      prompt(*args) unless @prompt == :human
+    end
 
     def read_passphrase
       begin
@@ -453,14 +475,13 @@ module Daniel
   end
 
   # The main command-line interface.
-  class MainProgram < Program   # rubocop:disable Metrics/ClassLength
+  class MainProgram < Program
     def initialize
       @params = Parameters.new
       @clipboard = false
       @mode = :password
-      @stdin = $stdin unless @stdin
-      @prompt = @stdin.isatty ? :interactive : :human unless @prompt
       @format = :plain
+      super
     end
 
     def main(args)
@@ -567,23 +588,6 @@ module Daniel
 
     def read_line
       @stdin.readline.chomp
-    end
-
-    def prompt(text, machine, *args)
-      Object.send :require, 'cgi'
-      nl = !machine_readable? && machine[-1] == '?' ? '' : "\n"
-      args.map! { |s| CGI.escape(s.to_s) } if machine_readable?
-      argtext = args.join(' ')
-      print(machine_readable? ? machine : text, ' ', argtext, nl)
-    end
-
-    # Is the output machine-readable?
-    def machine_readable?
-      @prompt == :machine
-    end
-
-    def interactive(*args)
-      prompt(*args) unless @prompt == :human
     end
 
     def encode(pass, binary = false)
