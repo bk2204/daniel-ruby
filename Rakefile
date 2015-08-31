@@ -29,7 +29,11 @@ end
 begin
 
   opal_dest = 'build/html'
-  opal_files = { 'daniel' => 'daniel', 'daniel-page' => 'daniel/opal/page' }
+  opal_files = {
+    'daniel' => 'daniel',
+    'daniel-converter' => 'daniel/converter',
+    'daniel-page' => 'daniel/opal/page'
+  }
   opal_files.each do |js, ruby|
     file "#{opal_dest}/#{js}.js" => ['build/html', "lib/#{ruby}.rb"] do |t|
       require 'opal'
