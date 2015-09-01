@@ -25,8 +25,11 @@ module Daniel
       def do_prompt
         res = []
         # Use full phrases to allow for future translation
-        ['Enter old passphrase: ', 'Enter new passphrase: '].each do |msg|
-          print msg
+        [
+          ['Enter old passphrase: ', ':master-password?'],
+          ['Enter new passphrase: ', ':new-master-password?']
+        ].each do |msg|
+          interactive(*msg)
           pass = read_passphrase
           generator = PasswordGenerator.new pass
           puts "\n# ok, checksum is #{Daniel::Util.to_hex(generator.checksum)}"
