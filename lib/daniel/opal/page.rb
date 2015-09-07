@@ -45,7 +45,7 @@ def flags
     flagval = 1 << i
     value |= flagval if element(name).is ':checked'
   end
-  value ^ Daniel::Flags::SYMBOL_MASK
+  value ^ Daniel::Flags::SYMBOL_MASK_NEGATED
 end
 
 def main
