@@ -35,6 +35,13 @@
 				</div>
 			</div>
 			<div class="container">
+			</div>
+			<div class="container">
+				<div>
+					<input type="radio" name="type" id="type-list"
+						class="type" value="list" />
+					<label for="type-list">From Reminder List</label>
+				</div>
 				<div>
 					<input type="radio" name="type" id="type-reminder"
 						class="type" value="reminder" checked="checked" />
@@ -81,6 +88,32 @@
 						id="code-button" type="button"
 						disabled="disabled" value="Generate"/>
 				</div>
+			</div>
+			<div class="container hidden" id="list-block">
+				<div class="row">
+					<label class="col-xs-2 col-sm-2 col-md-2"
+						for="source">Reminder Source:</label>
+					<input class="col-xs-4 col-sm-4 col-md-2
+							col-xs-offset-1 col-sm-offset-1 col-md-offset-1"
+						id="source" type="url"/>
+					<input class="btn btn-default
+							col-xs-offset-1 col-sm-offset-1 col-md-offset-1"
+						id="source-button" type="button"
+						value="Enter"/>
+				</div>
+				<div class="row hidden" id="remlist-block">
+					<label class="col-xs-2 col-sm-2 col-md-2"
+						for="remlist">Reminder:</label>
+					<input class="col-xs-4 col-sm-4 col-md-2
+							col-xs-offset-1 col-sm-offset-1 col-md-offset-1"
+						id="remlist" type="list" list="remlist-contents"/>
+					<input class="btn btn-default
+							col-xs-offset-1 col-sm-offset-1 col-md-offset-1"
+						id="remlist-button" type="button"
+						value="Generate"/>
+				</div>
+				<datalist id="remlist-contents">
+				</datalist>
 			</div>
 			<div class="container" id="reminder-block">
 				<div class="row">

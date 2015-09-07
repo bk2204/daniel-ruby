@@ -53,10 +53,11 @@ def flags
 end
 
 def handle_type_change
-  all_blocks = [:reminder, :new]
+  all_blocks = [:reminder, :new, :list]
   blocks = {
     :new => [:reminder, :new],
-    :reminder => [:reminder]
+    :reminder => [:reminder],
+    :list => [:list]
   }
   val = Element.find('input[name=type]:checked').value
   wanted = blocks[val]
@@ -65,8 +66,15 @@ def handle_type_change
   off.map { |b| b.to_s + '-block' }.each { |b| hide(b) }
 end
 
+def generate_from_reminder(pwobj, reminder)
+  pass = pwobj.generate_from_reminder(reminder)
+  element(:generated_password).value = pass
+  unhide(:password_helper)
+end
+
 def main
   pwobj = nil
+  reminders = {}
 
   password_box = element(:generated_password)
 
@@ -79,11 +87,11 @@ def main
     show(:checksum_text)
   end
 
-  element(:reminder_button).on :click do
-    reminder = element(:reminder).value
-    pass = pwobj.generate_from_reminder(reminder)
-    password_box.value = pass
-    unhide(:password_helper)
+  element(:reminder_button).on :click  do
+    generate_from_reminder(pwobj, element(:reminder).value)
+  end
+  element(:remlist_button).on :click do
+    generate_from_reminder(pwobj, reminders[element(:remlist).value])
   end
 
   element(:code_button).on :click do
@@ -93,6 +101,28 @@ def main
     password_box.value = pass
     element(:reminder).value = pwobj.reminder(code, params)
     unhide(:password_helper)
+  end
+
+  element(:source_button).on :click do
+    HTTP.get(element(:source).value) do |response|
+      if response.ok?
+        element(:remlist_contents).children.remove
+        reminders = {}
+        entries = response.body.each_line.map do |rem|
+          next if /^\s*(?:#|$)/.match(rem)
+          code = Daniel::Reminder.parse(rem).code
+          [code, rem]
+        end
+        entries = entries.reject(&:nil?).sort_by { |e| e[0] }
+        entries.each do |(code, rem)|
+          reminders[code] = rem
+          elem = Element.new(:option)
+          elem.prop(:value, code)
+          element(:remlist_contents).append(elem)
+        end
+        unhide(:remlist_block)
+      end
+    end
   end
 
   Element.find('input[name=type]').on(:change) { handle_type_change }
