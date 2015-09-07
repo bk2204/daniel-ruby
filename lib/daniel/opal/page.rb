@@ -23,6 +23,10 @@ def element(id)
   Element.find to_id(id)
 end
 
+def hide(id)
+  element(id).add_class(:hidden)
+end
+
 def unhide(id)
   element(id).remove_class(:hidden)
 end
@@ -46,6 +50,19 @@ def flags
     value |= flagval if element(name).is ':checked'
   end
   value ^ Daniel::Flags::SYMBOL_MASK_NEGATED
+end
+
+def handle_type_change
+  all_blocks = [:reminder, :new]
+  blocks = {
+    :new => [:reminder, :new],
+    :reminder => [:reminder]
+  }
+  val = Element.find('input[name=type]:checked').value
+  wanted = blocks[val]
+  on, off = all_blocks.partition { |b| wanted.include? b }
+  on.map { |b| b.to_s + '-block' }.each { |b| unhide(b) }
+  off.map { |b| b.to_s + '-block' }.each { |b| hide(b) }
 end
 
 def main
@@ -77,6 +94,8 @@ def main
     element(:reminder).value = pwobj.reminder(code, params)
     unhide(:password_helper)
   end
+
+  Element.find('input[name=type]').on(:change) { handle_type_change }
 
   clipboard_area = element(:clipboard_area)
 

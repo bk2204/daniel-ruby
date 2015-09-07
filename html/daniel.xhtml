@@ -36,6 +36,18 @@
 			</div>
 			<div class="container">
 				<div>
+					<input type="radio" name="type" id="type-reminder"
+						class="type" value="reminder" checked="checked" />
+					<label for="type-reminder">From Reminder</label>
+				</div>
+				<div>
+					<input type="radio" name="type" id="type-new"
+						class="type" value="new" />
+					<label for="type-new">New Password</label>
+				</div>
+			</div>
+			<div class="container hidden" id="new-block">
+				<div>
 					<input id="flags-numbers" type="checkbox"
 						checked="checked"/>
 					<label for="flags-numbers">Numbers</label>
@@ -70,7 +82,7 @@
 						disabled="disabled" value="Generate"/>
 				</div>
 			</div>
-			<div class="container">
+			<div class="container" id="reminder-block">
 				<div class="row">
 					<label class="col-xs-2 col-sm-2 col-md-2"
 						for="reminder">Reminder:</label>
