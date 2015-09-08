@@ -54,7 +54,7 @@ module Daniel
   # The version number of Daniel.
   class Version
     def self.to_s
-      '0.1.0'
+      '0.2.0'
     end
 
     # Are we dealing with a reasonably modern and feature-complete
