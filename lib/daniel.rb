@@ -548,6 +548,15 @@ module Daniel
           end
           @format = format.to_sym
         end
+
+        opts.on_tail('-h', '--help', 'Show this message') do
+          puts opts
+          puts 'Flags values:'
+          Flags.flag_names.each_with_index do |name, i|
+            puts format('    0x%02x: %s', 1 << i, name)
+          end
+          exit
+        end
       end.parse!(args)
 
       if flags_set && existing_set # rubocop:disable Style/GuardClause
