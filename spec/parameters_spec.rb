@@ -52,9 +52,9 @@ describe Daniel::Parameters do
     expect(Daniel::Parameters.new.length).to eq 16
   end
 
-  it 'defaults to having flags of 10' do
-    constant = Daniel::Flags::NO_SPACES | Daniel::Flags::NO_SYMBOLS_OTHER
-    expect(Daniel::Parameters.new.flags).to eq 10
+  it 'defaults to having flags of 2' do
+    constant = Daniel::Flags::NO_SPACES
+    expect(Daniel::Parameters.new.flags).to eq 2
     expect(Daniel::Parameters.new.flags).to eq constant
   end
 

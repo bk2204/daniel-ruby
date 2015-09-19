@@ -167,7 +167,7 @@ module Daniel
     # Create a new set of characters which are valid in a password
     #
     # @param options [Integer] a set of bit flags
-    def initialize(options = Flags::NO_SPACES | Flags::NO_SYMBOLS_OTHER)
+    def initialize(options = Flags::NO_SPACES)
       super((options & Flags::ARBITRARY_BYTES) != 0 ? 0x00..0xff : 0x20..0x7e)
       m = {
         Flags::NO_NUMBERS => 0x30..0x39,
@@ -196,7 +196,7 @@ module Daniel
   class Parameters
     attr_reader :flags, :length, :version, :salt, :format_version
 
-    def initialize(flags = 10, length = 16, version = 0, options = {})
+    def initialize(flags = 2, length = 16, version = 0, options = {})
       self.flags = flags
       @length = length
       @version = version

@@ -139,7 +139,7 @@ if RUBY_ENGINE != 'opal'
         prog.lines = ['example.tld']
         prog.passphrase = 'foobar'
         prog.prompt = type
-        prog.main(args)
+        prog.main(args + %w(-f10))
         expect(prog.passwords).to eq ['nj&xzO@hz&QvuoGY']
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
@@ -155,7 +155,7 @@ if RUBY_ENGINE != 'opal'
         prog.lines = ['example.tld', '!!']
         prog.passphrase = 'foobar'
         prog.prompt = type
-        prog.main(args)
+        prog.main(args + %w(-f10))
         expect(prog.passwords).to eq [
           'nj&xzO@hz&QvuoGY',
           'nj&xzO@hz&QvuoGY'
@@ -204,7 +204,7 @@ if RUBY_ENGINE != 'opal'
         ]
         prog.passphrase = %w(foobar foo)
         prog.prompt = type
-        prog.main(args)
+        prog.main(args + %w(-f10))
         expect(prog.passwords).to eq [
           'nj&xzO@hz&QvuoGY',
           '3*Re7n*qcDDl9N6y'
@@ -396,7 +396,7 @@ if RUBY_ENGINE != 'opal'
 
     it 'produces proper estimate output' do
       prog = Daniel::MainProgram.new
-      prog.main(%w(-e))
+      prog.main(%w(-e -f10))
       expect(prog.output.flatten).to eq [
         '16 characters; 72 possible (6.17 bpc); 98.72 bits of entropy'
       ]
@@ -404,7 +404,7 @@ if RUBY_ENGINE != 'opal'
 
     it 'produces proper estimate output (machine-readable)' do
       prog = Daniel::MainProgram.new
-      prog.main(%w(-e -r))
+      prog.main(%w(-e -f10 -r))
       expect(prog.output.flatten.map { |s| s.split("\n") }.flatten).to eq [
         ':length 16',
         ':possible-char 72',

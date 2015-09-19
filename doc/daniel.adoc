@@ -153,8 +153,8 @@ OPTIONS
 -------
 -f <flags>::
 	Specify the set of characters permitted in the password.  A flags value of 0
-	permits all printable ASCII characters (ASCII 32–ASCII 126).  The default, 10,
-	is to exclude spaces and most punctuation marks, as these are forbidden by
+	permits all printable ASCII characters (ASCII 32–ASCII 126).  The default, 2,
+	is to exclude spaces, as these are handled poorly by
 	many sites.  Changing the flags value results in a completely different
 	password.  To change the password at the code prompt, use `!flags=<flags>`.
 +

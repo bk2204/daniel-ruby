@@ -15,11 +15,11 @@ describe Daniel::PasswordGenerator do
     master, code, result, reminder = items
     it "gives the expected password for #{master}, #{code}" do
       gen = Daniel::PasswordGenerator.new master
-      expect(gen.generate(code, Daniel::Parameters.new)).to eq(result)
+      expect(gen.generate(code, Daniel::Parameters.new(10))).to eq(result)
     end
     it "gives the expected reminder for #{master}, #{code}" do
       gen = Daniel::PasswordGenerator.new master
-      expect(gen.reminder(code, Daniel::Parameters.new)).to eq(reminder)
+      expect(gen.reminder(code, Daniel::Parameters.new(10))).to eq(reminder)
     end
     it "gives the expected password for #{master}, #{code} reminder" do
       gen = Daniel::PasswordGenerator.new master
