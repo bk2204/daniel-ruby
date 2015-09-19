@@ -33,7 +33,7 @@ correct.
 +
 After this, daniel prompts for a code that indicates the purpose of the
 password.  For web site passwords, this is traditionally a shortened form of the
-domain name (e.g. _github.com_ for GitHub), although an UTF-8 input is
+domain name (e.g. _github.com_ for GitHub), although any UTF-8 input is
 acceptable.  Once the code is entered, a password is generated and output either
 to standard output or, with `-p`, to the clipboard.  This is followed by a
 reminder that can be used to recreate the password only with the correct master
