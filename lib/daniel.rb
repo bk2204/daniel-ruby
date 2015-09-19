@@ -574,10 +574,13 @@ module Daniel
       end
     end
 
-    def handle_command(code)
+    def handle_command(generator, code)
       # Strip off the leading !.
       name, value = code[1..-1].split(/=/)
       throw :restart if name =~ /\Apass(word|phrase)?\z/
+      if name =~ /\Arem(inder)?\z/
+        return generate_from_reminder(generator, value)
+      end
       sym = "#{name}=".to_sym
       begin
         @params.method(sym).call(value)
@@ -659,7 +662,7 @@ module Daniel
     end
 
     def dispatch_by_code(generator, code)
-      return handle_command(code) if code[0, 1] == '!'
+      return handle_command(generator, code) if code[0, 1] == '!'
       if @params.existing_mode?
         current = query_existing
         return unless current
@@ -672,6 +675,11 @@ module Daniel
       end
       prompt('Reminder is:', ':reminder',
              generator.reminder(code, @params, mask))
+    end
+
+    def generate_from_reminder(generator, reminder)
+      bin = Reminder.parse(reminder).params.binary?
+      output_password(encode(generator.generate_from_reminder(reminder), bin))
     end
 
     def main_loop(args)
@@ -694,11 +702,7 @@ module Daniel
           return
         end
       else
-        args.each do |reminder|
-          binary = Reminder.parse(reminder).params.binary?
-          output_password(encode(generator.generate_from_reminder(reminder),
-                                 binary))
-        end
+        args.each { |reminder| generate_from_reminder(generator, reminder) }
       end
     end
   end

@@ -195,6 +195,25 @@ if RUBY_ENGINE != 'opal'
         ]
       end
 
+      it "processes reminder commands properly#{msg}" do
+        prog = Daniel::MainProgram.new
+        prog.lines = [
+          '!rem=72eb360f0801example.tld',
+          '!reminder=72eb360f0801example.tld'
+        ]
+        prog.passphrase = 'foobar'
+        prog.prompt = type
+        prog.main(args)
+        expect(prog.passwords).to eq(['mJRUHjid'] * 2)
+        expect(prog.output.flatten).to eq func.call [
+          ':master-password?',
+          ':checksum 72eb36',
+          ':code?',
+          ':code?',
+          ':code?'
+        ]
+      end
+
       it "handles reloading the passphrase properly#{msg}" do
         prog = Daniel::MainProgram.new
         prog.lines = [
