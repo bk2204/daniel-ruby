@@ -252,6 +252,7 @@ module Daniel
     # @param rem [String] the complete reminder string
     # @return [Reminder] the parsed set of parameters
     def self.parse(rem)
+      return rem if rem.is_a? Reminder
       params = Parameters.new
       csum = rem[0..5]
       if rem[6..-1] =~ /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
@@ -384,7 +385,7 @@ module Daniel
     end
 
     def generate_from_reminder(reminder)
-      rem = reminder.is_a?(String) ? Reminder.parse(reminder) : reminder
+      rem = Reminder.parse(reminder)
       computed = Util.to_hex(checksum)
       if rem.checksum != computed
         fail ChecksumMismatchError.new(rem.checksum, computed)
