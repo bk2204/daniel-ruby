@@ -75,6 +75,11 @@ module Daniel
       to_binary(result)
     end
 
+    # Convert a byte to a character.
+    def self.to_chr(b)
+      Version.smart_implementation? ? b.chr('BINARY') : b.chr
+    end
+
     def self.to_binary(s)
       Version.smart_implementation? ? s.force_encoding('BINARY') : s
     end
