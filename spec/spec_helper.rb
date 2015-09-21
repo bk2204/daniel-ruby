@@ -7,7 +7,9 @@ if RUBY_ENGINE != 'opal'
   # Coverage has to go before other requires.
   if ENV['COVERAGE']
     require 'simplecov'
+    require 'simplecov-html'
 
+    SimpleCov.formatter = SimpleCov::Formatter::HTMLFormatter
     SimpleCov.start 'rails'
   end
 
