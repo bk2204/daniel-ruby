@@ -46,8 +46,6 @@ module Daniel
       end
 
       def finish
-        data = @encrypter.encrypt(@alldata)
-        @writer.print(data)
         @writer.print('PWS3-EOF' * 2)
         @writer.print(@mac.digest)
       end
@@ -67,9 +65,7 @@ module Daniel
 
       # Write one or more full 128-bit (16-byte) blocks, encrypted and MAC'd.
       def write_encrypted(data)
-        # We have to store this and then write it out all at once, since the
-        # Twofish class doesn't work incrementally.
-        @alldata << data
+        @writer.print(@encrypter.encrypt(data))
       end
 
       def write_field(type, data = '')
