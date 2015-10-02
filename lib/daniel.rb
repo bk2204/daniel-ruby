@@ -260,22 +260,19 @@ module Daniel
       return rem if rem.is_a? Reminder
       params = Parameters.new
       csum = rem[0..5]
-      if rem[6..-1] =~ /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
-        hex_params, code = Regexp.last_match[1..2]
-        dparams = Util.from_hex(hex_params)
-        flags, length, version = dparams.unpack('w3')
-        if (flags & Flags::REPLICATE_EXISTING) != 0
-          if code =~ /^([0-9a-f]{#{2 * length}})(.*)$/
-            mask, code = Regexp.last_match[1..2]
-            mask = Util.from_hex(mask)
-          else
-            fail InvalidReminderError, 'Flags set to existing but mask missing'
-          end
-        else
-          mask = nil
-        end
-      else
+      unless rem[6..-1] =~ /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
         fail InvalidReminderError, 'Invalid reminder'
+      end
+      hex_params, code = Regexp.last_match[1..2]
+      dparams = Util.from_hex(hex_params)
+      flags, length, version = dparams.unpack('w3')
+      mask = nil
+      if (flags & Flags::REPLICATE_EXISTING) != 0
+        unless code =~ /^([0-9a-f]{#{2 * length}})(.*)$/
+          fail InvalidReminderError, 'Flags set to existing but mask missing'
+        end
+        mask, code = Regexp.last_match[1..2]
+        mask = Util.from_hex(mask)
       end
       params.flags = flags
       params.length = length
