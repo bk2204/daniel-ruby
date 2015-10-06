@@ -611,17 +611,17 @@ module Daniel
     end
 
     def estimate
-      cs = CharacterSet.new @params.flags & Flags::SYMBOL_MASK
+      possibles = CharacterSet.new(@params.flags).length
       nchars = @params.length
-      possibles = cs.length
       # Ruby 1.8 doesn't implement Math#log2 or Float#round with an argument.
       bits = (Math.log(possibles) / Math.log(2) * 1000).round / 1000.0
+      tbits = bits * nchars
       if machine_readable?
-        puts ":length #{nchars}\n:possible-char #{possibles}"
-        puts ":bits-per-char #{bits}\n:bits-total #{nchars * bits}"
+        puts ":length #{nchars}\n:possible-char #{possibles}\n" \
+          ":bits-per-char #{bits}\n:bits-total #{tbits}"
       else
-        msg = "#{nchars} characters; #{possibles} possible (#{bits} bpc); "
-        msg += "#{nchars * bits} bits of entropy"
+        msg = "#{nchars} characters; #{possibles} possible (#{bits} bpc); " \
+          "#{tbits} bits of entropy"
         puts msg
       end
     end
