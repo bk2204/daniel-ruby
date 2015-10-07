@@ -31,7 +31,6 @@ module Daniel
         @encrypter = Twofish.new(@datakey, :mode => :cbc, :padding => :none)
         @encrypter.iv = @iv
         @mac = OpenSSL::HMAC.new(@mackey, OpenSSL::Digest::SHA256.new)
-        @alldata = ''
         write_header
       end
 
