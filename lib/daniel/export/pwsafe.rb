@@ -20,18 +20,17 @@ module Daniel
       def initialize(pass, writer, options = {})
         tempsalt = options[:salt] || SecureRandom.random_bytes(32)
         @bgen = ByteGenerator.new(pass, tempsalt)
-        @pass = pass
         @writer = writer
-        @salt = @bgen.random_bytes(32)
-        @t = 12 # 4096 (2**12) iterations
-        @key = stretch(@pass, @salt, @t)
-        @datakey = @bgen.random_bytes(32)
-        @mackey = @bgen.random_bytes(32)
-        @iv = @bgen.random_bytes(16)
-        @encrypter = Twofish.new(@datakey, :mode => :cbc, :padding => :none)
-        @encrypter.iv = @iv
-        @mac = OpenSSL::HMAC.new(@mackey, OpenSSL::Digest::SHA256.new)
-        write_header
+        salt = @bgen.random_bytes(32)
+        datakey = @bgen.random_bytes(32)
+        mackey = @bgen.random_bytes(32)
+        iv = @bgen.random_bytes(16)
+        @encrypter = Twofish.new(datakey, :mode => :cbc, :padding => :none,
+                                          :iv => iv)
+        @mac = OpenSSL::HMAC.new(mackey, OpenSSL::Digest::SHA256.new)
+        iters = 2**12 # 4096
+        write_header(stretch(pass, salt, iters), salt, iters, datakey + mackey,
+                     iv)
       end
 
       def add_entry(generator, reminder)
@@ -51,14 +50,14 @@ module Daniel
 
       protected
 
-      def write_header
+      def write_header(key, salt, iters, keyblock, iv)
         @writer.print('PWS3')
-        @writer.print(@salt)
-        @writer.print([2**@t].pack('V'))
-        @writer.print(OpenSSL::Digest::SHA256.new.digest(@key))
-        tf = Twofish.new(@key, :mode => :ecb, :padding => :none)
-        @writer.print(tf.encrypt(@datakey + @mackey))
-        @writer.print(@iv)
+        @writer.print(salt)
+        @writer.print([iters].pack('V'))
+        @writer.print(OpenSSL::Digest::SHA256.new.digest(key))
+        tf = Twofish.new(key, :mode => :ecb, :padding => :none)
+        @writer.print(tf.encrypt(keyblock))
+        @writer.print(iv)
         write_database_header
       end
 
@@ -82,10 +81,10 @@ module Daniel
         write_field(FIELD_EOE)
       end
 
-      def stretch(pass, salt, t)
+      def stretch(pass, salt, iters)
         x0 = OpenSSL::Digest::SHA256.new.digest(Util.to_binary(pass) + salt)
         x = x0
-        (2**t).times do
+        iters.times do
           x = OpenSSL::Digest::SHA256.new.digest(x)
         end
         x
