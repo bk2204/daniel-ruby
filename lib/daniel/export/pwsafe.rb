@@ -29,8 +29,7 @@ module Daniel
                                           :iv => iv)
         @mac = OpenSSL::HMAC.new(mackey, OpenSSL::Digest::SHA256.new)
         iters = 2**12 # 4096
-        write_header(stretch(pass, salt, iters), salt, iters, datakey + mackey,
-                     iv)
+        write_header(pass, salt, iters, datakey + mackey, iv)
       end
 
       def add_entry(generator, reminder)
@@ -50,7 +49,8 @@ module Daniel
 
       protected
 
-      def write_header(key, salt, iters, keyblock, iv)
+      def write_header(pass, salt, iters, keyblock, iv)
+        key = stretch(pass, salt, iters)
         @writer.print('PWS3')
         @writer.print(salt)
         @writer.print([iters].pack('V'))
