@@ -21,15 +21,12 @@ module Daniel
         tempsalt = options[:salt] || SecureRandom.random_bytes(32)
         @bgen = ByteGenerator.new(pass, tempsalt)
         @writer = writer
-        salt = @bgen.random_bytes(32)
-        datakey = @bgen.random_bytes(32)
-        mackey = @bgen.random_bytes(32)
-        iv = @bgen.random_bytes(16)
+        salt, datakey, mackey, iv = 4.times.map { @bgen.random_bytes(32) }
+        iv = iv[0..15]
         @encrypter = Twofish.new(datakey, :mode => :cbc, :padding => :none,
                                           :iv => iv)
         @mac = OpenSSL::HMAC.new(mackey, OpenSSL::Digest::SHA256.new)
-        iters = 2**12 # 4096
-        write_header(pass, salt, iters, datakey + mackey, iv)
+        write_header(pass, salt, 4096, datakey + mackey, iv)
       end
 
       def add_entry(generator, reminder)
