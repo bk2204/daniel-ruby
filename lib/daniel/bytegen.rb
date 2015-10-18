@@ -1,4 +1,5 @@
 require 'daniel'
+require 'securerandom'
 
 # A password generation tool.
 module Daniel
@@ -13,9 +14,10 @@ module Daniel
     #
     # @param secret [String] A secret, which may be low entropy (e.g. a
     #   password)
-    # @param salt [String] A 32-bit pseudorandom salt, which should be different
-    #   for each instantiation.
-    def initialize(secret, salt)
+    # @param salt [String, nil] A 32-bit pseudorandom salt, which should be
+    #   different for each instantiation.  If nil, generates a random value.
+    def initialize(secret, salt = nil)
+      salt = SecureRandom.random_bytes(32) if salt.nil?
       @k = "\x00" * 32
       @v = "\x01" * 32
       update(salt + secret)

@@ -1,7 +1,6 @@
 require 'daniel'
 require 'daniel/bytegen'
 require 'openssl'
-require 'securerandom'
 require 'twofish'
 
 # A password generation tool.
@@ -18,8 +17,7 @@ module Daniel
       LATEST_VERSION = "\x0d\x03".freeze
 
       def initialize(pass, writer, options = {})
-        tempsalt = options[:salt] || SecureRandom.random_bytes(32)
-        @bgen = ByteGenerator.new(pass, tempsalt)
+        @bgen = ByteGenerator.new(pass, options[:salt])
         @writer = writer
         salt, datakey, mackey, iv = 4.times.map { @bgen.random_bytes(32) }
         iv = iv[0..15]
