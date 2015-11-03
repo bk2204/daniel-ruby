@@ -685,6 +685,19 @@ module Daniel
       output_password(encode(generator.generate_from_reminder(reminder), bin))
     end
 
+    def prompt_and_dispatch(generator)
+      code = nil
+      loop do
+        interactive 'Enter code:', ':code?'
+        lastcode = code
+        code = read_line
+        code = lastcode if code == '!!'
+        dispatch_by_code(generator, code)
+      end
+    rescue EOFError
+      return
+    end
+
     def main_loop(args)
       prompt 'Please enter your master password:', ':master-password?'
       pass = read_passphrase
@@ -692,18 +705,7 @@ module Daniel
       generator = PasswordGenerator.new pass, 0
       prompt '# ok, checksum is', ':checksum', Util.to_hex(generator.checksum)
       if args.empty?
-        begin
-          code = nil
-          loop do
-            interactive 'Enter code:', ':code?'
-            lastcode = code
-            code = read_line
-            code = lastcode if code == '!!'
-            dispatch_by_code(generator, code)
-          end
-        rescue EOFError
-          return
-        end
+        prompt_and_dispatch(generator)
       else
         args.each { |reminder| generate_from_reminder(generator, reminder) }
       end
