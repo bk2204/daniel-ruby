@@ -252,31 +252,38 @@ module Daniel
 
   # A parsed reminder value
   Reminder = Struct.new(:params, :checksum, :code, :mask) do
+    class << self
+      protected
+
+      def parse_parameters(rem)
+        params = Parameters.new
+        pat = /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
+        csum = rem[0..5]
+        fail InvalidReminderError, 'Invalid reminder' unless rem[6..-1] =~ pat
+        hex_params, code = Regexp.last_match[1..2]
+        dparams = Util.from_hex(hex_params)
+        params.flags, params.length, params.version = dparams.unpack('w3')
+        [csum, params, code]
+      end
+
+      def compute_mask(flags, length, code)
+        return [nil, code] if (flags & Flags::REPLICATE_EXISTING) == 0
+
+        unless code =~ /^([0-9a-f]{#{2 * length}})(.*)$/
+          fail InvalidReminderError, 'Flags set to existing but mask missing'
+        end
+        [Util.from_hex(Regexp.last_match[1]), Regexp.last_match[2]]
+      end
+    end
+
     # Parse a reminder into its constituent parts.
     #
     # @param rem [String] the complete reminder string
     # @return [Reminder] the parsed set of parameters
     def self.parse(rem)
       return rem if rem.is_a? Reminder
-      params = Parameters.new
-      csum = rem[0..5]
-      unless rem[6..-1] =~ /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
-        fail InvalidReminderError, 'Invalid reminder'
-      end
-      hex_params, code = Regexp.last_match[1..2]
-      dparams = Util.from_hex(hex_params)
-      flags, length, version = dparams.unpack('w3')
-      mask = nil
-      if (flags & Flags::REPLICATE_EXISTING) != 0
-        unless code =~ /^([0-9a-f]{#{2 * length}})(.*)$/
-          fail InvalidReminderError, 'Flags set to existing but mask missing'
-        end
-        mask, code = Regexp.last_match[1..2]
-        mask = Util.from_hex(mask)
-      end
-      params.flags = flags
-      params.length = length
-      params.version = version
+      csum, params, code = parse_parameters(rem)
+      mask, code = compute_mask(params.flags, params.length, code)
       Reminder.new(params, csum, code, mask)
     end
 
