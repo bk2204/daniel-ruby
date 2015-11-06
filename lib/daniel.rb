@@ -311,6 +311,68 @@ module Daniel
     end
 
     # Format a password in the Bubble Babble format.
+    class BubbleBabble
+      def initialize(s)
+        @data = Util.to_binary(s).bytes.to_a
+        @len = (@data.length / 2).to_i
+      end
+
+      def formatted
+        format(tuples, partial)
+      end
+
+      protected
+
+      attr_reader :data, :len
+
+      def format_tuple(a, b, c, d = 0, e = 0)
+        v = %w(a e i o u y)
+        co = %w(b c d f g h k l m n p r s t v z x)
+        [v[a], co[b], v[c], co[d], '-', co[e]]
+      end
+
+      def format(t, p)
+        res = t.map { |x| format_tuple(*x) } + format_tuple(*p)[0..2]
+        'x' + res.flatten.join('') + 'x'
+      end
+
+      def checksum  # rubocop:disable Metrics/AbcSize
+        return @checksum if @checksum
+        k = []
+        (len + 1).times do |i|
+          k[i] = i == 0 ? 1 : (((k[i - 1] * 5) +
+                               (data[i * 2 - 2] * 7 + data[i * 2 - 1])) % 36)
+        end
+        @checksum = k
+      end
+
+      def tuple(c, d1, d2)
+        [
+          (((d1 >> 6) & 3) + c) % 6,
+          (d1 >> 2) & 15,
+          ((d1 & 3) + (c / 6)) % 6,
+          (d2 >> 4) & 15,
+          (d2 & 15)
+        ]
+      end
+
+      def partial
+        cl = checksum[len]
+        if data.length.even?
+          [cl % 6, 16, cl / 6]
+        else
+          tuple(cl, data[-1], 0)[0..2]
+        end
+      end
+
+      def tuples
+        len.times.map do |i|
+          tuple(checksum[i], data[i * 2], data[i * 2 + 1])
+        end
+      end
+    end
+
+    # Format a password in the Bubble Babble format.
     #
     # @return [String] the string converted to Bubble Babble format
     #
@@ -318,35 +380,7 @@ module Daniel
     # encoding provides the password in a human-pronounceable that provides a
     # small amount of redundancy against accidental corruption.
     def self.bubblebabble(s)
-      vo = %w(a e i o u y)
-      co = %w(b c d f g h k l m n p r s t v z x)
-      r = Util.to_binary(s).bytes.to_a
-      len = (r.length / 2).to_i
-      k = []
-      (len + 1).times do |i|
-        k[i] = i == 0 ? 1 : (((k[i - 1] * 5) +
-                              (r[i * 2 - 2] * 7 + r[i * 2 - 1])) % 36)
-      end
-      t = len.times.map do |i|
-        [
-          (((r[i * 2] >> 6) & 3) + k[i]) % 6,
-          (r[i * 2] >> 2) & 15,
-          ((r[i * 2] & 3) + (k[i] / 6)) % 6,
-          (r[i * 2 + 1] >> 4) & 15,
-          (r[i * 2 + 1] & 15)
-        ]
-      end
-      lastr = r.length - 1
-      p = if r.length.even?
-            [k[len] % 6, 16, k[len] / 6]
-          else
-            [(((r[lastr] >> 6) & 3) + k[len]) % 6,
-             (r[lastr] >> 2) & 15,
-             ((r[lastr] & 3) + k[len] / 6) % 6
-            ]
-          end
-      res = t.map { |(a, b, c, d, e)| [vo[a], co[b], vo[c], co[d], '-', co[e]] }
-      'x' + res.flatten.join('') + vo[p[0]] + co[p[1]] + vo[p[2]] + 'x'
+      BubbleBabble.new(s).formatted
     end
   end
 
