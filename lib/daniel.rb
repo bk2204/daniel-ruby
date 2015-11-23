@@ -385,6 +385,10 @@ module Daniel
   end
 
   # Generates a password or set of passwords.
+  #
+  # Note that passwords are returned as byte strings (encoding ASCII-8BIT).
+  # Unless the DC::Flags::ARBITRARY_BYTES flag is set, the password should be
+  # valid UTF-8.
   class PasswordGenerator
     def initialize(pass, version = 0)
       @version = version
@@ -413,6 +417,12 @@ module Daniel
       generate(code, params, password)
     end
 
+    # Generate a password.
+    #
+    # @param code [String] the code to generate the password for
+    # @param params [Daniel::Parameters] the parameters
+    # @param make [String, nil] the mask as a byte string or nil
+    # @return [String] the generated password
     def generate(code, params, mask = nil)
       flags = format('Flags 0x%08x: ', params.flags)
       version = format('Version 0x%08x: ', params.version)
@@ -427,6 +437,10 @@ module Daniel
       generate_default(cipher, params)
     end
 
+    # Generate a password based on a reminder.
+    #
+    # @param reminder [String, Daniel::Reminder] the reminder
+    # @return [String] the generated password
     def generate_from_reminder(reminder)
       rem = Reminder.parse(reminder)
       computed = Util.to_hex(checksum)
@@ -437,8 +451,14 @@ module Daniel
       generate(rem.code, rem.params, rem.mask)
     end
 
-    def reminder(code, p, mask = nil)
-      Reminder.new(p, checksum, code, mask).to_s
+    # Create a reminder based on the given parameters
+    #
+    # @param code [String] the code for the given reminder
+    # @param params [Daniel::Parameters] the parameters for the given reminder
+    # @param mask [String, nil] the mask for the given reminder, or nil
+    # @return [String] the reminder
+    def reminder(code, params, mask = nil)
+      Reminder.new(params, checksum, code, mask).to_s
     end
 
     private
