@@ -163,7 +163,7 @@ module Daniel
       flags = {}
       constants.each { |k| flags[k] = const_get(k) }
       pairs = flags.select { |_, v| (v & (v - 1)) == 0 }.sort_by { |_, v| v }
-      pairs.map { |k, _| k.to_s.downcase.gsub('_', '-') }
+      pairs.map { |k, _| k.to_s.downcase.tr('_', '-') }
     end
   end
 
