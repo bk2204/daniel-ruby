@@ -344,7 +344,7 @@ module Daniel
         'x' + res.flatten.join('') + 'x'
       end
 
-      def checksum  # rubocop:disable Metrics/AbcSize
+      def checksum # rubocop:disable Metrics/AbcSize
         return @checksum if @checksum
         k = []
         (len + 1).times do |i|
@@ -547,7 +547,7 @@ module Daniel
   end
 
   # The main command-line interface.
-  class MainProgram < Program   # rubocop:disable Metrics/ClassLength
+  class MainProgram < Program # rubocop:disable Metrics/ClassLength
     def initialize
       @params = Parameters.new
       @clipboard = false
@@ -699,7 +699,7 @@ module Daniel
       text && !machine_readable? ? Util.to_hex(text) : text
     end
 
-    def parse(args)
+    def parse(args) # rubocop:disable Metrics/AbcSize
       args.each do |reminder|
         rem = Reminder.parse(reminder)
         params = rem.params
