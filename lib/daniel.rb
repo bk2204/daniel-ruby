@@ -689,9 +689,8 @@ module Daniel
         puts ":length #{nchars}\n:possible-char #{possibles}\n" \
           ":bits-per-char #{bits}\n:bits-total #{tbits}"
       else
-        msg = "#{nchars} characters; #{possibles} possible (#{bits} bpc); " \
+        puts "#{nchars} characters; #{possibles} possible (#{bits} bpc); " \
           "#{tbits} bits of entropy"
-        puts msg
       end
     end
 
