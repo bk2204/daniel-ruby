@@ -558,7 +558,7 @@ module Daniel
 
     def main(args)
       args = args.dup
-      parse_args(args)
+      return unless parse_args(args)
       sanity_check
       return estimate if @mode == :estimate
       return parse(args) if @mode == :parse
@@ -627,13 +627,15 @@ module Daniel
           Flags.flag_names.each_with_index do |name, i|
             puts format('    0x%02x: %s', 1 << i, name)
           end
-          exit
+          return false
         end
       end.parse!(args)
 
       if flags_set && existing_set # rubocop:disable Style/GuardClause
         fail OptionParser::InvalidArgument, "Can't use both -m and -f"
       end
+
+      true
     end
 
     def sanity_check
