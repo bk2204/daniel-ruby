@@ -31,7 +31,7 @@ module Daniel
             Read reminders line by line from REMINDERS and produce a Password
             Safe v3 file in EXPORT.
             EOM
-            exit
+            options[:help] = true
           end
         end.parse!(args)
         [options, args]
