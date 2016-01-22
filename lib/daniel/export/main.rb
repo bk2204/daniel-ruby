@@ -24,7 +24,12 @@ module Daniel
       def parse_options(args)
         options = {}
         OptionParser.new do |opts|
-          opts.banner = 'Usage: daniel-export REMINDERS EXPORT'
+          opts.banner = 'Usage: daniel-export [-r] REMINDERS EXPORT'
+
+          opts.on('-r', 'Produce machine-readable output') do
+            @prompt = :machine
+          end
+
           opts.on_tail('-h', '--help', 'Show this message') do
             puts opts
             puts <<-EOM.gsub(/^\s+/, '')
@@ -41,7 +46,7 @@ module Daniel
         interactive('Enter passphrase: ', ':master-password?')
         pass = read_passphrase
         generator = PasswordGenerator.new pass
-        puts "\n# ok, checksum is #{Daniel::Util.to_hex(generator.checksum)}"
+        prompt '# ok, checksum is', ':checksum', Util.to_hex(generator.checksum)
         [pass, generator]
       end
 
