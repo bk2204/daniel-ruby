@@ -631,7 +631,7 @@ module Daniel
         end
       end.parse!(args)
 
-      if flags_set && existing_set # rubocop:disable Style/GuardClause
+      if flags_set && existing_set
         fail OptionParser::InvalidArgument, "Can't use both -m and -f"
       end
 
