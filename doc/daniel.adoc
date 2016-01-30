@@ -1,11 +1,11 @@
 daniel(1)
 =========
 
-NAME
+Name
 ----
 daniel - easy-to-use password generator
 
-SYNOPSIS
+Synopsis
 --------
 [verse]
 'daniel' [-r] [-p] [-v <version>] [-f <flags>] [-l <length>] [-P <format>]
@@ -14,7 +14,7 @@ SYNOPSIS
 'daniel' [-r] [-p] [-P <format>] <reminder>...
 'daniel' [-r] -a <reminder>...
 
-DESCRIPTION
+Description
 -----------
 daniel produces passwords based on a master password, a set of parameters
 (password version, length, and flags), and a code which identifies the
@@ -64,7 +64,7 @@ pausing.
 'daniel' [-r] -a <reminder>...::
 	Parse the given reminders and display the parameters and code encoded in them.
 
-FLAG VALUES
+Flag Values
 ~~~~~~~~~~~
 Flags values are specified using the `-f` option.  The flags value can be
 specified in decimal, octal, or hexadecimal (using standard C notation), or by
@@ -95,7 +95,7 @@ keyboard
 
 The `-m` option is represented using a flags value of exactly 32 (0x20).
 
-COMMANDS
+Commands
 ~~~~~~~~
 Any string starting with an exclamation point that is entered at the code prompt
 is considered a command.
@@ -112,7 +112,7 @@ is considered a command.
 The `!!` command can be useful with the `-p` option if something else has been
 copied to the clipboard in the mean time.
 
-MACHINE-READABLE FORMAT
+Machine-Readable Format
 ~~~~~~~~~~~~~~~~~~~~~~~
 In the machine-readable format, each non-empty line output starts with a colon,
 a message, a space, and one or more space-separated URI-encoded values.
@@ -149,7 +149,7 @@ The errors are as follows:
 |`:invalid-command!` | The command that was entered was invalid.
 |===
 
-OPTIONS
+Options
 -------
 -f <flags>::
 	Specify the set of characters permitted in the password.  A flags value of 0
