@@ -67,4 +67,19 @@ describe Daniel::JWT do
     }
     expect(j.payload).to eq data
   end
+
+  it 'canonicalizes JSON properly' do
+    data = {
+      :d => 4,
+      :b => 2,
+      :f => 10,
+      :c => 3,
+      :g => 7,
+      :a => 26,
+      :h => 8,
+      :e => 9
+    }
+    canon = '{"a":26,"b":2,"c":3,"d":4,"e":9,"f":10,"g":7,"h":8}'
+    expect(Daniel::JWT.canonical_json(data)).to eq canon
+  end
 end

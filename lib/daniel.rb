@@ -317,7 +317,7 @@ module Daniel
       if Version.smart_implementation?
         canonical = {}
         data.sort_by { |k, _| k }.each { |k, v| canonical[k] = v }
-        return JSON.generate(data)
+        return JSON.generate(canonical)
       end
       items = data.keys.sort { |a, b| a.to_s <=> b.to_s }.map do |k|
         dummy = { k.to_s => data[k] }
@@ -436,9 +436,9 @@ module Daniel
     # object.
     def to_s
       p = params
-      bytes = checksum + [p.flags, p.length, p.version].pack('w3')
+      bytes = [p.flags, p.length, p.version].pack('w3')
       bytes += mask if mask
-      Util.to_hex(bytes) + code
+      checksum + Util.to_hex(bytes) + code
     end
   end
 
@@ -601,7 +601,7 @@ module Daniel
     # @param mask [String, nil] the mask for the given reminder, or nil
     # @return [String] the reminder
     def reminder(code, params, mask = nil)
-      Reminder.new(params, checksum, code, mask).to_s
+      Reminder.new(params, Util.to_hex(checksum), code, mask).to_s
     end
 
     private
