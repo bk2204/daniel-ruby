@@ -7,12 +7,12 @@ Gem::Specification.new do |s|
   s.email       = 'sandals@crustytoothpaste.net'
   s.homepage    = 'https://github.com/bk2204/daniel-ruby'
   s.summary     = 'An easy-to-use password generator'
+  s.license     = 'MIT'
   s.description = <<-EOD
     daniel is a password tool that can generate new passwords or store existing
     ones and reproduce either with a small reminder string and a master
     password.
   EOD
-  s.license     = 'MIT'
 
   s.add_dependency('io-console') if ::RUBY_VERSION < '1.9'
   s.add_dependency('twofish', '~> 1.0.7')

@@ -14,7 +14,7 @@ class Event
 end
 
 def to_id(id)
-  id = id.gsub('_', '-')
+  id = id.tr('_', '-')
   id = '#' + id unless id[0] == '#'
   id
 end
