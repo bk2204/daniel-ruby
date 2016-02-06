@@ -90,7 +90,7 @@ module Daniel
 
     def self.to_base64(s)
       result = [s].pack('m*')
-      to_binary(result)
+      to_binary(result.chomp)
     end
 
     def self.from_base64(s)
