@@ -135,7 +135,7 @@ module Daniel
     REPLICATE_EXISTING = 0x20
     EXPLICIT_VERSION = 0x40
     ARBITRARY_BYTES = 0x80
-    IMPLEMENTED_MASK = 0xbf
+    IMPLEMENTED_MASK = 0xff
 
     # Compute a flag value from a number or string.
     #
@@ -237,7 +237,7 @@ module Daniel
 
   # The parameters affecting generation of a password.
   class Parameters
-    attr_reader :flags, :length, :version, :salt, :format_version
+    attr_reader :flags, :length, :version, :salt, :format_version, :iterations
 
     def initialize(flags = 2, length = 16, version = 0, options = {})
       self.flags = flags
@@ -245,6 +245,7 @@ module Daniel
       @version = version
       self.salt = options[:salt]
       @format_version = options[:format_version] || 0
+      @iterations = options[:iterations] || 1024
     end
 
     def flags=(flags)
@@ -268,6 +269,14 @@ module Daniel
 
     def salt=(salt)
       @salt = salt.nil? || salt.empty? ? nil : Util.to_binary(salt)
+    end
+
+    def format_version=(ver)
+      @format_version = ver
+    end
+
+    def iterations=(iters)
+      @iterations = iters.to_i
     end
 
     # Is this password an encrypted password?
@@ -394,28 +403,107 @@ module Daniel
   end
 
   # A parsed reminder value
-  Reminder = Struct.new(:params, :checksum, :code, :mask) do
-    class << self
-      protected
-
-      def parse_parameters(rem)
-        params = Parameters.new
-        pat = /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
-        csum = rem[0..5]
-        fail InvalidReminderError, 'Invalid reminder' unless rem[6..-1] =~ pat
-        hex_params, code = Regexp.last_match[1..2]
-        dparams = Util.from_hex(hex_params)
-        params.flags, params.length, params.version = dparams.unpack('w3')
-        [csum, params, code]
+  Reminder = Struct.new(:params, :checksum, :code, :mask, :options) do
+    # A parser for reminder string values.
+    #
+    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    class Parser
+      def parse(s)
+        Reminder.new(*do_parse(s))
       end
 
-      def compute_mask(flags, length, code)
-        return [nil, code] if (flags & Flags::REPLICATE_EXISTING) == 0
+      protected
 
-        unless code =~ /^([0-9a-f]{#{2 * length}})(.*)$/
+      BER_PATTERN = /(?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f])/.freeze
+      SUPPORTED_VERSIONS = (0..1).freeze
+
+      def do_parse(rem)
+        params = Parameters.new
+        csum = rem[0..5]
+        params.flags, remaining = parse_ber(rem[6..-1])
+        version = 0
+        if (params.flags & Flags::EXPLICIT_VERSION) != 0
+          version, remaining = parse_ber(remaining)
+        end
+        unless SUPPORTED_VERSIONS.include? version
+          fail InvalidReminderError, 'bad version'
+        end
+        klass = [Version0Parser, Version1Parser][version]
+        klass.new.parse_version(params, csum, remaining)
+      end
+
+      def parse_ber(s)
+        m = /^(#{BER_PATTERN})(.*)$/.match(s)
+        fail InvalidReminderError, 'Invalid reminder' unless m
+        [Util.from_hex(m[1]).unpack('w')[0], m[2]]
+      end
+    end
+
+    # A parser for version 0 reminder string values.
+    #
+    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    class Version0Parser < Parser
+      def parse_version(params, csum, remaining)
+        pat = /^(#{BER_PATTERN}{2})(.*)$/
+        fail InvalidReminderError, 'Invalid reminder' unless remaining =~ pat
+        hex_params, code = Regexp.last_match[1..2]
+        dparams = Util.from_hex(hex_params)
+        params.length, params.version = dparams.unpack('w2')
+        code, mask = compute_mask(params.flags, params.length, code)
+        [params, csum, code, mask, {}]
+      end
+
+      protected
+
+      def compute_mask(flags, length, code)
+        return [code, nil] if (flags & Flags::REPLICATE_EXISTING) == 0
+
+        m = /^([0-9a-f]{#{2 * length}})(.*)$/.match(code)
+        unless m
           fail InvalidReminderError, 'Flags set to existing but mask missing'
         end
-        [Util.from_hex(Regexp.last_match[1]), Regexp.last_match[2]]
+        [m[2], Util.from_hex(m[1])]
+      end
+    end
+
+    # A parser for version 1 reminder string values.
+    #
+    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    class Version1Parser < Parser
+      def parse_version(params, csum, remaining)
+        len, remaining = parse_ber(remaining)
+        parse_jwt(csum, params, remaining[0...len], remaining[len..-1])
+      end
+
+      protected
+
+      def validate_jwt(data, options, par, code)
+        fail InvalidReminderError, 'invalid protocol' if par.format_version != 1
+        fail InvalidReminderError, 'invalid flags' if data[:flg] != par.flags
+        fail InvalidReminderError, 'invalid code' if data[:code] != code
+        true
+      end
+
+      def parse_key_id(key_id, csum, options, params)
+        pver, iters, kcsum, salt = key_id.split(':')
+        fail InvalidReminderError, 'invalid checksum' if csum != kcsum
+        params.format_version = pver.to_i
+        params.salt = Util.from_base64(salt.to_s)
+        params.iterations = iters.to_i
+      end
+
+      def parse_jwt(csum, params, s, code)
+        jwt = JWT.parse(s)
+        options = {
+          :mac => jwt.mac,
+        }
+        parse_key_id(jwt.key_id, csum, options, params)
+        data = jwt.payload
+        validate_jwt(data, options, params, code)
+        mask = data.key?(:msk) ? Util.from_base64(data[:msk]) : nil
+        params.length = data[:len]
+        params.version = data[:ver]
+        [params, csum, code, mask, options]
       end
     end
 
@@ -425,9 +513,33 @@ module Daniel
     # @return [Reminder] the parsed set of parameters
     def self.parse(rem)
       return rem if rem.is_a? Reminder
-      csum, params, code = parse_parameters(rem)
-      mask, code = compute_mask(params.flags, params.length, code)
-      Reminder.new(params, csum, code, mask)
+      Reminder.new(*Parser.new.parse(rem))
+    end
+
+    def options
+      self[:options] || {}
+    end
+
+    def mac
+      options[:mac]
+    end
+
+    def key=(key)
+      @key = key
+    end
+
+    def jwt
+      return nil if params.format_version == 0
+      data = {
+        :flg => params.flags,
+        :len => params.length,
+        :ver => params.version,
+        :code => code
+      }
+      data[:msk] = Util.to_base64(mask) if mask
+      key_id = "#{params.format_version}:#{params.iterations}:#{checksum}"
+      key_id += ":#{Util.to_base64(params.salt)}" if params.salt
+      JWT.new(data, :mac => mac, :key => key, :key_id => key_id)
     end
 
     # Convert this reminder to a string form.
@@ -435,10 +547,27 @@ module Daniel
     # Calling {Reminder.parse} will convert the stringified form back into an
     # object.
     def to_s
+      send("format_v#{params.format_version}")
+    end
+
+    protected
+
+    def key
+      options[:key]
+    end
+
+    def format_v0
       p = params
-      bytes = [p.flags, p.length, p.version].pack('w3')
-      bytes += mask if mask
-      checksum + Util.to_hex(bytes) + code
+      prefix([p.flags, p.length, p.version], mask) + code
+    end
+
+    def format_v1
+      jwts = jwt.to_s
+      prefix([params.flags, 1, jwts.length]) + jwts + code
+    end
+
+    def prefix(ints, mask = nil)
+      checksum + Util.to_hex(ints.pack('w3') + mask.to_s)
     end
   end
 
