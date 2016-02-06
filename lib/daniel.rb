@@ -28,6 +28,7 @@ if RUBY_ENGINE == 'opal'
 else
   require 'openssl'
 end
+require 'json'
 require 'set'
 
 # A password generation tool.
@@ -42,6 +43,18 @@ module Daniel
 
   # An exception indicating an invalid reminder string.
   class InvalidReminderError < Exception
+  end
+
+  # An exception indicating an invalid JSON Web Token.
+  class InvalidJWTError < Exception
+  end
+
+  # An exception indicating an JSON Web Token failed validation (MAC check).
+  class JWTValidationError < Exception
+  end
+
+  # An exception indicating that the required data is not present.
+  class MissingDataError < Exception
   end
 
   # An exception indicating a checksum mismatch.
@@ -73,6 +86,31 @@ module Daniel
     def self.from_hex(s)
       result = [s].pack('H*')
       to_binary(result)
+    end
+
+    def self.to_base64(s)
+      result = [s].pack('m*')
+      to_binary(result)
+    end
+
+    def self.from_base64(s)
+      s.unpack('m*')[0]
+    end
+
+    def self.to_url64(s)
+      to_base64(s).tr('+/', '-_').delete("=\r\n")
+    end
+
+    def self.from_url64(s)
+      s += case s.length & 3
+           when 0
+             ''
+           when 2
+             '=='
+           when 3
+             '='
+           end
+      from_base64(s.tr('-_', '+/'))
     end
 
     # Convert a byte to a character.
@@ -256,6 +294,96 @@ module Daniel
     end
 
     alias_method :eql?, :==
+  end
+
+  # A limited JSON Web Token implementation.
+  #
+  # This implementation only generates HMAC-SHA-256 tokens, and it requires that
+  # all data be canonicalized (shortest possible JSON with keys sorted).
+  class JWT
+    HEADER = '{"alg":"HS256","typ":"JWT"}'.freeze
+
+    attr_reader :payload, :mac
+
+    def self.parse(s, key = nil)
+      header, payload, mac = s.split('.').map { |t| Util.from_url64(t) }
+      fail InvalidJWTError, 'invalid JWT header' if header != HEADER
+      new(payload, mac, key)
+    end
+
+    def self.canonical_json(data)
+      if Version.smart_implementation?
+        canonical = {}
+        data.sort_by { |k, _| k }.each { |k, v| canonical[k] = v }
+        return JSON.generate(data)
+      end
+      items = data.keys.sort { |a, b| a.to_s <=> b.to_s }.map do |k|
+        dummy = { k.to_s => data[k] }
+        JSON.generate(dummy)[1..-2]
+      end
+      "{#{items.join(',')}}"
+    end
+
+    def initialize(payload, mac = nil, key = nil)
+      @key = key
+      @valid = false
+      @mac = mac
+      if payload.is_a? String
+        @serialized = payload
+        validate if @key
+        @payload = check_canonical_object(payload)
+      else
+        @payload = payload
+        @serialized = self.class.canonical_json(payload)
+        @mac = compute_hmac unless @mac
+      end
+    end
+
+    def valid?
+      return @valid unless @valid.nil?
+      validate
+    rescue JWTValidationError
+      false
+    end
+
+    def validate
+      digest = compute_hmac
+      diff = 0
+      # Constant time comparison.
+      digest.bytes.to_a.zip(mac.bytes.to_a).each do |dig, mac|
+        diff |= dig ^ mac
+      end
+      fail JWTValidationError, 'MAC is incorrect' unless diff == 0
+      @valid = true
+      self
+    end
+
+    def key=(key)
+      @key = key
+      @valid = nil
+    end
+
+    def to_s
+      validate unless @valid
+      [HEADER, @serialized, @mac].map { |s| Util.to_url64(s) }.join('.')
+    end
+
+    protected
+
+    def compute_hmac
+      fail MissingDataError unless @key
+      hmac = OpenSSL::HMAC.new(@key, OpenSSL::Digest::SHA256.new)
+      hmac << [HEADER, @serialized].map { |s| Util.to_url64(s) }.join('.')
+      hmac.digest
+    end
+
+    def check_canonical_object(s)
+      fail InvalidJWTError, 'overlong JWT' if s.length > 1024
+      data = JSON.parse(s, :symbolize_names => 1)
+      canon_json = self.class.canonical_json(data)
+      fail InvalidJWTError, 'noncanonical data' if s != canon_json
+      data
+    end
   end
 
   # A parsed reminder value
