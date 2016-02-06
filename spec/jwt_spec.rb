@@ -4,16 +4,27 @@
 # Ruby 1.8 doesn't have require_relative.
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
-
 describe Daniel::JWT do
   def example
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' \
+    'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6NDA5NjowMDAwMDAiLCJ0eXAiOiJKV1QifQ.' \
     'eyJhZG1pbiI6dHJ1ZSwibmFtZSI6IkpvaG4gRG9lIiwic3ViIjoiMTIzNDU2Nzg5MCJ9.' \
-    'eNK_fimsCW3Q-meOXyc_dnZHubl2D4eZkIcn6llniCk'
+    '_FRrQNpNFRrOcjy-K8Vc7wIY-p0PyjwyWO9mAvQIlsY'
+  end
+
+  def key_id
+    '1:4096:000000'
   end
 
   it 'has a valid header' do
     expect { JSON.parse(Daniel::JWT::HEADER) }.not_to raise_error
+  end
+
+  it 'has a header that contains the expected items' do
+    expect(JSON.parse(Daniel::Util.from_url64(example.split('.')[0]))).to eq(
+      'alg' => 'HS256',
+      'kid' => key_id,
+      'typ' => 'JWT'
+    )
   end
 
   it 'validates data correctly' do
@@ -39,10 +50,10 @@ describe Daniel::JWT do
   it 'round-trips payload properly' do
     data = {
       :admin => true,
-      :name => "John Doe",
-      :sub => "1234567890"
+      :name => 'John Doe',
+      :sub => '1234567890'
     }
-    j = Daniel::JWT.new(data, nil, 'secret')
+    j = Daniel::JWT.new(data, :key => 'secret', :key_id => key_id)
     expect(j.payload).to eq data
     expect(j.to_s).to eq example
   end
@@ -51,8 +62,8 @@ describe Daniel::JWT do
     j = Daniel::JWT.parse(example, 'secret')
     data = {
       :admin => true,
-      :name => "John Doe",
-      :sub => "1234567890"
+      :name => 'John Doe',
+      :sub => '1234567890'
     }
     expect(j.payload).to eq data
   end

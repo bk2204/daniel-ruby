@@ -301,14 +301,16 @@ module Daniel
   # This implementation only generates HMAC-SHA-256 tokens, and it requires that
   # all data be canonicalized (shortest possible JSON with keys sorted).
   class JWT
-    HEADER = '{"alg":"HS256","typ":"JWT"}'.freeze
+    HEADER = '{"alg":"HS256","kid":"%s","typ":"JWT"}'.freeze
 
-    attr_reader :payload, :mac
+    attr_reader :payload, :mac, :key_id
 
     def self.parse(s, key = nil)
       header, payload, mac = s.split('.').map { |t| Util.from_url64(t) }
-      fail InvalidJWTError, 'invalid JWT header' if header != HEADER
-      new(payload, mac, key)
+      re = /^#{Regexp.escape(HEADER).sub('%s', "(\\d+:\\d+:[a-f0-9]+(:.*)?)")}$/
+      m = re.match header
+      fail InvalidJWTError, 'invalid JWT header' unless m
+      new(payload, :mac => mac, :key => key, :key_id => m[1])
     end
 
     def self.canonical_json(data)
@@ -324,10 +326,11 @@ module Daniel
       "{#{items.join(',')}}"
     end
 
-    def initialize(payload, mac = nil, key = nil)
-      @key = key
+    def initialize(payload, options = {})
+      @key = options[:key]
       @valid = false
-      @mac = mac
+      @mac = options[:mac]
+      @key_id = options[:key_id]
       if payload.is_a? String
         @serialized = payload
         validate if @key
@@ -365,15 +368,19 @@ module Daniel
 
     def to_s
       validate unless @valid
-      [HEADER, @serialized, @mac].map { |s| Util.to_url64(s) }.join('.')
+      [header, @serialized, @mac].map { |s| Util.to_url64(s) }.join('.')
     end
 
     protected
 
+    def header
+      HEADER % @key_id
+    end
+
     def compute_hmac
       fail MissingDataError unless @key
       hmac = OpenSSL::HMAC.new(@key, OpenSSL::Digest::SHA256.new)
-      hmac << [HEADER, @serialized].map { |s| Util.to_url64(s) }.join('.')
+      hmac << [header, @serialized].map { |s| Util.to_url64(s) }.join('.')
       hmac.digest
     end
 
