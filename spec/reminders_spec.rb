@@ -104,6 +104,15 @@ describe Daniel::Reminder do
     expect(r.to_s).to eq s
   end
 
+  it 'refuses to serialize v1 reminders with no key' do
+    params = Daniel::Parameters.new(0x60, 12, 2, :iterations => 8192,
+                                                 :salt => "\x00" * 9,
+                                                 :format_version => 1)
+    r = Daniel::Reminder.new(params, '987654', 'example.com',
+                             Daniel::Util.to_binary("\xff") * 12)
+    expect { r.to_s }.to raise_error(Daniel::MissingDataError)
+  end
+
   it 'raises an exception for reminder missing mask' do
     expect { Daniel::Reminder.parse('8244c520810001la-france') } \
       .to raise_error(Daniel::InvalidReminderError, /mask missing/)
