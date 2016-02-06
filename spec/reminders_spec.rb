@@ -17,7 +17,10 @@ describe Daniel::Reminder do
   # A 12-character passphrase with salt and mask.
   def example2
     '98765460018162' \
-      'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6ODE5Mjo5ODc2NTQ6QUFBQUFBQUFBQUFBIiwidHlwIjoiSldUIn0.eyJjb2RlIjoiZXhhbXBsZS5jb20iLCJmbGciOjk2LCJsZW4iOjEyLCJtc2siOiIvLy8vLy8vLy8vLy8vLy8vIiwidmVyIjoyfQ.ubYHWboinhpsFBqAgTgCuovi7YdgfJzmtIJtvWrXSv0' \
+      'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6ODE5Mjo5ODc2NTQ6QUFBQUFBQUFBQUFBIi' \
+      'widHlwIjoiSldUIn0.eyJjb2RlIjoiZXhhbXBsZS5jb20iLCJmbGciOjk2LCJsZW4i' \
+      'OjEyLCJtc2siOiIvLy8vLy8vLy8vLy8vLy8vIiwidmVyIjoyfQ.ubYHWboinhpsFBq' \
+      'AgTgCuovi7YdgfJzmtIJtvWrXSv0' \
       'example.com'
   end
 
@@ -83,7 +86,7 @@ describe Daniel::Reminder do
 
   it 'can create v1 reminders' do
     params = Daniel::Parameters.new(0x40, 16, 0, :iterations => 4096,
-                                    :format_version => 1)
+                                                 :format_version => 1)
     s = example
     r = Daniel::Reminder.new(params, 'abcdef', 'example.tld', nil,
                              :key => 'secret')
@@ -92,14 +95,14 @@ describe Daniel::Reminder do
 
   it 'can create v1 reminders with all features' do
     params = Daniel::Parameters.new(0x60, 12, 2, :iterations => 8192,
-                                    :salt => "\x00" * 9, :format_version => 1)
+                                                 :salt => "\x00" * 9,
+                                                 :format_version => 1)
     s = example2
     r = Daniel::Reminder.new(params, '987654', 'example.com',
                              Daniel::Util.to_binary("\xff") * 12,
                              :key => 'nothing')
     expect(r.to_s).to eq s
   end
-
 
   it 'raises an exception for reminder missing mask' do
     expect { Daniel::Reminder.parse('8244c520810001la-france') } \

@@ -272,7 +272,7 @@ module Daniel
     end
 
     def format_version=(ver)
-      @format_version = ver
+      @format_version = ver.to_i
     end
 
     def iterations=(iters)
@@ -477,14 +477,14 @@ module Daniel
 
       protected
 
-      def validate_jwt(data, options, par, code)
+      def validate_jwt(data, par, code)
         fail InvalidReminderError, 'invalid protocol' if par.format_version != 1
         fail InvalidReminderError, 'invalid flags' if data[:flg] != par.flags
         fail InvalidReminderError, 'invalid code' if data[:code] != code
         true
       end
 
-      def parse_key_id(key_id, csum, options, params)
+      def parse_key_id(key_id, csum, params)
         pver, iters, kcsum, salt = key_id.split(':')
         fail InvalidReminderError, 'invalid checksum' if csum != kcsum
         params.format_version = pver.to_i
@@ -495,11 +495,11 @@ module Daniel
       def parse_jwt(csum, params, s, code)
         jwt = JWT.parse(s)
         options = {
-          :mac => jwt.mac,
+          :mac => jwt.mac
         }
-        parse_key_id(jwt.key_id, csum, options, params)
+        parse_key_id(jwt.key_id, csum, params)
         data = jwt.payload
-        validate_jwt(data, options, params, code)
+        validate_jwt(data, params, code)
         mask = data.key?(:msk) ? Util.from_base64(data[:msk]) : nil
         params.length = data[:len]
         params.version = data[:ver]
@@ -525,7 +525,7 @@ module Daniel
     end
 
     def key=(key)
-      @key = key
+      options[:key] = key
     end
 
     def jwt
