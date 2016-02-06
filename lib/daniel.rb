@@ -969,6 +969,7 @@ module Daniel
         rem = Reminder.parse(reminder)
         params = rem.params
         flags = Flags.explain(params.flags)
+        mac = humanify(rem.mac)
         mask = humanify(rem.mask)
         salt = humanify(params.salt)
         prompt 'Reminder is:', ':reminder', reminder
@@ -976,9 +977,11 @@ module Daniel
         prompt 'Length:', ':length', params.length
         prompt 'Password version:', ':password-version', params.version
         prompt 'Flags:', ':flags', params.flags, *flags
+        prompt 'Iterations:', ':iterations', params.iterations
         prompt 'Salt:', ':salt', salt if salt
         prompt 'Checksum:', ':checksum', rem.checksum
         prompt 'Mask:', ':mask', mask if mask
+        prompt 'MAC:', ':mac', mac if mac
         prompt 'Code:', ':code', rem.code
       end
     end

@@ -57,6 +57,10 @@ def process_message_human(msg)
     ':version' => 'Version:',
     ':length' => 'Length:',
     ':password-version' => 'Password version:',
+    ':iterations' => 'Iterations:',
+    ':mask' => 'Mask:',
+    ':mac' => 'MAC:',
+    ':salt' => 'Salt:',
     ':flags' => 'Flags:',
     ':code' => 'Code:'
   }
@@ -64,8 +68,9 @@ def process_message_human(msg)
   case s
   when ':master-password?'
     'Please enter your master password: '
-  when /\A:mask (.*)\z/
-    "Mask: #{Daniel::Util.to_hex(CGI.unescape(Regexp.last_match[1]))}"
+  when /\A(:(?:mask|mac|salt)) (.*)\z/
+    str, val = Regexp.last_match[1..2]
+    "#{strings[str]} #{Daniel::Util.to_hex(CGI.unescape(val))}"
   when ':code?'
     nil
   else
@@ -366,6 +371,7 @@ if RUBY_ENGINE != 'opal'
           ':length 15',
           ':password-version 4',
           ':flags 32 replicate-existing',
+          ':iterations 1024',
           ':checksum 72eb36',
           ':mask %5E%D8%D9%2F%93%09%C1%00Y%EEy%F5%D5%02f',
           ':code example.tld'
@@ -407,8 +413,36 @@ if RUBY_ENGINE != 'opal'
           ':length 13',
           ':password-version 237',
           ':flags 5 no-numbers no-symbols-top',
+          ':iterations 1024',
           ':checksum d90403',
           ':code default.example.com'
+        ]
+      end
+
+      # Synthesized, no actual password.
+      it 'parses v1 generated-password reminders correctly' do
+        reminder = '98765460018162' \
+          'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6ODE5Mjo5ODc2NTQ6QUFBQUFBQUFBQUFBI' \
+          'iwidHlwIjoiSldUIn0.eyJjb2RlIjoiZXhhbXBsZS5jb20iLCJmbGciOjk2LCJsZW' \
+          '4iOjEyLCJtc2siOiIvLy8vLy8vLy8vLy8vLy8vIiwidmVyIjoyfQ.ubYHWboinhps' \
+          'FBqAgTgCuovi7YdgfJzmtIJtvWrXSv0example.com'
+        prog = Daniel::MainProgram.new
+        prog.prompt = type
+        prog.main(%w(-a) + args + [reminder])
+        expect(prog.output.flatten).to eq parse_human func.call [
+          ":reminder #{reminder}",
+          ':version 1',
+          ':length 12',
+          ':password-version 2',
+          ':flags 96 replicate-existing explicit-version',
+          ':iterations 8192',
+          ':salt %00%00%00%00%00%00%00%00%00',
+          ':checksum 987654',
+          ':mask %FF%FF%FF%FF%FF%FF%FF%FF%FF%FF%FF%FF',
+          ':mac ' \
+            '%B9%B6%07Y%BA%22%9E%1Al%14%1A%80%818%02' \
+            '%BA%8B%E2%ED%87%60%7C%9C%E6%B4%82m%BDj%D7J%FD',
+          ':code example.com'
         ]
       end
     end
