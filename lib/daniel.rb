@@ -31,6 +31,17 @@ end
 require 'json'
 require 'set'
 
+fallback = false
+
+begin
+  require 'daniel/bytegen'
+rescue LoadError
+  raise if fallback
+  fallback = true
+  $LOAD_PATH.push File.join(File.dirname(__FILE__), '..', 'lib')
+  retry
+end
+
 # A password generation tool.
 module Daniel
   # The class from which all Daniel exceptions derive.
@@ -312,7 +323,7 @@ module Daniel
   class JWT
     HEADER = '{"alg":"HS256","kid":"%s","typ":"JWT"}'.freeze
 
-    attr_reader :payload, :mac, :key_id
+    attr_reader :payload, :mac, :key_id, :serialized
 
     def self.parse(s, key = nil)
       header, payload, mac = s.split('.').map { |t| Util.from_url64(t) }
@@ -542,6 +553,12 @@ module Daniel
       JWT.new(data, :mac => mac, :key => key, :key_id => key_id)
     end
 
+    def validate
+      token = jwt
+      return unless token
+      token.validate
+    end
+
     # Convert this reminder to a string form.
     #
     # Calling {Reminder.parse} will convert the stringified form back into an
@@ -691,12 +708,97 @@ module Daniel
         buffer = ([0] * 32).pack('C*')
         lambda { cipher.update(buffer).bytes }
       end
+
+      def reminder(code, params, mask = nil)
+        Reminder.new(params, Util.to_hex(checksum), code, mask).to_s
+      end
+
+      def parse_reminder(reminder)
+        Reminder.parse(reminder)
+      end
+    end
+
+    # Generates version 1 passwords.
+    #
+    # This class is an implementation detail.
+    class GeneratorVersion1 < PasswordGenerator
+      def initialize(master_secret)
+        setup
+        @version = 1
+        @master_secret = master_secret
+        @keys = {}
+      end
+
+      def generate(code, params, mask = nil)
+        seed = key_for(params, :seed)
+        data = {
+          :flg => params.flags,
+          :ver => params.version,
+          :code => code
+        }
+        salt = OpenSSL::Digest::SHA256.digest(JWT.canonical_json(data))
+        prng = Daniel::ByteGenerator.new(seed, salt)
+
+        gen = generator_function(prng)
+        return generate_existing(gen, params, mask) if params.existing_mode?
+        generate_default(gen, params)
+      end
+
+      def generator_function(prng)
+        lambda { prng.random_bytes(1024).bytes }
+      end
+
+      def reminder(code, params, mask = nil)
+        Reminder.new(params, Util.to_hex(checksum), code, mask,
+                     :key => key_for(params, :mac)).to_s
+      end
+
+      def parse_reminder(reminder)
+        rem = Reminder.parse(reminder)
+        rem.key = key_for(rem.params, :mac)
+        rem.validate
+        rem
+      end
+
+      protected
+
+      # Generate a key of length bytes based on the iteration count, salt (if
+      # any), and the master secret.
+      #
+      # Uses PBKDF2-HMAC-SHA-256 to generate a master key, and then uses
+      # HKDF-Expand to produce the required number of bytes.
+      def key_for(params, id, length = 32)
+        pset = {
+          :iters => params.iterations,
+          :salt => params.salt
+        }
+        @keys[pset] = { :master => master_key_for(params) } unless @keys[pset]
+        return @keys[pset][id] if @keys[pset][id]
+        @keys[pset][id] = hkdf_expand(@keys[pset][:master], "1:#{id}", length)
+      end
+
+      def master_key_for(params)
+        OpenSSL::PKCS5.pbkdf2_hmac(@master_secret, params.salt.to_s,
+                                   params.iterations, 32,
+                                   OpenSSL::Digest::SHA256.new)
+      end
+
+      def hkdf_expand(prk, info, length)
+        niters = (length + 31) / 32
+        t = ['']
+        (1..niters).each do |i|
+          t << OpenSSL::HMAC.digest(OpenSSL::Digest::SHA256.new, prk,
+                                    t[i - 1] + info.to_s + i.chr)
+        end
+        t.join[0...length]
+      end
     end
 
     def initialize(pass, version = 0)
       setup
       @master_secret = process_strings([@prefix, 'Master Secret: ', pass], '')
-      @impl = [GeneratorVersion0][version].new(@master_secret)
+      klass = [GeneratorVersion0, GeneratorVersion1][version]
+      @impl = klass.new(@master_secret)
     end
 
     def checksum
@@ -734,7 +836,7 @@ module Daniel
     # @param reminder [String, Daniel::Reminder] the reminder
     # @return [String] the generated password
     def generate_from_reminder(reminder)
-      rem = Reminder.parse(reminder)
+      rem = @impl.parse_reminder(reminder)
       computed = Util.to_hex(checksum)
       if rem.checksum != computed
         fail ChecksumMismatchError.new(rem.checksum, computed)
@@ -750,7 +852,7 @@ module Daniel
     # @param mask [String, nil] the mask for the given reminder, or nil
     # @return [String] the reminder
     def reminder(code, params, mask = nil)
-      Reminder.new(params, Util.to_hex(checksum), code, mask).to_s
+      @impl.reminder(code, params, mask)
     end
 
     protected

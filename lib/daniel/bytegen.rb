@@ -1,4 +1,3 @@
-require 'daniel'
 require 'securerandom'
 
 # A password generation tool.
