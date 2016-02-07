@@ -662,11 +662,41 @@ module Daniel
   # Unless the DC::Flags::ARBITRARY_BYTES flag is set, the password should be
   # valid UTF-8.
   class PasswordGenerator
+    # Generates version 0 passwords.
+    #
+    # This class is an implementation detail.
+    class GeneratorVersion0 < PasswordGenerator
+      def initialize(master_secret)
+        setup
+        @version = 0
+        @master_secret = master_secret
+      end
+
+      def generate(code, params, mask = nil)
+        flags = format('Flags 0x%08x: ', params.flags)
+        version = format('Version 0x%08x: ', params.version)
+
+        cipher = OpenSSL::Cipher::AES.new(256, :CTR)
+        cipher.encrypt
+        cipher.key = @master_secret
+        cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
+                                    @master_secret)
+
+        gen = generator_function(cipher)
+        return generate_existing(gen, params, mask) if params.existing_mode?
+        generate_default(gen, params)
+      end
+
+      def generator_function(cipher)
+        buffer = ([0] * 32).pack('C*')
+        lambda { cipher.update(buffer).bytes }
+      end
+    end
+
     def initialize(pass, version = 0)
-      @version = version
-      @prefix = format('DrewPassChart: Version 0x%08x: ', version)
+      setup
       @master_secret = process_strings([@prefix, 'Master Secret: ', pass], '')
-      @checksum = nil
+      @impl = [GeneratorVersion0][version].new(@master_secret)
     end
 
     def checksum
@@ -696,17 +726,7 @@ module Daniel
     # @param make [String, nil] the mask as a byte string or nil
     # @return [String] the generated password
     def generate(code, params, mask = nil)
-      flags = format('Flags 0x%08x: ', params.flags)
-      version = format('Version 0x%08x: ', params.version)
-
-      cipher = OpenSSL::Cipher::AES.new(256, :CTR)
-      cipher.encrypt
-      cipher.key = @master_secret
-      cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
-                                  @master_secret)
-
-      return generate_existing(cipher, params, mask) if params.existing_mode?
-      generate_default(cipher, params)
+      @impl.generate(code, params, mask)
     end
 
     # Generate a password based on a reminder.
@@ -733,21 +753,31 @@ module Daniel
       Reminder.new(params, Util.to_hex(checksum), code, mask).to_s
     end
 
-    private
+    protected
 
-    def generate_existing(cipher, parameters, mask)
+    def setup
+      @prefix = format('DrewPassChart: Version 0x%08x: ', 0)
+      @checksum = nil
+    end
+
+    def generate_existing(gen, parameters, mask)
       if parameters.length != mask.length
         fail InvalidParametersError, 'Invalid mask length'
       end
-      (cipher.update(mask) + cipher.final)[0...parameters.length]
+      result = []
+      result += gen.call.to_a while result.length < parameters.length
+      xor(mask, result[0...parameters.length])
     end
 
-    def generate_default(cipher, parameters)
+    def xor(string, bytes)
+      string.bytes.zip(bytes).map { |a, b| a ^ b }.pack('C*')
+    end
+
+    def generate_default(gen, parameters)
       set = CharacterSet.new parameters.flags
-      buffer = ([0] * 32).pack('C*')
       result = ''
       while result.length < parameters.length
-        result += cipher.update(buffer).bytes.select do |x|
+        result += gen.call.select do |x|
           set.include?(x)
         end.pack('C*')
       end
