@@ -27,6 +27,7 @@ if RUBY_ENGINE == 'opal'
   require 'daniel/opal'
 else
   require 'openssl'
+  require 'securerandom'
 end
 require 'json'
 require 'set'
@@ -319,10 +320,7 @@ module Daniel
     # @param salt [String, nil] A 32-bit pseudorandom salt, which should be
     #   different for each instantiation.  If nil, generates a random value.
     def initialize(secret, salt = nil)
-      if salt.nil?
-        require 'securerandom'
-        salt = SecureRandom.random_bytes(32)
-      end
+      salt = SecureRandom.random_bytes(32) if salt.nil?
       @k = "\x00" * 32
       @v = "\x01" * 32
       update(salt + secret)
