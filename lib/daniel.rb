@@ -339,9 +339,9 @@ module Daniel
     # Generate a random version 4 UUID.
     def uuid
       buffer = random_bytes(16)
-      buffer[6] = Util.to_chr((buffer[6].ord & 0x0f) | 0x40)
-      buffer[8] = Util.to_chr((buffer[8].ord & 0x3f) | 0x80)
-      hex = Util.to_hex(buffer)
+      c1 = Util.to_chr((buffer[6].ord & 0x0f) | 0x40)
+      c2 = Util.to_chr((buffer[8].ord & 0x3f) | 0x80)
+      hex = Util.to_hex(buffer[0..5] + c1 + buffer[7, 1] + c2 + buffer[9..16])
       [0..7, 8..11, 12..15, 16..19, 20..31].map { |r| hex[r] }.join('-')
     end
 
