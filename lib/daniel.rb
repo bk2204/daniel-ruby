@@ -330,7 +330,7 @@ module Daniel
       buffer = Util.to_binary('')
       while buffer.bytesize < n
         @v = hmac(@k, @v)
-        buffer << @v
+        buffer += @v
       end
       update
       buffer[0, n]
