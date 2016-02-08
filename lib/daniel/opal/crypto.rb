@@ -103,11 +103,45 @@ module OpenSSL
 
       def update(data)
         @jsobj.update(Daniel::Util.to_bit_array(data).to_n)
+        self
       end
+
+      alias_method :<<, :update
 
       def digest
         Daniel::Util.from_bit_array(@jsobj.finalize)
       end
+
+      def self.digest(s)
+        obj = new
+        obj << s
+        obj.digest
+      end
+    end
+  end
+
+  # This only implements HMAC-SHA-256, since that's all we use.
+  class HMAC
+    def initialize(key, _digest)
+      k = Daniel::Util.to_bit_array(key).to_n
+      @jsobj = Native(`new sjcl.misc.hmac(#{k})`)
+    end
+
+    def update(data)
+      @jsobj.update(Daniel::Util.to_bit_array(data).to_n)
+      self
+    end
+
+    alias_method :<<, :update
+
+    def digest
+      Daniel::Util.from_bit_array(@jsobj.digest)
+    end
+
+    def self.digest(digest, k, v)
+      obj = new(k, digest)
+      obj << v
+      obj.digest
     end
   end
 
