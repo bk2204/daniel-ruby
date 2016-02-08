@@ -29,6 +29,7 @@ else
   require 'openssl'
   require 'securerandom'
 end
+require 'base64'
 require 'json'
 require 'set'
 
@@ -90,12 +91,11 @@ module Daniel
     end
 
     def self.to_base64(s)
-      result = [s].pack('m*')
-      to_binary(result.chomp)
+      to_binary(Base64.encode64(s).delete("\r\n"))
     end
 
     def self.from_base64(s)
-      s.unpack('m*')[0]
+      Base64.decode64(s)
     end
 
     def self.to_url64(s)
