@@ -56,11 +56,8 @@ describe Daniel::ByteGenerator do
     gen = Daniel::ByteGenerator.new('example secret', "\x01\x02" * 16)
     100.times do
       uuid = gen.uuid
-      pat = /\A[0-9a-f]{8}-
-               [0-9a-f]{4}-
-               4[0-9a-f]{3}-
-               [89ab][0-9a-f]{3}-
-               [0-9a-f]{12}\z/x
+      h = '[0-9a-f]'
+      pat = /^#{h}{8}-#{h}{4}-4#{h}{3}-[89ab]#{h}{3}-#{h}{12}$/
       expect(uuid).to match pat
     end
   end

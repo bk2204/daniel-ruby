@@ -469,7 +469,7 @@ module Daniel
 
       protected
 
-      BER_PATTERN = /(?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f])/.freeze
+      BER_PATTERN = '(?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f])'.freeze
       SUPPORTED_VERSIONS = (0..1).freeze
 
       def do_parse(rem)
