@@ -6,9 +6,9 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 
 describe Daniel::JWT do
   def example
-    'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6NDA5NjowMDAwMDAiLCJ0eXAiOiJKV1QifQ.' \
-    'eyJhZG1pbiI6dHJ1ZSwibmFtZSI6IkpvaG4gRG9lIiwic3ViIjoiMTIzNDU2Nzg5MCJ9.' \
-    '_FRrQNpNFRrOcjy-K8Vc7wIY-p0PyjwyWO9mAvQIlsY'
+    ['eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6NDA5NjowMDAwMDAiLCJ0eXAiOiJKV1QifQ.',
+     'eyJhZG1pbiI6dHJ1ZSwibmFtZSI6IkpvaG4gRG9lIiwic3ViIjoiMTIzNDU2Nzg5MCJ9.',
+     '_FRrQNpNFRrOcjy-K8Vc7wIY-p0PyjwyWO9mAvQIlsY'].join
   end
 
   def key_id
@@ -34,8 +34,9 @@ describe Daniel::JWT do
     expect { j.validate }.not_to raise_error
 
     s = example.sub(/...$/, 'abc')
-    expect { j = Daniel::JWT.parse(s, 'secret') }.to \
-      raise_error(Daniel::JWTValidationError)
+    expect do
+      j = Daniel::JWT.parse(s, 'secret')
+    end.to raise_error(Daniel::JWTValidationError)
     j = Daniel::JWT.parse(s)
     j.key = 'secret'
     expect(j.valid?).to eq false
