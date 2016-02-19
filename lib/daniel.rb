@@ -1024,6 +1024,10 @@ module Daniel
           @params.version = version
         end
 
+        opts.on('--format-version FORMAT-VERSION', 'Set format version') do |v|
+          @params.format_version = v
+        end
+
         opts.on('-f FLAGS', 'Set flags') do |flags|
           @params.flags = flags
           flags_set = true
@@ -1215,7 +1219,7 @@ module Daniel
       prompt 'Please enter your master password:', ':master-password?'
       pass = read_passphrase
       print "\n"
-      generator = PasswordGenerator.new pass, 0
+      generator = PasswordGenerator.new pass, @params.format_version
       prompt '# ok, checksum is', ':checksum', Util.to_hex(generator.checksum)
       if args.empty?
         prompt_and_dispatch(generator)
