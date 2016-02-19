@@ -19,8 +19,8 @@ describe Daniel::Reminder do
     '98765460018162' \
       'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6ODE5Mjo5ODc2NTQ6QUFBQUFBQUFBQUFBIi' \
       'widHlwIjoiSldUIn0.eyJjb2RlIjoiZXhhbXBsZS5jb20iLCJmbGciOjk2LCJsZW4i' \
-      'OjEyLCJtc2siOiIvLy8vLy8vLy8vLy8vLy8vIiwidmVyIjoyfQ.ubYHWboinhpsFBq' \
-      'AgTgCuovi7YdgfJzmtIJtvWrXSv0' \
+      'OjEyLCJtc2siOiJfX19fX19fX19fX19fX19fIiwidmVyIjoyfQ.30y6aMk3h4GfjBh' \
+      'zCLIfySmT4ULCiRMMclDU3L5jLZk' \
       'example.com'
   end
 

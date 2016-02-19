@@ -543,7 +543,7 @@ module Daniel
         pver, iters, kcsum, salt = key_id.split(':')
         fail InvalidReminderError, 'invalid checksum' if csum != kcsum
         params.format_version = pver.to_i
-        params.salt = Util.from_base64(salt.to_s)
+        params.salt = Util.from_url64(salt.to_s)
         params.iterations = iters.to_i
       end
 
@@ -555,7 +555,7 @@ module Daniel
         parse_key_id(jwt.key_id, csum, params)
         data = jwt.payload
         validate_jwt(data, params, code)
-        mask = data.key?(:msk) ? Util.from_base64(data[:msk]) : nil
+        mask = data.key?(:msk) ? Util.from_url64(data[:msk]) : nil
         params.length = data[:len]
         params.version = data[:ver]
         [params, csum, code, mask, options]
@@ -591,9 +591,9 @@ module Daniel
         :ver => params.version,
         :code => code
       }
-      data[:msk] = Util.to_base64(mask) if mask
+      data[:msk] = Util.to_url64(mask) if mask
       key_id = "#{params.format_version}:#{params.iterations}:#{checksum}"
-      key_id += ":#{Util.to_base64(params.salt)}" if params.salt
+      key_id += ":#{Util.to_url64(params.salt)}" if params.salt
       JWT.new(data, :mac => mac, :key => key, :key_id => key_id)
     end
 
