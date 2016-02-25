@@ -264,23 +264,26 @@ module Daniel
       protected
 
       def parse_parameters(rem)
-        params = Parameters.new
+        params = Daniel::Parameters.new
         pat = /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
         csum = rem[0..5]
-        fail InvalidReminderError, 'Invalid reminder' unless rem[6..-1] =~ pat
+        unless rem[6..-1] =~ pat
+          fail Daniel::InvalidReminderError, 'Invalid reminder'
+        end
         hex_params, code = Regexp.last_match[1..2]
-        dparams = Util.from_hex(hex_params)
+        dparams = Daniel::Util.from_hex(hex_params)
         params.flags, params.length, params.version = dparams.unpack('w3')
         [csum, params, code]
       end
 
       def compute_mask(flags, length, code)
-        return [nil, code] if (flags & Flags::REPLICATE_EXISTING) == 0
+        return [nil, code] if (flags & Daniel::Flags::REPLICATE_EXISTING) == 0
 
         unless code =~ /^([0-9a-f]{#{2 * length}})(.*)$/
-          fail InvalidReminderError, 'Flags set to existing but mask missing'
+          fail Daniel::InvalidReminderError,
+               'Flags set to existing but mask missing'
         end
-        [Util.from_hex(Regexp.last_match[1]), Regexp.last_match[2]]
+        [Daniel::Util.from_hex(Regexp.last_match[1]), Regexp.last_match[2]]
       end
     end
 
