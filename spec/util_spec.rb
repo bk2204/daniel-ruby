@@ -28,4 +28,16 @@ describe Daniel::Util do
     expect(Daniel::Util.from_base64('aGlq')).to eq 'hij'
     expect(Daniel::Util.from_base64('a2xtbgo=')).to eq "klmn\n"
   end
+
+  it 'converts data to url64 as expected' do
+    expect(Daniel::Util.to_url64('abcdefg')).to eq 'YWJjZGVmZw'
+    expect(Daniel::Util.to_url64('hij')).to eq 'aGlq'
+    expect(Daniel::Util.to_url64("klmn\n")).to eq 'a2xtbgo'
+  end
+
+  it 'converts data from url64 as expected' do
+    expect(Daniel::Util.from_url64('YWJjZGVmZw')).to eq 'abcdefg'
+    expect(Daniel::Util.from_url64('aGlq')).to eq 'hij'
+    expect(Daniel::Util.from_url64('a2xtbgo')).to eq "klmn\n"
+  end
 end
