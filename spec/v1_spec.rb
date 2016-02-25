@@ -89,7 +89,7 @@ describe Daniel::PasswordGenerator do
     expect { gen.generate_from_reminder(reminder) }.not_to raise_error
 
     rem = reminder.sub(/...example.tld$/, 'abcexample.tld')
-    expect { gen.generate_from_reminder(rem) }.to \
-      raise_error(Daniel::JWTValidationError)
+    error = Daniel::JWTValidationError
+    expect { gen.generate_from_reminder(rem) }.to raise_error error
   end
 end
