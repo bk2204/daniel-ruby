@@ -1,3 +1,5 @@
+require 'base64'
+
 # Array polyfill.
 class Array
   def pack(template)
@@ -44,6 +46,31 @@ class Array
     else
       fail "Don't know how to pack '#{template}'"
     end
+  end
+end
+
+# Base64 polyfill.
+#
+# Opal 0.9.2 has a bug with base64 that causes it to encode an extra NUL byte.
+module Base64
+  def self.encode64(s)
+    len = s.length % 3
+    chars = ('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /)
+    res = ''
+    loop do
+      chunk = s[0, 3].bytes + [0, 0]
+      s = s[3..-1]
+      enc = (chunk[0] << 16) | (chunk[1] << 8) | chunk[2]
+      rres =''
+      4.times do
+        rres += chars[enc & 0x3f]
+        enc >>= 6
+      end
+      res += rres.reverse
+      break if s.nil? || s.empty?
+    end
+    return res if len == 0
+    len == 1 ? res[0..-3] + '==' : res[0..-2] + '='
   end
 end
 
