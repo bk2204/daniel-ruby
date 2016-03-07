@@ -99,7 +99,7 @@ module Daniel
     end
 
     def self.to_url64(s)
-      to_base64(s).tr('+/', '-_').delete("=\r\n")
+      to_base64(s).tr('/+', '_-').delete("=\r\n")
     end
 
     def self.from_url64(s)
