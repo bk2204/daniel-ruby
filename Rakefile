@@ -18,8 +18,10 @@ begin
   require 'opal'
   require 'opal-rspec'
   require 'opal/rspec/rake_task'
-  Opal::RSpec::RakeTask.new do |t|
-    t.append_path 'lib'
+  require 'net/http'
+  Opal::RSpec::RakeTask.new do |serv, task|
+    serv.append_path 'lib'
+    task.runner = :node
   end
   possible << :"opal:rspec"
 rescue LoadError => e
