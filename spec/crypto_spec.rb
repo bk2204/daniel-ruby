@@ -72,4 +72,11 @@ describe OpenSSL::HMAC do
     expect(Daniel::Util.to_hex(digest)).to eq \
       '2f4f5517ecf77837d4c87cd224a44fb44b0551a67805a61cca91f9c518a57223'
   end
+
+  it 'should produce binary strings' do
+    digest = OpenSSL::HMAC.digest(OpenSSL::Digest::SHA256.new, 'abcd', 'abc')
+    if Daniel::Version.smart_implementation?
+      expect(digest.encoding).to eq Encoding::ASCII_8BIT
+    end
+  end
 end

@@ -321,8 +321,8 @@ module Daniel
     #   different for each instantiation.  If nil, generates a random value.
     def initialize(secret, salt = nil)
       salt = SecureRandom.random_bytes(32) if salt.nil?
-      @k = "\x00" * 32
-      @v = "\x01" * 32
+      @k = Daniel::Util.to_binary("\x00" * 32)
+      @v = Daniel::Util.to_binary("\x01" * 32)
       update(salt + secret)
     end
 
@@ -330,10 +330,10 @@ module Daniel
       buffer = Util.to_binary('')
       while buffer.bytesize < n
         @v = hmac(@k, @v)
-        buffer += @v
+        buffer = Util.to_binary(buffer + @v)
       end
       update
-      buffer[0, n]
+      Util.to_binary(buffer)[0, n]
     end
 
     # Generate a random version 4 UUID.
@@ -348,10 +348,11 @@ module Daniel
     protected
 
     def update(seed = nil)
-      @k = hmac(@k, @v + "\x00" + (seed || ''))
+      seed = Daniel::Util.to_binary(seed) if seed
+      @k = hmac(@k, @v + Daniel::Util.to_chr(0) + (seed || ''))
       @v = hmac(@k, @v)
       return if seed.nil?
-      @k = hmac(@k, @v + "\x01" + seed)
+      @k = hmac(@k, @v + Daniel::Util.to_chr(1) + seed)
       @v = hmac(@k, @v)
     end
 
