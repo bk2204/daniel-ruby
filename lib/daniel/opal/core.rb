@@ -5,7 +5,7 @@ class Array
   def pack(template)
     if template == 'C*'
       s = Daniel::Util.to_binary('')
-      each { |n| s += n.chr }
+      each { |n| s += Daniel::Util.to_chr(n) }
       s
     elsif template == 'N'
       a = []
@@ -22,7 +22,7 @@ class Array
       self[0].each_char do |item|
         p << item
         next unless p.size == 2
-        s += ((m[p[0]] << 4) + m[p[1]]).chr
+        s += Daniel::Util.to_chr((m[p[0]] << 4) + m[p[1]])
         p = []
       end
       s
@@ -30,13 +30,13 @@ class Array
       s = Daniel::Util.to_binary('')
       each do |item|
         if item <= 0x7f
-          s += item.chr
+          s += Daniel::Util.to_chr(item)
         else
           val = item
-          t = Daniel::Util.to_binary((val & 0x7f).chr)
+          t = Daniel::Util.to_chr(val & 0x7f)
           val >>= 7
           while val != 0
-            t = ((val & 0x7f) | 0x80).chr + t
+            t = Daniel::Util.to_chr((val & 0x7f) | 0x80) + t
             val >>= 7
           end
           s += t
@@ -76,16 +76,8 @@ end
 
 # String polyfill.
 class String
-  def bytes
-    Daniel::Util.to_binary(self).each_char.to_a.map(&:ord)
-  end
-
   def bytesize
     bytes.size
-  end
-
-  def each_byte
-    bytes.each
   end
 
   def unpack(template)
