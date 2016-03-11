@@ -60,14 +60,14 @@ module Daniel
     # Are we dealing with a reasonably modern and feature-complete
     # implementation?
     def self.smart_implementation?
-      ::RUBY_ENGINE != 'opal' && ::RUBY_VERSION.to_f > 1.8
+      ::RUBY_VERSION.to_f > 1.8
     end
   end
 
   # Utility functions.
   class Util
     def self.to_hex(s)
-      s.unpack('H*')[0]
+      to_binary(s).unpack('H*')[0]
     end
 
     def self.from_hex(s)
@@ -306,7 +306,7 @@ module Daniel
       p = params
       bytes = checksum + [p.flags, p.length, p.version].pack('w3')
       bytes += mask if mask
-      Util.to_hex(bytes) + code
+      Util.to_hex(Util.to_binary(bytes)) + code
     end
   end
 
@@ -496,15 +496,17 @@ module Daniel
     def compute_checksum
       digest = OpenSSL::Digest::SHA256.new
       [@prefix, 'Quick Check: ', @master_secret].each do |s|
+        s = Daniel::Util.to_binary(s)
         digest.update([s.bytesize].pack('N'))
         digest.update(s)
       end
-      digest.digest[0, 3]
+      Daniel::Util.to_binary(digest.digest[0, 3])
     end
 
     def process_strings(strings, salt)
       str = Daniel::Util.to_binary('')
       strings.each do |s|
+        s = Daniel::Util.to_binary(s)
         str += [s.bytesize].pack('N') + s
       end
       digest = OpenSSL::Digest::SHA256.new

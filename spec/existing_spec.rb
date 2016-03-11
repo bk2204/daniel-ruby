@@ -15,6 +15,7 @@ describe Daniel::PasswordGenerator do
         72eb3681200e00), Daniel::Flags::ARBITRARY_BYTES]
   ].each do |items|
     master, code, mask, result, remroot, flags = items.flatten
+    result = Daniel::Util.to_binary(result)
     rawmask = Daniel::Util.from_hex(mask)
     reminder = [remroot, mask, code].join
     flags = flags.to_i | Daniel::Flags::REPLICATE_EXISTING
@@ -47,7 +48,7 @@ describe Daniel::PasswordGenerator do
       gen = Daniel::PasswordGenerator.new master
       params = Daniel::Parameters.new(flags, result.length)
       xorout = result.bytes.zip(rawmask.bytes).map do |a|
-        (a[0] ^ a[1]).chr
+        Daniel::Util.to_chr(a[0] ^ a[1])
       end.join
       nuls = "\x00" * result.length
       expect(gen.generate_mask(code, params, xorout)).to eq(nuls)
@@ -58,7 +59,7 @@ describe Daniel::PasswordGenerator do
       gen = Daniel::PasswordGenerator.new master
       params = Daniel::Parameters.new(flags, result.length)
       xorout = result.bytes.zip(rawmask.bytes).map do |a|
-        (a[0] ^ a[1]).chr
+        Daniel::Util.to_chr(a[0] ^ a[1])
       end.join
       nuls = "\x00" * result.length
       expect(gen.generate(code, params, xorout)).to eq(nuls)

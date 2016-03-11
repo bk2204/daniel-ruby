@@ -14,6 +14,7 @@ module Daniel
   class Util
     # Convert a String to a bitArray.
     def self.to_bit_array(s)
+      s = Daniel::Util.to_binary(s)
       Native(`sjcl.codec.bytes.toBits(#{s.bytes})`)
     end
 
@@ -32,7 +33,7 @@ module Daniel
 
     def encrypt(data)
       len = data.length
-      s = ''
+      s = Daniel::Util.to_binary('')
       (len / 16).ceil.times do
         cur, data = data[0..15], data[16..-1]
         buf = @cipher.encrypt(Daniel::Util.to_bit_array(@iv))
@@ -45,7 +46,7 @@ module Daniel
     private
 
     def increment
-      iv = @iv.bytes.reverse
+      iv = Daniel::Util.to_binary(@iv).bytes.reverse
       offset = 0
       while offset < 16
         iv[offset] += 1
@@ -53,11 +54,15 @@ module Daniel
         iv[offset] = 0
         offset += 1
       end
-      @iv = iv.reverse.map(&:chr).join
+      @iv = iv.reverse.map { |c| Daniel::Util.to_chr(c) }.join
     end
 
     def xor(a, b)
-      a.bytes.zip(b.bytes).map { |p| (p[0] ^ p[1]).chr }.join
+      a, b = [a, b].map { |x| Daniel::Util.to_binary(x) }
+      v = a.bytes.zip(b.bytes).map do |p|
+        Daniel::Util.to_chr(p[0] ^ p[1])
+      end
+      Daniel::Util.to_binary(v.join)
     end
   end
 end
@@ -85,6 +90,7 @@ module OpenSSL
       end
 
       def update(input)
+        input = Daniel::Util.to_binary(input)
         @ctr.encrypt(input)[0, input.length]
       end
 
