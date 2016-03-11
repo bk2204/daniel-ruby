@@ -379,7 +379,7 @@ module Daniel
     end
 
     def self.canonical_json(data)
-      if Version.smart_implementation?
+      if Version.smart_implementation? && ::RUBY_ENGINE != 'opal'
         canonical = {}
         data.sort_by { |k, _| k }.each { |k, v| canonical[k] = v }
         return JSON.generate(canonical)
