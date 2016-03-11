@@ -917,6 +917,7 @@ module Daniel
     end
 
     def xor(string, bytes)
+      string = Util.to_binary(string)
       string.bytes.zip(bytes).map { |a, b| a ^ b }.pack('C*')
     end
 

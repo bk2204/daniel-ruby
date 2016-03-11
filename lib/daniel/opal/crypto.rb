@@ -40,7 +40,7 @@ module Daniel
         s += xor(Daniel::Util.from_bit_array(buf)[0, cur.length], cur)
         increment
       end
-      s
+      Daniel::Util.to_binary(s)
     end
 
     private
@@ -91,7 +91,7 @@ module OpenSSL
 
       def update(input)
         input = Daniel::Util.to_binary(input)
-        @ctr.encrypt(input)[0, input.length]
+        Daniel::Util.to_binary(@ctr.encrypt(input)[0, input.length])
       end
 
       def final
