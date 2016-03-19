@@ -72,7 +72,29 @@ module Base64
     return res if len == 0
     len == 1 ? res[0..-3] + '==' : res[0..-2] + '='
   end
+
+  def self.decode64(s)
+    chars = (('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /))
+    m = {}
+    chars.each_with_index { |c, i| m[c] = i }
+    m['='] = 0
+    res = ''
+    t = '    '
+    while !s.nil? && !s.empty?
+      t = s[0..3]
+      s = s[4..-1]
+      val = 0
+      t.each_char { |b| val <<= 6; val |= m[b] }
+      res += Daniel::Util.to_chr(val >> 16) +
+             Daniel::Util.to_chr((val >> 8) & 0xff) +
+             Daniel::Util.to_chr(val & 0xff)
+      res = Daniel::Util.to_binary(res)
+    end
+    return res if t[3] != '='
+    t[2] == '=' ? res[0..-3] : res[0..-2]
+  end
 end
+
 
 # String polyfill.
 class String
