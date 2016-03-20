@@ -58,7 +58,8 @@ describe Daniel::PasswordGenerator do
     seed = g1.send(:hkdf_expand, master_key, '1:seed', 32)
     mac_key = g1.send(:hkdf_expand, master_key, '1:mac', 32)
     bytegen = Daniel::ByteGenerator.new(seed, json_hash)
-    expect(bytegen.random_bytes(1024)[0...len]).to eq seq
+    byteseq = Daniel::Util.to_binary(bytegen.random_bytes(1024)[0...len])
+    expect(byteseq).to eq seq
 
     rem = gen.reminder('example.tld', params)
     m = /^.{16}(.*)\.([^.]+)example.tld$/.match rem

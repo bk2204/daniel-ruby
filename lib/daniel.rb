@@ -791,7 +791,7 @@ module Daniel
       end
 
       def generator_function(prng)
-        lambda { prng.random_bytes(1024).bytes }
+        lambda { Daniel::Util.to_binary(prng.random_bytes(1024)).bytes }
       end
 
       def reminder(code, params, mask = nil)
