@@ -594,8 +594,6 @@ module Daniel
         :code => code
       }
       data[:msk] = Util.to_url64(mask) if mask
-      key_id = "#{params.format_version}:#{params.iterations}:#{checksum}"
-      key_id += ":#{Util.to_url64(params.salt)}" if params.salt
       JWT.new(data, :mac => mac, :key => key, :key_id => key_id)
     end
 
@@ -614,6 +612,12 @@ module Daniel
     end
 
     protected
+
+    def key_id
+      k = [params.format_version, params.iterations, checksum]
+      k << Util.to_url64(params.salt) if params.salt
+      k.join(':')
+    end
 
     def key
       options[:key]
