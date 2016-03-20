@@ -61,7 +61,7 @@ module Base64
       chunk = Daniel::Util.to_binary(s[0, 3]).bytes + [0, 0]
       s = s[3..-1]
       enc = (chunk[0] << 16) | (chunk[1] << 8) | chunk[2]
-      rres =''
+      rres = ''
       4.times do
         rres += chars[enc & 0x3f]
         enc >>= 6
@@ -84,7 +84,7 @@ module Base64
       t = s[0..3]
       s = s[4..-1]
       val = 0
-      t.each_char { |b| val <<= 6; val |= m[b] }
+      t.each_char { |b| val = (val << 6) | m[b] }
       res += Daniel::Util.to_chr(val >> 16) +
              Daniel::Util.to_chr((val >> 8) & 0xff) +
              Daniel::Util.to_chr(val & 0xff)
