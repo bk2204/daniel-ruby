@@ -417,8 +417,9 @@ module Daniel
     def validate
       digest = compute_hmac
       diff = 0
+      digest, m = [digest, mac].map { |s| Util.to_binary(s) }
       # Constant time comparison.
-      digest.bytes.to_a.zip(mac.bytes.to_a).each do |dig, mac|
+      digest.bytes.to_a.zip(m.bytes.to_a).each do |dig, mac|
         diff |= dig ^ mac
       end
       fail JWTValidationError, 'MAC is incorrect' unless diff == 0
