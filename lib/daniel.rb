@@ -830,7 +830,7 @@ module Daniel
       end
 
       def hkdf_expand(prk, info, length)
-        niters = ((length + 31) / 32).to_i
+        niters = (length / 32.0).ceil
         t = ['']
         (1..niters).each do |i|
           t << OpenSSL::HMAC.digest(OpenSSL::Digest::SHA256.new, prk,
