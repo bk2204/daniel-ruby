@@ -374,6 +374,18 @@ module Daniel
 
     attr_reader :payload, :mac, :key_id, :serialized
 
+    class << self
+      protected
+
+      def old_canonical_json(data)
+        items = data.keys.sort { |a, b| a.to_s <=> b.to_s }.map do |k|
+          dummy = { k.to_s => data[k] }
+          JSON.generate(dummy)[1..-2]
+        end
+        "{#{items.join(',')}}"
+      end
+    end
+
     def self.parse(s, key = nil)
       header, payload, mac = s.split('.').map { |t| Util.from_url64(t) }
       re = /^#{Regexp.escape(HEADER).sub('%s', "(\\d+:\\d+:[a-f0-9]+(:.*)?)")}$/
@@ -382,17 +394,21 @@ module Daniel
       new(payload, :mac => mac, :key => key, :key_id => m[1])
     end
 
+    # Return a hash in canonical JSON form.
+    #
+    # The canonical JSON format is the shortest possible JSON representation
+    # (i.e., no extraneous whitespace) with each object having its keys sorted.
+    # Currently, this implementation does not operate recursively.
+    #
+    # @param data [Hash] the data to canonicalize
+    # @return [String] a canonical JSON representation of data
     def self.canonical_json(data)
-      if Version.smart_implementation? && ::RUBY_ENGINE != 'opal'
-        canonical = {}
-        data.sort_by { |k, _| k }.each { |k, v| canonical[k] = v }
-        return JSON.generate(canonical)
+      if !Version.smart_implementation? || ::RUBY_ENGINE == 'opal'
+        return old_canonical_json(data)
       end
-      items = data.keys.sort { |a, b| a.to_s <=> b.to_s }.map do |k|
-        dummy = { k.to_s => data[k] }
-        JSON.generate(dummy)[1..-2]
-      end
-      "{#{items.join(',')}}"
+      canonical = {}
+      data.sort_by { |k, _| k }.each { |k, v| canonical[k] = v }
+      JSON.generate(canonical)
     end
 
     def initialize(payload, options = {})
