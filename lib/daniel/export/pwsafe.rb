@@ -1,5 +1,4 @@
 require 'daniel'
-require 'daniel/bytegen'
 require 'openssl'
 require 'twofish'
 

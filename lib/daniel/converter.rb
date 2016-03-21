@@ -18,7 +18,7 @@ module Daniel
       pass = @oldgen.generate_from_reminder(rem)
       rem.params.flags = Daniel::Flags::REPLICATE_EXISTING
       rem.mask = @newgen.generate_mask(rem.code, rem.params, pass)
-      rem.checksum = @newgen.checksum
+      rem.checksum = Util.to_hex(@newgen.checksum)
       rem.to_s
     end
   end

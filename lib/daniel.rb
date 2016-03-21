@@ -27,7 +27,10 @@ if RUBY_ENGINE == 'opal'
   require 'daniel/opal'
 else
   require 'openssl'
+  require 'securerandom'
 end
+require 'base64'
+require 'json'
 require 'set'
 
 # A password generation tool.
@@ -42,6 +45,18 @@ module Daniel
 
   # An exception indicating an invalid reminder string.
   class InvalidReminderError < Exception
+  end
+
+  # An exception indicating an invalid JSON Web Token.
+  class InvalidJWTError < Exception
+  end
+
+  # An exception indicating an JSON Web Token failed validation (MAC check).
+  class JWTValidationError < Exception
+  end
+
+  # An exception indicating that the required data is not present.
+  class MissingDataError < Exception
   end
 
   # An exception indicating a checksum mismatch.
@@ -75,6 +90,30 @@ module Daniel
       to_binary(result)
     end
 
+    def self.to_base64(s)
+      to_binary(Base64.encode64(s).delete("\r\n"))
+    end
+
+    def self.from_base64(s)
+      Base64.decode64(s)
+    end
+
+    def self.to_url64(s)
+      to_base64(s).tr('/+', '_-').delete("=\r\n")
+    end
+
+    def self.from_url64(s)
+      s += case s.length & 3
+           when 0
+             ''
+           when 2
+             '=='
+           when 3
+             '='
+           end
+      from_base64(s.tr('-_', '+/'))
+    end
+
     # Convert a byte to a character.
     def self.to_chr(b)
       Version.smart_implementation? ? b.chr('BINARY') : b.chr
@@ -97,7 +136,7 @@ module Daniel
     REPLICATE_EXISTING = 0x20
     EXPLICIT_VERSION = 0x40
     ARBITRARY_BYTES = 0x80
-    IMPLEMENTED_MASK = 0xbf
+    IMPLEMENTED_MASK = 0xff
 
     # Compute a flag value from a number or string.
     #
@@ -199,7 +238,7 @@ module Daniel
 
   # The parameters affecting generation of a password.
   class Parameters
-    attr_reader :flags, :length, :version, :salt, :format_version
+    attr_reader :flags, :length, :version, :salt, :format_version, :iterations
 
     def initialize(flags = 2, length = 16, version = 0, options = {})
       self.flags = flags
@@ -207,6 +246,7 @@ module Daniel
       @version = version
       self.salt = options[:salt]
       @format_version = options[:format_version] || 0
+      @iterations = options[:iterations] || 1024
     end
 
     def flags=(flags)
@@ -230,6 +270,14 @@ module Daniel
 
     def salt=(salt)
       @salt = salt.nil? || salt.empty? ? nil : Util.to_binary(salt)
+    end
+
+    def format_version=(ver)
+      @format_version = ver.to_i
+    end
+
+    def iterations=(iters)
+      @iterations = iters.to_i
     end
 
     # Is this password an encrypted password?
@@ -258,32 +306,281 @@ module Daniel
     alias_method :eql?, :==
   end
 
-  # A parsed reminder value
-  Reminder = Struct.new(:params, :checksum, :code, :mask) do
+  # A PRNG based on a secret and a salt.
+  #
+  # Uses the HMAC_DRBG as specified in NIST SP800-90A.  This class is required
+  # so that the unit tests can produce reproducible output while still
+  # generating secure output by using a salt from SecureRandom each time.  This
+  # is essentially the technique used by RFC 6979.
+  class ByteGenerator
+    # Create a new ByteGenerator.
+    #
+    # @param secret [String] A secret, which may be low entropy (e.g. a
+    #   password)
+    # @param salt [String, nil] A 32-bit pseudorandom salt, which should be
+    #   different for each instantiation.  If nil, generates a random value.
+    def initialize(secret, salt = nil)
+      salt = SecureRandom.random_bytes(32) if salt.nil?
+      @k = Daniel::Util.to_binary("\x00" * 32)
+      @v = Daniel::Util.to_binary("\x01" * 32)
+      update(salt + secret)
+    end
+
+    def random_bytes(n)
+      buffer = Util.to_binary('')
+      while buffer.bytesize < n
+        @v = hmac(@k, @v)
+        buffer = Util.to_binary(buffer + @v)
+      end
+      update
+      Util.to_binary(buffer)[0, n]
+    end
+
+    # Generate a random version 4 UUID.
+    def uuid
+      buffer = canonicalize_uuid Util.to_binary(random_bytes(16)).each_byte.to_a
+      hex = buffer.map { |b| format('%02x', b) }.join
+      [0..7, 8..11, 12..15, 16..19, 20..31].map { |r| hex[r] }.join('-')
+    end
+
+    protected
+
+    def canonicalize_uuid(buffer)
+      buffer[6] = (buffer[6] & 0x0f) | 0x40
+      buffer[8] = (buffer[8] & 0x3f) | 0x80
+      buffer
+    end
+
+    def update(seed = nil)
+      seed = Daniel::Util.to_binary(seed) if seed
+      @k = hmac(@k, @v + Daniel::Util.to_chr(0) + (seed || ''))
+      @v = hmac(@k, @v)
+      return if seed.nil?
+      @k = hmac(@k, @v + Daniel::Util.to_chr(1) + seed)
+      @v = hmac(@k, @v)
+    end
+
+    def hmac(k, v)
+      OpenSSL::HMAC.digest(OpenSSL::Digest::SHA256.new, k, v)
+    end
+  end
+
+  # A limited JSON Web Token implementation.
+  #
+  # This implementation only generates HMAC-SHA-256 tokens, and it requires that
+  # all data be canonicalized (shortest possible JSON with keys sorted).
+  class JWT
+    HEADER = '{"alg":"HS256","kid":"%s","typ":"JWT"}'.freeze
+
+    attr_reader :payload, :mac, :key_id, :serialized
+
     class << self
       protected
 
-      def parse_parameters(rem)
-        params = Daniel::Parameters.new
-        pat = /^((?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f]){3})(.*)$/
-        csum = rem[0..5]
-        unless rem[6..-1] =~ pat
-          fail Daniel::InvalidReminderError, 'Invalid reminder'
+      def old_canonical_json(data)
+        items = data.keys.sort { |a, b| a.to_s <=> b.to_s }.map do |k|
+          dummy = { k.to_s => data[k] }
+          JSON.generate(dummy)[1..-2]
         end
-        hex_params, code = Regexp.last_match[1..2]
-        dparams = Daniel::Util.from_hex(hex_params)
-        params.flags, params.length, params.version = dparams.unpack('w3')
-        [csum, params, code]
+        "{#{items.join(',')}}"
+      end
+    end
+
+    def self.parse(s, key = nil)
+      header, payload, mac = s.split('.').map { |t| Util.from_url64(t) }
+      re = /^#{Regexp.escape(HEADER).sub('%s', "(\\d+:\\d+:[a-f0-9]+(:.*)?)")}$/
+      m = re.match header
+      fail InvalidJWTError, 'invalid JWT header' unless m
+      new(payload, :mac => mac, :key => key, :key_id => m[1])
+    end
+
+    # Return a hash in canonical JSON form.
+    #
+    # The canonical JSON format is the shortest possible JSON representation
+    # (i.e., no extraneous whitespace) with each object having its keys sorted.
+    # Currently, this implementation does not operate recursively.
+    #
+    # @param data [Hash] the data to canonicalize
+    # @return [String] a canonical JSON representation of data
+    def self.canonical_json(data)
+      if !Version.smart_implementation? || ::RUBY_ENGINE == 'opal'
+        return old_canonical_json(data)
+      end
+      canonical = {}
+      data.sort_by { |k, _| k }.each { |k, v| canonical[k] = v }
+      JSON.generate(canonical)
+    end
+
+    def initialize(payload, options = {})
+      @key = options[:key]
+      @valid = false
+      @mac = options[:mac]
+      @key_id = options[:key_id]
+      if payload.is_a? String
+        @serialized = payload
+        validate if @key
+        @payload = check_canonical_object(payload)
+      else
+        @payload = payload
+        @serialized = self.class.canonical_json(payload)
+        @mac = compute_hmac unless @mac
+      end
+    end
+
+    def valid?
+      return @valid unless @valid.nil?
+      validate
+    rescue JWTValidationError
+      false
+    end
+
+    def validate
+      digest = compute_hmac
+      diff = 0
+      digest, m = [digest, mac].map { |s| Util.to_binary(s) }
+      # Constant time comparison.
+      digest.bytes.to_a.zip(m.bytes.to_a).each do |dig, mac|
+        diff |= dig ^ mac
+      end
+      fail JWTValidationError, 'MAC is incorrect' unless diff == 0
+      @valid = true
+      self
+    end
+
+    def key=(key)
+      @key = key
+      @valid = nil
+    end
+
+    def to_s
+      validate unless @valid
+      [header, @serialized, @mac].map { |s| Util.to_url64(s) }.join('.')
+    end
+
+    protected
+
+    def header
+      HEADER % @key_id
+    end
+
+    def compute_hmac
+      fail MissingDataError unless @key
+      hmac = OpenSSL::HMAC.new(@key, OpenSSL::Digest::SHA256.new)
+      hmac << [header, @serialized].map { |s| Util.to_url64(s) }.join('.')
+      hmac.digest
+    end
+
+    def check_canonical_object(s)
+      fail InvalidJWTError, 'overlong JWT' if s.length > 1024
+      data = JSON.parse(s, :symbolize_names => 1)
+      canon_json = self.class.canonical_json(data)
+      fail InvalidJWTError, 'noncanonical data' if s != canon_json
+      data
+    end
+  end
+
+  # A parsed reminder value
+  Reminder = Struct.new(:params, :checksum, :code, :mask, :options) do
+    # A parser for reminder string values.
+    #
+    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    class Parser
+      def parse(s)
+        Reminder.new(*do_parse(s))
       end
 
-      def compute_mask(flags, length, code)
-        return [nil, code] if (flags & Daniel::Flags::REPLICATE_EXISTING) == 0
+      protected
 
-        unless code =~ /^([0-9a-f]{#{2 * length}})(.*)$/
-          fail Daniel::InvalidReminderError,
-               'Flags set to existing but mask missing'
+      BER_PATTERN = '(?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f])'.freeze
+      SUPPORTED_VERSIONS = (0..1).freeze
+
+      def do_parse(rem)
+        params = Parameters.new
+        csum = rem[0..5]
+        params.flags, remaining = parse_ber(rem[6..-1])
+        version = 0
+        if (params.flags & Flags::EXPLICIT_VERSION) != 0
+          version, remaining = parse_ber(remaining)
         end
-        [Daniel::Util.from_hex(Regexp.last_match[1]), Regexp.last_match[2]]
+        unless SUPPORTED_VERSIONS.include? version
+          fail InvalidReminderError, 'bad version'
+        end
+        klass = [Version0Parser, Version1Parser][version]
+        klass.new.parse_version(params, csum, remaining)
+      end
+
+      def parse_ber(s)
+        m = /^(#{BER_PATTERN})(.*)$/.match(s)
+        fail InvalidReminderError, 'Invalid reminder' unless m
+        [Util.from_hex(m[1]).unpack('w')[0], m[2]]
+      end
+    end
+
+    # A parser for version 0 reminder string values.
+    #
+    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    class Version0Parser < Parser
+      def parse_version(params, csum, remaining)
+        pat = /^(#{BER_PATTERN}{2})(.*)$/
+        fail InvalidReminderError, 'Invalid reminder' unless remaining =~ pat
+        hex_params, code = Regexp.last_match[1..2]
+        dparams = Util.from_hex(hex_params)
+        params.length, params.version = dparams.unpack('w2')
+        code, mask = compute_mask(params.flags, params.length, code)
+        [params, csum, code, mask, {}]
+      end
+
+      protected
+
+      def compute_mask(flags, length, code)
+        return [code, nil] if (flags & Flags::REPLICATE_EXISTING) == 0
+
+        m = /^([0-9a-f]{#{2 * length}})(.*)$/.match(code)
+        unless m
+          fail InvalidReminderError, 'Flags set to existing but mask missing'
+        end
+        [m[2], Util.from_hex(m[1])]
+      end
+    end
+
+    # A parser for version 1 reminder string values.
+    #
+    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    class Version1Parser < Parser
+      def parse_version(params, csum, remaining)
+        len, remaining = parse_ber(remaining)
+        parse_jwt(csum, params, remaining[0...len], remaining[len..-1])
+      end
+
+      protected
+
+      def validate_jwt(data, par, code)
+        fail InvalidReminderError, 'invalid protocol' if par.format_version != 1
+        fail InvalidReminderError, 'invalid flags' if data[:flg] != par.flags
+        fail InvalidReminderError, 'invalid code' if data[:code] != code
+        true
+      end
+
+      def parse_key_id(key_id, csum, params)
+        pver, iters, kcsum, salt = key_id.split(':')
+        fail InvalidReminderError, 'invalid checksum' if csum != kcsum
+        params.format_version = pver.to_i
+        params.salt = Util.from_url64(salt.to_s)
+        params.iterations = iters.to_i
+      end
+
+      def parse_jwt(csum, params, s, code)
+        jwt = JWT.parse(s)
+        options = {
+          :mac => jwt.mac
+        }
+        parse_key_id(jwt.key_id, csum, params)
+        data = jwt.payload
+        validate_jwt(data, params, code)
+        mask = data.key?(:msk) ? Util.from_url64(data[:msk]) : nil
+        params.length = data[:len]
+        params.version = data[:ver]
+        [params, csum, code, mask, options]
       end
     end
 
@@ -293,9 +590,37 @@ module Daniel
     # @return [Reminder] the parsed set of parameters
     def self.parse(rem)
       return rem if rem.is_a? Reminder
-      csum, params, code = parse_parameters(rem)
-      mask, code = compute_mask(params.flags, params.length, code)
-      Reminder.new(params, csum, code, mask)
+      Reminder.new(*Parser.new.parse(rem))
+    end
+
+    def options
+      self[:options] || {}
+    end
+
+    def mac
+      options[:mac]
+    end
+
+    def key=(key)
+      options[:key] = key
+    end
+
+    def jwt
+      return nil if params.format_version == 0
+      data = {
+        :flg => params.flags,
+        :len => params.length,
+        :ver => params.version,
+        :code => code
+      }
+      data[:msk] = Util.to_url64(mask) if mask
+      JWT.new(data, :mac => mac, :key => key, :key_id => key_id)
+    end
+
+    def validate
+      token = jwt
+      return unless token
+      token.validate
     end
 
     # Convert this reminder to a string form.
@@ -303,10 +628,33 @@ module Daniel
     # Calling {Reminder.parse} will convert the stringified form back into an
     # object.
     def to_s
+      send("format_v#{params.format_version}")
+    end
+
+    protected
+
+    def key_id
+      k = [params.format_version, params.iterations, checksum]
+      k << Util.to_url64(params.salt) if params.salt
+      k.join(':')
+    end
+
+    def key
+      options[:key]
+    end
+
+    def format_v0
       p = params
-      bytes = checksum + [p.flags, p.length, p.version].pack('w3')
-      bytes += mask if mask
-      Util.to_hex(Util.to_binary(bytes)) + code
+      prefix([p.flags, p.length, p.version], mask) + code
+    end
+
+    def format_v1
+      jwts = jwt.to_s
+      prefix([params.flags, 1, jwts.length]) + jwts + code
+    end
+
+    def prefix(ints, mask = nil)
+      checksum + Util.to_hex(ints.pack('w3') + mask.to_s)
     end
   end
 
@@ -401,11 +749,126 @@ module Daniel
   # Unless the DC::Flags::ARBITRARY_BYTES flag is set, the password should be
   # valid UTF-8.
   class PasswordGenerator
+    # Generates version 0 passwords.
+    #
+    # This class is an implementation detail.
+    class GeneratorVersion0 < PasswordGenerator
+      def initialize(master_secret)
+        setup
+        @version = 0
+        @master_secret = master_secret
+      end
+
+      def generate(code, params, mask = nil)
+        flags = format('Flags 0x%08x: ', params.flags)
+        version = format('Version 0x%08x: ', params.version)
+
+        cipher = OpenSSL::Cipher::AES.new(256, :CTR)
+        cipher.encrypt
+        cipher.key = @master_secret
+        cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
+                                    @master_secret)
+
+        gen = generator_function(cipher)
+        return generate_existing(gen, params, mask) if params.existing_mode?
+        generate_default(gen, params)
+      end
+
+      def generator_function(cipher)
+        buffer = ([0] * 32).pack('C*')
+        lambda { cipher.update(buffer).bytes }
+      end
+
+      def reminder(code, params, mask = nil)
+        Reminder.new(params, Util.to_hex(checksum), code, mask).to_s
+      end
+
+      def parse_reminder(reminder)
+        Reminder.parse(reminder)
+      end
+    end
+
+    # Generates version 1 passwords.
+    #
+    # This class is an implementation detail.
+    class GeneratorVersion1 < PasswordGenerator
+      def initialize(master_secret)
+        setup
+        @version = 1
+        @master_secret = master_secret
+        @keys = {}
+      end
+
+      def generate(code, params, mask = nil)
+        seed = key_for(params, :seed)
+        data = {
+          :flg => params.flags,
+          :ver => params.version,
+          :code => code
+        }
+        salt = OpenSSL::Digest::SHA256.digest(JWT.canonical_json(data))
+        prng = Daniel::ByteGenerator.new(seed, salt)
+
+        gen = generator_function(prng)
+        return generate_existing(gen, params, mask) if params.existing_mode?
+        generate_default(gen, params)
+      end
+
+      def generator_function(prng)
+        lambda { Daniel::Util.to_binary(prng.random_bytes(1024)).bytes }
+      end
+
+      def reminder(code, params, mask = nil)
+        Reminder.new(params, Util.to_hex(checksum), code, mask,
+                     :key => key_for(params, :mac)).to_s
+      end
+
+      def parse_reminder(reminder)
+        rem = Reminder.parse(reminder)
+        rem.key = key_for(rem.params, :mac)
+        rem.validate
+        rem
+      end
+
+      protected
+
+      # Generate a key of length bytes based on the iteration count, salt (if
+      # any), and the master secret.
+      #
+      # Uses PBKDF2-HMAC-SHA-256 to generate a master key, and then uses
+      # HKDF-Expand to produce the required number of bytes.
+      def key_for(params, id, length = 32)
+        pset = {
+          :iters => params.iterations,
+          :salt => params.salt
+        }
+        @keys[pset] = { :master => master_key_for(params) } unless @keys[pset]
+        return @keys[pset][id] if @keys[pset][id]
+        @keys[pset][id] = hkdf_expand(@keys[pset][:master], "1:#{id}", length)
+      end
+
+      def master_key_for(params)
+        OpenSSL::PKCS5.pbkdf2_hmac(@master_secret, params.salt.to_s,
+                                   params.iterations, 32,
+                                   OpenSSL::Digest::SHA256.new)
+      end
+
+      def hkdf_expand(prk, info, length)
+        niters = (length / 32.0).ceil
+        t = ['']
+        (1..niters).each do |i|
+          t << OpenSSL::HMAC.digest(OpenSSL::Digest::SHA256.new, prk,
+                                    t[i - 1] + info.to_s + i.chr)
+        end
+        t.join[0...length]
+      end
+    end
+
     def initialize(pass, version = 0)
-      @version = version
-      @prefix = format('DrewPassChart: Version 0x%08x: ', version)
+      setup
       @master_secret = process_strings([@prefix, 'Master Secret: ', pass], '')
-      @checksum = nil
+      klass = [GeneratorVersion0, GeneratorVersion1][version]
+      @impl = klass.new(@master_secret)
     end
 
     def checksum
@@ -435,17 +898,7 @@ module Daniel
     # @param make [String, nil] the mask as a byte string or nil
     # @return [String] the generated password
     def generate(code, params, mask = nil)
-      flags = format('Flags 0x%08x: ', params.flags)
-      version = format('Version 0x%08x: ', params.version)
-
-      cipher = OpenSSL::Cipher::AES.new(256, :CTR)
-      cipher.encrypt
-      cipher.key = @master_secret
-      cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
-                                  @master_secret)
-
-      return generate_existing(cipher, params, mask) if params.existing_mode?
-      generate_default(cipher, params)
+      @impl.generate(code, params, mask)
     end
 
     # Generate a password based on a reminder.
@@ -453,7 +906,7 @@ module Daniel
     # @param reminder [String, Daniel::Reminder] the reminder
     # @return [String] the generated password
     def generate_from_reminder(reminder)
-      rem = Reminder.parse(reminder)
+      rem = @impl.parse_reminder(reminder)
       computed = Util.to_hex(checksum)
       if rem.checksum != computed
         fail ChecksumMismatchError.new(rem.checksum, computed)
@@ -469,24 +922,35 @@ module Daniel
     # @param mask [String, nil] the mask for the given reminder, or nil
     # @return [String] the reminder
     def reminder(code, params, mask = nil)
-      Reminder.new(params, checksum, code, mask).to_s
+      @impl.reminder(code, params, mask)
     end
 
-    private
+    protected
 
-    def generate_existing(cipher, parameters, mask)
+    def setup
+      @prefix = format('DrewPassChart: Version 0x%08x: ', 0)
+      @checksum = nil
+    end
+
+    def generate_existing(gen, parameters, mask)
       if parameters.length != mask.length
         fail InvalidParametersError, 'Invalid mask length'
       end
-      (cipher.update(mask) + cipher.final)[0...parameters.length]
+      result = []
+      result += gen.call.to_a while result.length < parameters.length
+      xor(mask, result[0...parameters.length])
     end
 
-    def generate_default(cipher, parameters)
+    def xor(string, bytes)
+      string = Util.to_binary(string)
+      string.bytes.zip(bytes).map { |a, b| a ^ b }.pack('C*')
+    end
+
+    def generate_default(gen, parameters)
       set = CharacterSet.new parameters.flags
-      buffer = ([0] * 32).pack('C*')
       result = ''
       while result.length < parameters.length
-        result += cipher.update(buffer).bytes.select do |x|
+        result += gen.call.select do |x|
           set.include?(x)
         end.pack('C*')
       end
@@ -587,6 +1051,10 @@ module Daniel
 
         opts.on('-v PASSWORD-VERSION', 'Set version') do |version|
           @params.version = version
+        end
+
+        opts.on('--format-version FORMAT-VERSION', 'Set format version') do |v|
+          @params.format_version = v
         end
 
         opts.on('-f FLAGS', 'Set flags') do |flags|
@@ -710,6 +1178,7 @@ module Daniel
         rem = Reminder.parse(reminder)
         params = rem.params
         flags = Flags.explain(params.flags)
+        mac = humanify(rem.mac)
         mask = humanify(rem.mask)
         salt = humanify(params.salt)
         prompt 'Reminder is:', ':reminder', reminder
@@ -717,9 +1186,11 @@ module Daniel
         prompt 'Length:', ':length', params.length
         prompt 'Password version:', ':password-version', params.version
         prompt 'Flags:', ':flags', params.flags, *flags
+        prompt 'Iterations:', ':iterations', params.iterations
         prompt 'Salt:', ':salt', salt if salt
         prompt 'Checksum:', ':checksum', rem.checksum
         prompt 'Mask:', ':mask', mask if mask
+        prompt 'MAC:', ':mac', mac if mac
         prompt 'Code:', ':code', rem.code
       end
     end
@@ -777,7 +1248,7 @@ module Daniel
       prompt 'Please enter your master password:', ':master-password?'
       pass = read_passphrase
       print "\n"
-      generator = PasswordGenerator.new pass, 0
+      generator = PasswordGenerator.new pass, @params.format_version
       prompt '# ok, checksum is', ':checksum', Util.to_hex(generator.checksum)
       if args.empty?
         prompt_and_dispatch(generator)
