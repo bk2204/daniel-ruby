@@ -593,18 +593,32 @@ module Daniel
       Reminder.new(*Parser.new.parse(rem))
     end
 
+    # Additional options, if any.
+    #
+    # @return [Hash] the options or an empty Hash
     def options
       self[:options] || {}
     end
 
+    # The MAC associated with this reminder.
+    #
+    # Only format version 1 reminders have a MAC.
+    #
+    # @return [String, nil] the MAC
     def mac
       options[:mac]
     end
 
+    # Set the MAC key to validate this reminder.
     def key=(key)
       options[:key] = key
     end
 
+    # The reminder in JWT form.
+    #
+    # Only format version 1 reminders can be represented in JWT form.
+    #
+    # @return [String, nil] the encoded JWT in compact serialization or nil
     def jwt
       return nil if params.format_version == 0
       data = {
@@ -617,6 +631,7 @@ module Daniel
       JWT.new(data, :mac => mac, :key => key, :key_id => key_id)
     end
 
+    # Validate the MAC on the reminder.
     def validate
       token = jwt
       return unless token
