@@ -122,6 +122,17 @@ module Daniel
     def self.to_binary(s)
       Version.smart_implementation? ? s.force_encoding('BINARY') : s
     end
+
+    # Compare strings a and b in constant time.
+    def self.constant_equal?(a, b)
+      diff = 0
+      a, b = [a, b].map { |s| Util.to_binary(s) }
+      # Constant time comparison.
+      a.bytes.to_a.zip(b.bytes.to_a).each do |ab, bb|
+        diff |= ab ^ bb
+      end
+      diff == 0
+    end
   end
 
   # Flag constants and conversion functions.
@@ -435,14 +446,9 @@ module Daniel
     end
 
     def validate
-      digest = compute_hmac
-      diff = 0
-      digest, m = [digest, mac].map { |s| Util.to_binary(s) }
-      # Constant time comparison.
-      digest.bytes.to_a.zip(m.bytes.to_a).each do |dig, mac|
-        diff |= dig ^ mac
+      unless Daniel::Util.constant_equal?(compute_hmac, mac)
+        fail JWTValidationError, 'MAC is incorrect'
       end
-      fail JWTValidationError, 'MAC is incorrect' unless diff == 0
       @valid = true
       self
     end
