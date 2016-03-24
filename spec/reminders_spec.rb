@@ -49,6 +49,16 @@ describe Daniel::Reminder do
       params = Daniel::Parameters.new(flags, length, version)
       expect(gen.reminder(code, params, mask)).to eq(reminder)
     end
+
+    it 'produces the correct values when parsed by generator' do
+      gen = Daniel::PasswordGenerator.new(password)
+      pieces = gen.parse_reminder(reminder)
+      expect(pieces[:checksum]).to eq(csum)
+      expect(pieces[:code]).to eq(code)
+      expect(pieces[:params].flags).to eq(flags)
+      expect(pieces[:params].length).to eq(length)
+      expect(pieces[:params].version).to eq(version)
+    end
   end
 
   it 'parses basic v1 reminders' do

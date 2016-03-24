@@ -922,6 +922,14 @@ module Daniel
       @impl.generate(code, params, mask)
     end
 
+    # Parse a reminder, validating it if necessary.
+    #
+    # @param rem [String] the reminder string
+    # @return [Reminder] the reminder
+    def parse_reminder(rem)
+      @impl.parse_reminder(rem)
+    end
+
     # Generate a password based on a reminder.
     #
     # @param reminder [String, Daniel::Reminder] the reminder
@@ -1248,8 +1256,9 @@ module Daniel
     end
 
     def generate_from_reminder(generator, reminder)
-      bin = Reminder.parse(reminder).params.binary?
-      output_password(encode(generator.generate_from_reminder(reminder), bin))
+      rem = generator.parse_reminder(reminder)
+      bin = rem.params.binary?
+      output_password(encode(generator.generate_from_reminder(rem), bin))
     end
 
     def prompt_and_dispatch(generator)
