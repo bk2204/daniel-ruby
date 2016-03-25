@@ -489,7 +489,8 @@ module Daniel
   Reminder = Struct.new(:params, :checksum, :code, :mask, :options) do
     # A parser for reminder string values.
     #
-    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    # This class is an implementation detail.  Use
+    # {PasswordGenerator.parse_reminder} instead.
     class Parser
       def parse(s)
         Reminder.new(*do_parse(s))
@@ -524,7 +525,8 @@ module Daniel
 
     # A parser for version 0 reminder string values.
     #
-    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    # This class is an implementation detail.  Use
+    # {PasswordGenerator.parse_reminder} instead.
     class Version0Parser < Parser
       def parse_version(params, csum, remaining)
         pat = /^(#{BER_PATTERN}{2})(.*)$/
@@ -551,7 +553,8 @@ module Daniel
 
     # A parser for version 1 reminder string values.
     #
-    # This class is an implementation detail.  Use {Reminder.parse} instead.
+    # This class is an implementation detail.  Use
+    # {PasswordGenerator.parse_reminder} instead.
     class Version1Parser < Parser
       def parse_version(params, csum, remaining)
         len, remaining = parse_ber(remaining)
@@ -591,6 +594,9 @@ module Daniel
     end
 
     # Parse a reminder into its constituent parts.
+    #
+    # This method does not validate the MAC on the reminder it generates.  Use
+    # {PasswordGenerator.parse_reminder} instead.
     #
     # @param rem [String] the complete reminder string
     # @return [Reminder] the parsed set of parameters
@@ -646,8 +652,8 @@ module Daniel
 
     # Convert this reminder to a string form.
     #
-    # Calling {Reminder.parse} will convert the stringified form back into an
-    # object.
+    # Calling {PasswordGenerator.parse_reminder} will convert the stringified
+    # form back into an object.
     def to_s
       send("format_v#{params.format_version}")
     end
