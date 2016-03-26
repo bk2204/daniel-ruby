@@ -60,7 +60,7 @@ module Daniel
   end
 
   # An exception indicating a checksum mismatch.
-  class ChecksumMismatchError < Exception
+  class ChecksumMismatchError < InvalidReminderError
     def initialize(actual, expected)
       super("Checksum mismatch (#{actual} != #{expected})")
     end
@@ -572,7 +572,7 @@ module Daniel
 
       def parse_key_id(key_id, csum, params)
         pver, iters, kcsum, salt = key_id.split(':')
-        fail InvalidReminderError, 'invalid checksum' if csum != kcsum
+        fail ChecksumMismatchError, kcsum, csum if kcsum != csum
         params.format_version = pver.to_i
         params.salt = Util.from_url64(salt.to_s)
         params.iterations = iters.to_i
