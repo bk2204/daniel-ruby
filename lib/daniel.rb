@@ -572,7 +572,7 @@ module Daniel
 
       def parse_key_id(key_id, csum, params)
         pver, iters, kcsum, salt = key_id.split(':')
-        fail ChecksumMismatchError, kcsum, csum if kcsum != csum
+        Reminder.compare_checksum(kcsum, csum)
         params.format_version = pver.to_i
         params.salt = Util.from_url64(salt.to_s)
         params.iterations = iters.to_i
@@ -603,6 +603,13 @@ module Daniel
     def self.parse(rem)
       return rem if rem.is_a? Reminder
       Reminder.new(*Parser.new.parse(rem))
+    end
+
+    def self.compare_checksum(rem_csum, gen_csum)
+      if rem_csum != gen_csum && rem_csum != '000000'
+        fail ChecksumMismatchError.new(rem_csum, gen_csum)
+      end
+      true
     end
 
     # Additional options, if any.
@@ -943,9 +950,7 @@ module Daniel
     def generate_from_reminder(reminder)
       rem = @impl.parse_reminder(reminder)
       computed = Util.to_hex(checksum)
-      if rem.checksum != computed
-        fail ChecksumMismatchError.new(rem.checksum, computed)
-      end
+      rem.class.compare_checksum(rem.checksum, computed)
 
       generate(rem.code, rem.params, rem.mask)
     end

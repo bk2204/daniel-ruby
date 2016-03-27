@@ -285,6 +285,20 @@ if RUBY_ENGINE != 'opal'
           .to raise_error(Daniel::ChecksumMismatchError, /checksum mismatch/i)
       end
 
+      it "allows all-null reminders properly#{msg}" do
+        prog = Daniel::MainProgram.new
+        prog.lines = ['example.tld']
+        prog.passphrase = 'foobar'
+        prog.prompt = type
+        expect { prog.main(args + ['0000000f0801example.tld']) } \
+          .not_to raise_error
+        expect(prog.passwords).to eq ['mJRUHjid']
+        expect(prog.output.flatten).to eq func.call [
+          ':master-password?',
+          ':checksum 72eb36'
+        ]
+      end
+
       it "processes reminders for existing passwords properly#{msg}" do
         prog = Daniel::MainProgram.new
         prog.lines = ['example.tld']
