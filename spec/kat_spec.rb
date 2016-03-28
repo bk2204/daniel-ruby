@@ -38,6 +38,14 @@ describe Daniel::PasswordGenerator do
       gen = Daniel::PasswordGenerator.new master
       expect(gen.generate_from_reminder(reminder)).to eq(result)
     end
+
+    it "gives the expected password for #{master}, #{code} all-null reminder" do
+      pending 'Opal encoding issues' if known_failure(code)
+
+      gen = Daniel::PasswordGenerator.new master
+      reminder.sub!(/^[0-9a-f]{6}/, '000000')
+      expect(gen.generate_from_reminder(reminder)).to eq(result)
+    end
   end
 
   it 'accepts reminder objects in generate_from_reminder' do
