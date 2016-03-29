@@ -18,6 +18,19 @@ describe Daniel::PasswordGenerator do
       'example.tld'
   end
 
+  def zero_reminder
+    # Broken out into the constituent components.
+    '000000' \
+      '8140' \
+      '01' \
+      '814d' \
+      'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6NDA5NjowMDAwMDA6YzI5a2FYVnRJR05vYkc5e' \
+      'WFXUmwiLCJ0eXAiOiJKV1QifQ.' \
+      'eyJjb2RlIjoiZXhhbXBsZS50bGQiLCJmbGciOjE5MiwibGVuIjoyMCwidmVyIjozfQ.' \
+      '7d5C_sBJh-Mg3gPGm0LAkR1TtJADKT6hSyXdUXHvD5o' \
+      'example.tld'
+  end
+
   def byte_sequence
     Daniel::Util.from_hex('957a076a3eda9845b2d611946d4e2334edc1c044')
   end
@@ -82,6 +95,12 @@ describe Daniel::PasswordGenerator do
   it 'should generate passwords from reminders' do
     gen = Daniel::PasswordGenerator.new('foobar', 1)
     seq = gen.generate_from_reminder(reminder)
+    expect(seq).to eq byte_sequence
+  end
+
+  it 'should generate passwords from all-zero reminders' do
+    gen = Daniel::PasswordGenerator.new('foobar', 1)
+    seq = gen.generate_from_reminder(zero_reminder)
     expect(seq).to eq byte_sequence
   end
 
