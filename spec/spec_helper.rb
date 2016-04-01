@@ -16,6 +16,9 @@ if RUBY_ENGINE != 'opal'
   require 'daniel/converter'
 end
 
+# Ensure we don't load the user's config.
+ENV['XDG_CONFIG_HOME'] = File.dirname(__FILE__)
+
 require 'daniel'
 
 RSpec.configure do |c|

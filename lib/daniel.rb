@@ -32,6 +32,7 @@ end
 require 'base64'
 require 'json'
 require 'set'
+require 'yaml'
 
 # A password generation tool.
 module Daniel
@@ -777,6 +778,59 @@ module Daniel
     end
   end
 
+  # Configuration data as read from the user's configuration file.
+  class Configuration
+    def initialize(file = nil)
+      @presets = {
+        'default' => { :params => Daniel::Parameters.new }
+      }
+      if file.nil?
+        file = File.exist?(default_path) ? File.new(default_path, 'r') : nil
+      end
+      load_data(file)
+    end
+
+    def parameters(s)
+      @presets[s.to_s][:params]
+    end
+
+    def passphrase(s)
+      @presets[s.to_s][:passphrase]
+    end
+
+    protected
+
+    def default_path
+      config = ENV['XDG_CONFIG_HOME'] || File.join(ENV['HOME'], '.config')
+      File.join(config, 'daniel', 'main.yaml')
+    end
+
+    def load_data(file)
+      return if file.nil? || !defined?(YAML)
+      data = ::YAML.load(file.read)
+      return unless data['presets']
+      data['presets'].each do |name, params|
+        p = Daniel::Parameters.new
+        [
+          :flags, :version, :length, :format_version, :salt, :iterations
+        ].each do |sym|
+          val = data_from(params, sym)
+          p.method(:"#{sym}=").call(val) if val
+        end
+        @presets[name] = { :params => p, :passphrase => params['passphrase'] }
+      end
+    end
+
+    def data_from(params, sym)
+      val = params[sym.to_s.tr('_', '-')]
+      # Ruby 1.8 does this for binary.
+      if val.respond_to?(:type_id) && val.type_id == 'binary'
+        val = Daniel::Util.from_base64(val.value)
+      end
+      val
+    end
+  end
+
   # Generates a password or set of passwords.
   #
   # Note that passwords are returned as byte strings (encoding ASCII-8BIT).
@@ -1058,7 +1112,8 @@ module Daniel
   # The main command-line interface.
   class MainProgram < Program # rubocop:disable Metrics/ClassLength
     def initialize
-      @params = Parameters.new
+      @config = Configuration.new
+      @params = @config.parameters(:default)
       @clipboard = false
       @mode = :password
       @format = :plain
