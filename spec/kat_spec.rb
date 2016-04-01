@@ -43,7 +43,7 @@ describe Daniel::PasswordGenerator do
       pending 'Opal encoding issues' if known_failure(code)
 
       gen = Daniel::PasswordGenerator.new master
-      reminder.sub!(/^[0-9a-f]{6}/, '000000')
+      reminder = reminder.sub(/^[0-9a-f]{6}/, '000000')
       expect(gen.generate_from_reminder(reminder)).to eq(result)
     end
   end
