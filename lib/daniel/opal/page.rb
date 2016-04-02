@@ -109,6 +109,7 @@ def main
         element(:remlist_contents).children.remove
         reminders = {}
         entries = response.body.each_line.map do |rem|
+          rem = rem.chomp
           next if /^\s*(?:#|$)/.match(rem)
           code = Daniel::Reminder.parse(rem).code
           [code, rem]
