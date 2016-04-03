@@ -7,3 +7,8 @@ presets:
         version: 0
         length: 16
         format-version: 1
+    throwaway:
+        flags: 0x0f
+        version: 1
+        length: 8
+        format-version: 0

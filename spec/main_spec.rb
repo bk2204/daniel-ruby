@@ -304,6 +304,24 @@ if RUBY_ENGINE != 'opal'
         end
       end
 
+      it "honors theme properly#{msg}" do
+        with_config do
+          prog = Daniel::MainProgram.new
+          prog.lines = ['example.tld']
+          prog.passphrase = 'foobar'
+          prog.prompt = type
+          prog.main(args + %w(-t throwaway))
+          expect(prog.passwords).to eq ['mJRUHjid']
+          expect(prog.output.flatten).to eq func.call [
+            ':master-password?',
+            ':checksum 72eb36',
+            ':code?',
+            ':reminder 72eb360f0801example.tld',
+            ':code?'
+          ]
+        end
+      end
+
       it "handles mismatched reminders properly#{msg}" do
         prog = Daniel::MainProgram.new
         prog.lines = ['example.tld']
@@ -560,6 +578,12 @@ if RUBY_ENGINE != 'opal'
     it 'throws an exception with an invalid password format' do
       prog = Daniel::MainProgram.new
       expect { prog.main(%w(-P bizarre)) }.to \
+        raise_error(OptionParser::InvalidArgument, /not.*valid/)
+    end
+
+    it 'throws an exception when -t is used with no config' do
+      prog = Daniel::MainProgram.new
+      expect { prog.main(%w(-t throwaway)) }.to \
         raise_error(OptionParser::InvalidArgument, /not.*valid/)
     end
 

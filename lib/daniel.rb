@@ -791,10 +791,12 @@ module Daniel
     end
 
     def parameters(s)
+      return nil unless @presets.key? s.to_s
       @presets[s.to_s][:params]
     end
 
     def passphrase(s)
+      return nil unless @presets.key? s.to_s
       @presets[s.to_s][:passphrase]
     end
 
@@ -1194,6 +1196,14 @@ module Daniel
             fail OptionParser::InvalidArgument, "not a valid format '#{format}'"
           end
           @format = format.to_sym
+        end
+
+        opts.on('-t PRESET', 'Default parameters to a preset value') do |preset|
+          p = @config.parameters(preset)
+          unless p
+            fail OptionParser::InvalidArgument, "not a valid preset '#{preset}'"
+          end
+          @params = p
         end
 
         opts.on_tail('-h', '--help', 'Show this message') do
