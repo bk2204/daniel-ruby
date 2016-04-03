@@ -112,6 +112,18 @@ def parse_human(msgs)
   end
 end
 
+def with_config(&block)
+  key = 'XDG_CONFIG_HOME'
+  old = ENV[key]
+  ENV[key] = File.join(File.dirname(__FILE__), 'fixtures')
+  begin
+    ret = block.call
+  ensure
+    ENV[key] = old
+  end
+  return ret
+end
+
 if RUBY_ENGINE != 'opal'
   describe Daniel::MainProgram do
     it 'parses args correctly' do
@@ -274,6 +286,22 @@ if RUBY_ENGINE != 'opal'
           ':master-password?',
           ':checksum 72eb36'
         ]
+      end
+
+      it "processes reminders properly with config#{msg}" do
+        with_config do
+          prog = Daniel::MainProgram.new
+          prog.lines = ['example.tld']
+          prog.passphrase = 'foobar'
+          prog.prompt = type
+          prog.main(args + ['72eb360f0801example.tld',
+                            '72eb360a1000example.tld'])
+          expect(prog.passwords).to eq ['mJRUHjid', 'nj&xzO@hz&QvuoGY']
+          expect(prog.output.flatten).to eq func.call [
+            ':master-password?',
+            ':checksum 72eb36'
+          ]
+        end
       end
 
       it "handles mismatched reminders properly#{msg}" do

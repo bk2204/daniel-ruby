@@ -952,11 +952,11 @@ module Daniel
       end
     end
 
-    def initialize(pass, version = 0)
+    def initialize(pass, _version = 0)
       setup
       @master_secret = process_strings([@prefix, 'Master Secret: ', pass], '')
-      klass = [GeneratorVersion0, GeneratorVersion1][version]
-      @impl = klass.new(@master_secret)
+      klasses = [GeneratorVersion0, GeneratorVersion1]
+      @impls = klasses.map { |c| c.new(@master_secret) }
     end
 
     def checksum
@@ -986,7 +986,7 @@ module Daniel
     # @param make [String, nil] the mask as a byte string or nil
     # @return [String] the generated password
     def generate(code, params, mask = nil)
-      @impl.generate(code, params, mask)
+      impl(params).generate(code, params, mask)
     end
 
     # Parse a reminder, validating it if necessary.
@@ -994,7 +994,8 @@ module Daniel
     # @param rem [String] the reminder string
     # @return [Reminder] the reminder
     def parse_reminder(rem)
-      @impl.parse_reminder(rem)
+      rem = Reminder.parse(rem)
+      impl(rem).parse_reminder(rem)
     end
 
     # Generate a password based on a reminder.
@@ -1002,11 +1003,11 @@ module Daniel
     # @param reminder [String, Daniel::Reminder] the reminder
     # @return [String] the generated password
     def generate_from_reminder(reminder)
-      rem = @impl.parse_reminder(reminder)
+      rem = parse_reminder(reminder)
       computed = Util.to_hex(checksum)
       rem.class.compare_checksum(rem.checksum, computed)
 
-      generate(rem.code, rem.params, rem.mask)
+      impl(rem).generate(rem.code, rem.params, rem.mask)
     end
 
     # Create a reminder based on the given parameters
@@ -1016,10 +1017,16 @@ module Daniel
     # @param mask [String, nil] the mask for the given reminder, or nil
     # @return [String] the reminder
     def reminder(code, params, mask = nil)
-      @impl.reminder(code, params, mask)
+      impl(params).reminder(code, params, mask)
     end
 
     protected
+
+    # Get the implementation for a Reminder or Parameters object.
+    def impl(selector)
+      selector = selector.params if selector.is_a? Reminder
+      @impls[selector.format_version]
+    end
 
     def setup
       @prefix = format('DrewPassChart: Version 0x%08x: ', 0)

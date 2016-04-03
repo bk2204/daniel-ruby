@@ -83,25 +83,42 @@ describe Daniel::PasswordGenerator do
     expect(computed).to eq mac
   end
 
-  it 'should generate expected reminders' do
-    gen = Daniel::PasswordGenerator.new('foobar', 1)
-    params = Daniel::Parameters.new(0xc0, 20, 3, :iterations => 4096,
-                                                 :format_version => 1,
-                                                 :salt => 'sodium chloride')
-    rem = gen.reminder('example.tld', params)
-    expect(rem).to eq reminder
+  it 'should generate expected byte sequence from parameters' do
+    (0..1).each do |fv|
+      gen = Daniel::PasswordGenerator.new('foobar', fv)
+      params = Daniel::Parameters.new(0xc0, 20, 3, :iterations => 4096,
+                                                   :format_version => 1,
+                                                   :salt => 'sodium chloride')
+      expect(gen.generate('example.tld', params)).to eq byte_sequence
+    end
   end
 
+  it 'should generate expected reminders' do
+    (0..1).each do |fv|
+      gen = Daniel::PasswordGenerator.new('foobar', fv)
+      params = Daniel::Parameters.new(0xc0, 20, 3, :iterations => 4096,
+                                                   :format_version => 1,
+                                                   :salt => 'sodium chloride')
+      rem = gen.reminder('example.tld', params)
+      expect(rem).to eq reminder
+    end
+  end
+
+
   it 'should generate passwords from reminders' do
-    gen = Daniel::PasswordGenerator.new('foobar', 1)
-    seq = gen.generate_from_reminder(reminder)
-    expect(seq).to eq byte_sequence
+    (0..1).each do |fv|
+      gen = Daniel::PasswordGenerator.new('foobar', fv)
+      seq = gen.generate_from_reminder(reminder)
+      expect(seq).to eq byte_sequence
+    end
   end
 
   it 'should generate passwords from all-zero reminders' do
-    gen = Daniel::PasswordGenerator.new('foobar', 1)
-    seq = gen.generate_from_reminder(zero_reminder)
-    expect(seq).to eq byte_sequence
+    (0..1).each do |fv|
+      gen = Daniel::PasswordGenerator.new('foobar', fv)
+      seq = gen.generate_from_reminder(zero_reminder)
+      expect(seq).to eq byte_sequence
+    end
   end
 
   it 'should validate MAC on reminders' do
