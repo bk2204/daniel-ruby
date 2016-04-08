@@ -1,0 +1,14 @@
+# This file is colon-separated.  Fields are
+# * master passphrase
+# * checksum
+# * BER flags
+# * BER version
+# * code
+# * reminder
+# * generated passphrase
+# * description
+# All arguments are URL-encoded.
+foobar:%72%eb%36:%81%40:%03:example.tld:72eb36814001814deyJhbGciOiJIUzI1NiIsImtpZCI6IjE6NDA5Njo3MmViMzY6YzI5a2FYVnRJR05vYkc5eWFXUmwiLCJ0eXAiOiJKV1QifQ.eyJjb2RlIjoiZXhhbXBsZS50bGQiLCJmbGciOjE5MiwibGVuIjoyMCwidmVyIjozfQ.Hsu6WskpGVZNF3PDKpFW3oQo4LULHHEz1glbPZn8EK4example.tld:%95z%07j%3e%da%98E%b2%d6%11%94mN%234%ed%c1%c0D:v1 example.tld
+foobar:%72%eb%36:%81%40:%03:example.tld:000000814001814deyJhbGciOiJIUzI1NiIsImtpZCI6IjE6NDA5NjowMDAwMDA6YzI5a2FYVnRJR05vYkc5eWFXUmwiLCJ0eXAiOiJKV1QifQ.eyJjb2RlIjoiZXhhbXBsZS50bGQiLCJmbGciOjE5MiwibGVuIjoyMCwidmVyIjozfQ.7d5C_sBJh-Mg3gPGm0LAkR1TtJADKT6hSyXdUXHvD5oexample.tld:%95z%07j%3e%da%98E%b2%d6%11%94mN%234%ed%c1%c0D:v1 anonymous example.tld
+foobar:%72%eb%36:%0a:%00:example.tld:72eb360a1000example.tld:nj%26xzO%40hz%26QvuoGY:v0 example.tld old defaults
+foobar:%72%eb%36:%0f:%01:example.tld:72eb360f0801example.tld:mJRUHjid:v0 example.tld non-defaults
