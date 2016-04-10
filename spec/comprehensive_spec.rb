@@ -51,7 +51,15 @@ describe Daniel::PasswordGenerator do
       expect(gen.generate_from_reminder(rem)).to eq(result)
     end
 
-    unless /^000000/.match(reminder)
+    if /^000000/.match(reminder)
+      it "marks all-zero reminders as anonymous for #{description}" do
+        pending 'Opal encoding issues' if known_failure(master)
+
+        gen = Daniel::PasswordGenerator.new master
+        rem = gen.parse_reminder(reminder)
+        expect(rem.anonymous?).to be true
+      end
+    else
       it "round-trips the reminder correctly for #{description}" do
         pending 'Opal encoding issues' if known_failure(master)
 

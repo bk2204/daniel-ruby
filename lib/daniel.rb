@@ -666,6 +666,10 @@ module Daniel
       send("format_v#{params.format_version}")
     end
 
+    def anonymous?
+      checksum == '000000'
+    end
+
     protected
 
     def key_id
