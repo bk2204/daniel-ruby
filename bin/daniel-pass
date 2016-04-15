@@ -30,7 +30,7 @@ begin
 rescue LoadError
   raise if fallback
   fallback = true
-  $LOAD_PATH.push File.join(File.dirname(__FILE__), '..', 'lib')
+  $LOAD_PATH.push File.join(File.dirname(File.realpath(__FILE__)), '..', 'lib')
   retry
 end
 
