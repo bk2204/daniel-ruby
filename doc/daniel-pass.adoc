@@ -1,0 +1,45 @@
+daniel-pass(1)
+==============
+
+Name
+----
+daniel-pass - password generator for throwaway passwords
+
+Synopsis
+--------
+[verse]
+'daniel-pass' [-p] <code>
+
+Description
+-----------
+daniel-pass produces unique throwaway passwords based on a low-value secret and
+a code which identifies the particular password.  This tool is designed for
+situations such as testing or quality assurance work which require many
+low-value passwords that pass typical password tests.
+
+This tool is not suitable for strong passwords used for real authentication, as
+it relies on a secret written in plaintext on disk.
+
+The code, which must be provided on the command line, is typically a username,
+hostname, or email address, but can be any valid UTF-8 string.
+
+Options
+-------
+-p::
+	Print the password to standard output without a trailing newline.  The default
+	if this option is not specified is to copy the password to the clipboard.
+	Note that this option has the inverse meaning of the `-p` flag for daniel(1).
+
+-v <version>::
+	Specify a particular password version.  The default is 0.  This can be useful
+	for testing situations that require password changes.
+
+Configuration
+-------------
+
+The configuration is read from `$XDG_CONFIG_HOME/daniel/main.yaml`.  The file is
+a YAML file containing a top-level key `presets`, and under that a key
+`throwaway`.  The `flags`, `version`, `length`, `salt`, `iterations`,
+`format-version`, and `passphrase` keys are read from the throwaway section and
+used to set the corresponding parameters.  The `passphrase` key is mandatory;
+all other values default to the standard daniel(1) defaults.
