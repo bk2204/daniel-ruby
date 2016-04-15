@@ -61,6 +61,10 @@ module Daniel
           opts.on('-p', 'Print passwords to standard output') do
             @clipboard = false
           end
+
+          opts.on('-v VERSION', 'Set the password version') do |ver|
+            @params.version = ver
+          end
         end.parse!(args)
         args[0].dup
       end
