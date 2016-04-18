@@ -12,8 +12,8 @@ module Daniel
         return if options[:help]
         pass, generator = do_prompt
         srcfile = File.new(args[0], 'r')
-        destfile = File.new(args[1], 'w')
-        converter = Daniel::Export::PasswordSafe.new(pass, destfile)
+        converter = Daniel::Export::PasswordSafe.new pass,
+                                                     File.new(args[1], 'w')
         srcfile.each_line do |l|
           converter.add_entry(generator, l.chomp) unless /^(#|\s*$)/.match(l)
         end
