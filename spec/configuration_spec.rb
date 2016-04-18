@@ -34,7 +34,8 @@ describe Daniel::Configuration do
     EOM
     c = Daniel::Configuration.new(StringIO.new(data, 'r'))
     p = Daniel::Parameters.new(0x5e, 12, 3, :salt => 'sodium chloride',
-                               :format_version => 1, :iterations => 12345)
+                                            :format_version => 1,
+                                            :iterations => 12_345)
     expect(c.parameters(:default)).to eq p
     expect(c.passphrase(:default)).to be nil
     p = Daniel::Parameters.new(0x08, 20, 45)

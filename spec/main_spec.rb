@@ -121,7 +121,7 @@ def with_config(&block)
   ensure
     ENV[key] = old
   end
-  return ret
+  ret
 end
 
 if RUBY_ENGINE != 'opal'

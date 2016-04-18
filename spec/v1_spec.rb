@@ -104,7 +104,6 @@ describe Daniel::PasswordGenerator do
     end
   end
 
-
   it 'should generate passwords from reminders' do
     (0..1).each do |fv|
       gen = Daniel::PasswordGenerator.new('foobar', fv)
