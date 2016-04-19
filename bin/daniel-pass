@@ -36,6 +36,18 @@ end
 
 module Daniel
   module ThrowawayPass
+    # Exceptions for this module.
+    class Exception < Daniel::Exception
+    end
+
+    # Missing command-line argument.
+    class MissingArgumentError < Exception
+    end
+
+    # Missing command-line argument.
+    class MissingDataError < Exception
+    end
+
     # Main program.
     class MainProgram < Daniel::Program
       def initialize
@@ -43,6 +55,8 @@ module Daniel
         @params = @config.parameters(:throwaway)
         @passphrase = @config.passphrase(:throwaway)
         @clipboard = true
+        fail MissingDataError, 'No passphrase provided' unless @passphrase
+        fail MissingDataError, 'No parameters provided' unless @params
         super
       end
 
@@ -66,6 +80,7 @@ module Daniel
             @params.version = ver
           end
         end.parse!(args)
+        fail MissingArgumentError, 'No code provided' if args.empty?
         args[0].dup
       end
 
