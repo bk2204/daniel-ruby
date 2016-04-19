@@ -36,6 +36,7 @@ end
 
 module Daniel
   module ThrowawayPass
+    # Main program.
     class MainProgram < Daniel::Program
       def initialize
         @config = Configuration.new
@@ -46,8 +47,7 @@ module Daniel
       end
 
       def main(args)
-        args = args.dup
-        code = parse_args(args)
+        code = parse_args(args.dup)
         generator = PasswordGenerator.new @passphrase
         output_password(generator.generate(code, @params))
       end
