@@ -7,8 +7,9 @@ class Element
   alias_native :select
 end
 
+# The built-in jQuery Event class.
 class Event
-  def originalEvent
+  def originalEvent # rubocop:disable Style/MethodName
     Native(`#{@native}.originalEvent`)
   end
 end
@@ -60,10 +61,13 @@ def handle_type_change
     :list => [:list]
   }
   val = Element.find('input[name=type]:checked').value
-  wanted = blocks[val]
-  on, off = all_blocks.partition { |b| wanted.include? b }
-  on.map { |b| b.to_s + '-block' }.each { |b| unhide(b) }
-  off.map { |b| b.to_s + '-block' }.each { |b| hide(b) }
+  on, off = all_blocks.partition { |b| blocks[val].include? b }
+  on.each { |b| unhide(block_name(b)) }
+  off.each { |b| hide(block_name(b)) }
+end
+
+def block_name(b)
+  b.to_s + '-block'
 end
 
 def generate_from_reminder(pwobj, reminder)
@@ -87,7 +91,7 @@ def main
     show(:checksum_text)
   end
 
-  element(:reminder_button).on :click  do
+  element(:reminder_button).on :click do
     generate_from_reminder(pwobj, element(:reminder).value)
   end
   element(:remlist_button).on :click do
