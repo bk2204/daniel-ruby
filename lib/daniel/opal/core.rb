@@ -95,7 +95,6 @@ module Base64
   end
 end
 
-
 # String polyfill.
 class String
   def bytesize
@@ -118,9 +117,7 @@ class String
           a << (val | v)
           val = 0
         else
-          # Intermediate variable required due to Opal bug #599
-          x = (v & 0x7f)
-          val |= x
+          val |= (v & 0x7f)
           val <<= 7
         end
       end
