@@ -75,21 +75,18 @@ module Base64
 
   def self.decode64(s)
     chars = (('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /))
-    m = {}
+    m = { '=' => 0 }
     chars.each_with_index { |c, i| m[c] = i }
-    m['='] = 0
-    res = ''
+    res = []
     t = '    '
     while !s.nil? && !s.empty?
       t = s[0..3]
       s = s[4..-1]
       val = 0
       t.each_char { |b| val = (val << 6) | m[b] }
-      res += Daniel::Util.to_chr(val >> 16) +
-             Daniel::Util.to_chr((val >> 8) & 0xff) +
-             Daniel::Util.to_chr(val & 0xff)
-      res = Daniel::Util.to_binary(res)
+      res += [val >> 16, (val >> 8) & 0xff, val & 0xff]
     end
+    res = Daniel::Util.to_binary(res.map { |b| Daniel::Util.to_chr(b) }.join)
     return res if t[3] != '='
     t[2] == '=' ? res[0..-3] : res[0..-2]
   end
