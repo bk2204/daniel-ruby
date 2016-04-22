@@ -38,7 +38,7 @@ describe Daniel::JWT do
       j = Daniel::JWT.parse(s, 'secret')
     end.to raise_error(Daniel::JWTValidationError)
     j = Daniel::JWT.parse(s)
-    j.key = 'secret'
+    j.mac_key = 'secret'
     expect(j.valid?).to eq false
     expect { j.validate }.to raise_error(Daniel::JWTValidationError)
   end
@@ -54,7 +54,7 @@ describe Daniel::JWT do
       :name => 'John Doe',
       :sub => '1234567890'
     }
-    j = Daniel::JWT.new(data, :key => 'secret', :key_id => key_id)
+    j = Daniel::JWT.new(data, :mac_key => 'secret', :key_id => key_id)
     expect(j.payload).to eq data
     expect(j.to_s).to eq example
   end

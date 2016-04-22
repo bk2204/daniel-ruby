@@ -403,7 +403,7 @@ module Daniel
       re = /^#{Regexp.escape(HEADER).sub('%s', "(\\d+:\\d+:[a-f0-9]+(:.*)?)")}$/
       m = re.match header
       fail InvalidJWTError, 'invalid JWT header' unless m
-      new(payload, :mac => mac, :key => key, :key_id => m[1])
+      new(payload, :mac => mac, :mac_key => key, :key_id => m[1])
     end
 
     # Return a hash in canonical JSON form.
@@ -424,13 +424,13 @@ module Daniel
     end
 
     def initialize(payload, options = {})
-      @key = options[:key]
+      @mac_key = options[:mac_key]
       @valid = false
       @mac = options[:mac]
       @key_id = options[:key_id]
       if payload.is_a? String
         @serialized = payload
-        validate if @key
+        validate if @mac_key
         @payload = check_canonical_object(payload)
       else
         @payload = payload
@@ -454,8 +454,8 @@ module Daniel
       self
     end
 
-    def key=(key)
-      @key = key
+    def mac_key=(key)
+      @mac_key = key
       @valid = nil
     end
 
@@ -471,8 +471,8 @@ module Daniel
     end
 
     def compute_hmac
-      fail MissingDataError unless @key
-      hmac = OpenSSL::HMAC.new(@key, OpenSSL::Digest::SHA256.new)
+      fail MissingDataError unless @mac_key
+      hmac = OpenSSL::HMAC.new(@mac_key, OpenSSL::Digest::SHA256.new)
       hmac << [header, @serialized].map { |s| Util.to_url64(s) }.join('.')
       hmac.digest
     end
@@ -630,8 +630,8 @@ module Daniel
     end
 
     # Set the MAC key to validate this reminder.
-    def key=(key)
-      options[:key] = key
+    def mac_key=(key)
+      options[:mac_key] = key
     end
 
     # The reminder in JWT form.
@@ -648,7 +648,7 @@ module Daniel
         :code => code
       }
       data[:msk] = Util.to_url64(mask) if mask
-      JWT.new(data, :mac => mac, :key => key, :key_id => key_id)
+      JWT.new(data, :mac => mac, :mac_key => mac_key, :key_id => key_id)
     end
 
     # Validate the MAC on the reminder.
@@ -678,8 +678,8 @@ module Daniel
       k.join(':')
     end
 
-    def key
-      options[:key]
+    def mac_key
+      options[:mac_key]
     end
 
     def format_v0
@@ -914,12 +914,12 @@ module Daniel
 
       def reminder(code, params, mask = nil)
         Reminder.new(params, Util.to_hex(checksum), code, mask,
-                     :key => key_for(params, :mac)).to_s
+                     :mac_key => key_for(params, :mac)).to_s
       end
 
       def parse_reminder(reminder)
         rem = Reminder.parse(reminder)
-        rem.key = key_for(rem.params, :mac)
+        rem.mac_key = key_for(rem.params, :mac)
         rem.validate
         rem
       end

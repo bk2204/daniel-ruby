@@ -101,7 +101,7 @@ describe Daniel::Reminder do
                                                  :format_version => 1)
     s = example
     r = Daniel::Reminder.new(params, 'abcdef', 'example.tld', nil,
-                             :key => 'secret')
+                             :mac_key => 'secret')
     expect(r.to_s).to eq s
   end
 
@@ -112,7 +112,7 @@ describe Daniel::Reminder do
     s = example2
     r = Daniel::Reminder.new(params, '987654', 'example.com',
                              Daniel::Util.to_binary("\xff") * 12,
-                             :key => 'nothing')
+                             :mac_key => 'nothing')
     expect(r.to_s).to eq s
   end
 
