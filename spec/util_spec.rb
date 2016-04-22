@@ -23,6 +23,7 @@ describe Daniel::Util do
     expect(Daniel::Util.to_base64("klmn\n")).to eq 'a2xtbgo='
     expect(Daniel::Util.to_base64('aa?')).to eq 'YWE/'
     expect(Daniel::Util.to_base64('bc>')).to eq 'YmM+'
+    expect(Daniel::Util.to_base64('')).to eq ''
   end
 
   it 'converts data from base64 as expected' do
@@ -40,6 +41,7 @@ describe Daniel::Util do
     expect(Daniel::Util.to_url64("klmn\n")).to eq 'a2xtbgo'
     expect(Daniel::Util.to_url64('aa?')).to eq 'YWE_'
     expect(Daniel::Util.to_url64('bc>')).to eq 'YmM-'
+    expect(Daniel::Util.to_url64('')).to eq ''
   end
 
   it 'converts data from url64 as expected' do

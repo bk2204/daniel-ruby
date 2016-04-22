@@ -57,7 +57,7 @@ module Base64
     len = s.length % 3
     chars = ('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /)
     res = ''
-    loop do
+    while !s.nil? && !s.empty?
       chunk = Daniel::Util.to_binary(s[0, 3]).bytes + [0, 0]
       s = s[3..-1]
       enc = (chunk[0] << 16) | (chunk[1] << 8) | chunk[2]
@@ -67,7 +67,6 @@ module Base64
         enc >>= 6
       end
       res += rres.reverse
-      break if s.nil? || s.empty?
     end
     return res if len == 0
     len == 1 ? res[0..-3] + '==' : res[0..-2] + '='
