@@ -547,22 +547,22 @@ module Daniel
     # This class is an implementation detail.  Use
     # {PasswordGenerator.parse_reminder} instead.
     class Version0Parser < Parser
-      def parse_version(args, _options)
-        @params.length, @params.version, code = *args
-        code, mask = compute_mask(@params.flags, @params.length, code)
+      def parse_version(args, _options = nil)
+        @params.length, @params.version, remaining = *args
+        code, mask = compute_mask(remaining)
         [@params, @checksum, code, mask, {}]
       end
 
       def parse_header(args)
-        parse_version(args, {})[0]
+        parse_version(args)[0]
       end
 
       protected
 
-      def compute_mask(flags, length, code)
-        return [code, nil] if (flags & Flags::REPLICATE_EXISTING) == 0
+      def compute_mask(code)
+        return [code, nil] if (@params.flags & Flags::REPLICATE_EXISTING) == 0
 
-        m = /^([0-9a-f]{#{2 * length}})(.*)$/.match(code)
+        m = /^([0-9a-f]{#{2 * @params.length}})(.*)$/.match(code)
         unless m
           fail InvalidReminderError, 'Flags set to existing but mask missing'
         end
