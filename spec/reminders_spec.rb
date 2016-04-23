@@ -7,20 +7,21 @@ require File.join(File.dirname(__FILE__), 'spec_helper')
 describe Daniel::Reminder do
   # A basic 16-character passphrase.
   def example
-    'abcdef4001812f' \
-      'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6NDA5NjphYmNkZWYiLCJ0eXAiOiJKV1QifQ.' \
+    '72eb364001812f' \
+      'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6NDA5Njo3MmViMzYiLCJ0eXAiOiJKV1QifQ.' \
       'eyJjb2RlIjoiZXhhbXBsZS50bGQiLCJmbGciOjY0LCJsZW4iOjE2LCJ2ZXIiOjB9.' \
-      'wuFtKLG5pfanr5-3gJk3mQI_7jn5oj66U9OeMr1zSvU' \
+      'F58yIKd7IDmYxGRpkgr6UWOn3ZTUTgjowK2RUu_VLG8' \
       'example.tld'
   end
 
   # A 12-character passphrase with salt and mask.
   def example2
-    '98765460018162' \
-      'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6ODE5Mjo5ODc2NTQ6QUFBQUFBQUFBQUFBIi' \
-      'widHlwIjoiSldUIn0.eyJjb2RlIjoiZXhhbXBsZS5jb20iLCJmbGciOjk2LCJsZW4i' \
-      'OjEyLCJtc2siOiJfX19fX19fX19fX19fX19fIiwidmVyIjoyfQ.30y6aMk3h4GfjBh' \
-      'zCLIfySmT4ULCiRMMclDU3L5jLZk' \
+    'ca679660018162' \
+      'eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6ODE5MjpjYTY3OTY6QUFBQUFBQUFBQUFBIiw' \
+      'idHlwIjoiSldUIn0.' \
+      'eyJjb2RlIjoiZXhhbXBsZS5jb20iLCJmbGciOjk2LCJsZW4iOjEyLCJtc2siOiJfX19' \
+      'fX19fX19fX19fX19fIiwidmVyIjoyfQ.' \
+      '7YhYmorl6qcKy2LeKfJDKrSi-d5r6c8VL8adJxNPfbY' \
       'example.com'
   end
 
@@ -66,7 +67,7 @@ describe Daniel::Reminder do
     m = /\.([A-Za-z0-9_-]+)example\.tld$/.match(s)
     mac = Daniel::Util.from_url64(m[1])
     r = Daniel::Reminder.parse(s)
-    expect(r.checksum).to eq 'abcdef'
+    expect(r.checksum).to eq '72eb36'
     expect(r.params.format_version).to eq 1
     expect(r.params.flags).to eq 0x40
     expect(r.params.version).to eq 0
@@ -83,7 +84,7 @@ describe Daniel::Reminder do
     m = /\.([A-Za-z0-9_-]+)example\.com$/.match(s)
     mac = Daniel::Util.from_url64(m[1])
     r = Daniel::Reminder.parse(s)
-    expect(r.checksum).to eq '987654'
+    expect(r.checksum).to eq 'ca6796'
     expect(r.params.format_version).to eq 1
     expect(r.params.flags).to eq 0x60
     expect(r.params.version).to eq 2
@@ -100,8 +101,9 @@ describe Daniel::Reminder do
     params = Daniel::Parameters.new(0x40, 16, 0, :iterations => 4096,
                                                  :format_version => 1)
     s = example
-    r = Daniel::Reminder.new(params, 'abcdef', 'example.tld', nil,
-                             :mac_key => 'secret')
+    k = Daniel::Util.from_url64('w6vSGl3w_iEO8qhoCRO2vRxRqMY-3AK7-QasPXSrEIY')
+    r = Daniel::Reminder.new(params, '72eb36', 'example.tld', nil,
+                             :mac_key => k)
     expect(r.to_s).to eq s
   end
 
@@ -110,9 +112,10 @@ describe Daniel::Reminder do
                                                  :salt => "\x00" * 9,
                                                  :format_version => 1)
     s = example2
-    r = Daniel::Reminder.new(params, '987654', 'example.com',
+    k = Daniel::Util.from_url64('6_DXNpxRaNa7K-7dC_Xb7yqacik2NiVlAjB6SSYANdw')
+    r = Daniel::Reminder.new(params, 'ca6796', 'example.com',
                              Daniel::Util.to_binary("\xff") * 12,
-                             :mac_key => 'nothing')
+                             :mac_key => k)
     expect(r.to_s).to eq s
   end
 
