@@ -27,7 +27,7 @@ module Daniel
       end
 
       def add_entry(generator, reminder)
-        rem = Reminder.parse(reminder)
+        rem = generator.parse_reminder(reminder)
         pass = generator.generate_from_reminder(rem)
         uuid = Util.from_hex(@bgen.uuid.delete('-'))
         write_field(FIELD_UUID, uuid)

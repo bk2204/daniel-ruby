@@ -14,7 +14,7 @@ module Daniel
     # @param oldrem [String] reminder for the old master password
     # @return [String] reminder for the new master password
     def convert(oldrem)
-      rem = Reminder.parse(oldrem)
+      rem = @oldgen.parse_reminder(oldrem)
       pass = @oldgen.generate_from_reminder(rem)
       rem.params.flags = Daniel::Flags::REPLICATE_EXISTING
       rem.mask = @newgen.generate_mask(rem.code, rem.params, pass)
