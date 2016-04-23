@@ -29,13 +29,15 @@ describe Daniel::JWT do
 
   it 'validates data correctly' do
     j = nil
-    expect { j = Daniel::JWT.parse(example, 'secret') }.not_to raise_error
+    expect do
+      j = Daniel::JWT.parse(example, :mac_key => 'secret')
+    end.not_to raise_error
     expect(j.valid?).to eq true
     expect { j.validate }.not_to raise_error
 
     s = example.sub(/...$/, 'abc')
     expect do
-      j = Daniel::JWT.parse(s, 'secret')
+      j = Daniel::JWT.parse(s, :mac_key => 'secret')
     end.to raise_error(Daniel::JWTValidationError)
     j = Daniel::JWT.parse(s)
     j.mac_key = 'secret'
@@ -44,7 +46,7 @@ describe Daniel::JWT do
   end
 
   it 'round-trips properly' do
-    j = Daniel::JWT.parse(example, 'secret')
+    j = Daniel::JWT.parse(example, :mac_key => 'secret')
     expect(j.to_s).to eq example
   end
 
@@ -60,7 +62,7 @@ describe Daniel::JWT do
   end
 
   it 'parses JSON properly' do
-    j = Daniel::JWT.parse(example, 'secret')
+    j = Daniel::JWT.parse(example, :mac_key => 'secret')
     data = {
       :admin => true,
       :name => 'John Doe',

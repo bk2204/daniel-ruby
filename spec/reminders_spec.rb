@@ -66,7 +66,8 @@ describe Daniel::Reminder do
     s = example
     m = /\.([A-Za-z0-9_-]+)example\.tld$/.match(s)
     mac = Daniel::Util.from_url64(m[1])
-    r = Daniel::Reminder.parse(s)
+    k = Daniel::Util.from_url64('w6vSGl3w_iEO8qhoCRO2vRxRqMY-3AK7-QasPXSrEIY')
+    r = Daniel::Reminder.parse(s, :mac_key => k)
     expect(r.checksum).to eq '72eb36'
     expect(r.params.format_version).to eq 1
     expect(r.params.flags).to eq 0x40
@@ -88,7 +89,8 @@ describe Daniel::Reminder do
     s = example2
     m = /\.([A-Za-z0-9_-]+)example\.com$/.match(s)
     mac = Daniel::Util.from_url64(m[1])
-    r = Daniel::Reminder.parse(s)
+    k = Daniel::Util.from_url64('6_DXNpxRaNa7K-7dC_Xb7yqacik2NiVlAjB6SSYANdw')
+    r = Daniel::Reminder.parse(s, :mac_key => k)
     expect(r.checksum).to eq 'ca6796'
     expect(r.params.format_version).to eq 1
     expect(r.params.flags).to eq 0x60

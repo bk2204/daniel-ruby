@@ -384,7 +384,7 @@ module Daniel
   class JWT
     HEADER = '{"alg":"HS256","kid":"%s","typ":"JWT"}'.freeze
 
-    attr_reader :payload, :mac, :key_id, :serialized
+    attr_reader :mac, :key_id, :serialized
 
     class << self
       protected
@@ -398,12 +398,13 @@ module Daniel
       end
     end
 
-    def self.parse(s, key = nil)
+    def self.parse(s, options = {})
       header, payload, mac = s.split('.').map { |t| Util.from_url64(t) }
       re = /^#{Regexp.escape(HEADER).sub('%s', "(\\d+:\\d+:[a-f0-9]+(:.*)?)")}$/
       m = re.match header
       fail InvalidJWTError, 'invalid JWT header' unless m
-      new(payload, :mac => mac, :mac_key => key, :key_id => m[1])
+      new(payload, :mac => mac, :mac_key => options[:mac_key], :key_id => m[1],
+                   :skip_verify => options[:skip_verify])
     end
 
     # Return a hash in canonical JSON form.
@@ -428,10 +429,10 @@ module Daniel
       @valid = false
       @mac = options[:mac]
       @key_id = options[:key_id]
+      @skip_verify = options[:skip_verify]
       if payload.is_a? String
         @serialized = payload
         validate if @mac_key
-        @payload = check_canonical_object(payload)
       else
         @payload = payload
         @serialized = self.class.canonical_json(payload)
@@ -450,6 +451,7 @@ module Daniel
       unless Daniel::Util.constant_equal?(compute_hmac, mac)
         fail JWTValidationError, 'MAC is incorrect'
       end
+      @payload = check_canonical_object(@serialized) unless @payload
       @valid = true
       self
     end
@@ -457,6 +459,12 @@ module Daniel
     def mac_key=(key)
       @mac_key = key
       @valid = nil
+    end
+
+    def payload
+      return check_canonical_object(@serialized) if @skip_verify
+      validate unless @valid
+      @payload
     end
 
     def to_s
@@ -493,9 +501,9 @@ module Daniel
     # This class is an implementation detail.  Use
     # {PasswordGenerator.parse_reminder} instead.
     class Parser
-      def parse(s)
+      def parse(s, options = {})
         klass, params, csum, remaining = parse_common_header(s)
-        Reminder.new(*klass.new.parse_version(params, csum, remaining))
+        Reminder.new(*klass.new.parse_version(params, csum, remaining, options))
       end
 
       def parse_header(s)
@@ -534,7 +542,7 @@ module Daniel
     # This class is an implementation detail.  Use
     # {PasswordGenerator.parse_reminder} instead.
     class Version0Parser < Parser
-      def parse_version(params, csum, remaining)
+      def parse_version(params, csum, remaining, _options)
         pat = /^(#{BER_PATTERN}{2})(.*)$/
         fail InvalidReminderError, 'Invalid reminder' unless remaining =~ pat
         hex_params, code = Regexp.last_match[1..2]
@@ -545,7 +553,7 @@ module Daniel
       end
 
       def parse_header(params, csum, remaining)
-        parse_version(params, csum, remaining)[0]
+        parse_version(params, csum, remaining, {})[0]
       end
 
       protected
@@ -566,9 +574,9 @@ module Daniel
     # This class is an implementation detail.  Use
     # {PasswordGenerator.parse_reminder} instead.
     class Version1Parser < Parser
-      def parse_version(params, csum, remaining)
+      def parse_version(params, csum, remaining, options)
         len, remaining = parse_ber(remaining)
-        parse_jwt(csum, params, remaining[0...len], remaining[len..-1])
+        parse_jwt(csum, params, remaining[0...len], remaining[len..-1], options)
       end
 
       def parse_header(params, csum, remaining)
@@ -594,17 +602,16 @@ module Daniel
         params.iterations = iters.to_i
       end
 
-      def parse_jwt_header(csum, params, s)
-        jwt = JWT.parse(s)
-        options = {
-          :mac => jwt.mac
-        }
+      def parse_jwt_header(csum, params, s, options = {})
+        jwt = JWT.parse(s, options)
+        options[:mac] = jwt.mac
         parse_key_id(jwt.key_id, csum, params)
         [jwt, options]
       end
 
-      def parse_jwt(csum, params, s, code)
-        jwt, options = parse_jwt_header(csum, params, s)
+      def parse_jwt(csum, params, s, code, options)
+        jwt, options = parse_jwt_header(csum, params, s, options)
+        jwt.mac_key = options[:mac_key]
         data = jwt.payload
         validate_jwt(data, params, code)
         mask = data.key?(:msk) ? Util.from_url64(data[:msk]) : nil
@@ -620,10 +627,11 @@ module Daniel
     # {PasswordGenerator.parse_reminder} instead.
     #
     # @param rem [String] the complete reminder string
+    # @param options [Hash] options required to parse the parameters
     # @return [Reminder] the parsed set of parameters
-    def self.parse(rem)
+    def self.parse(rem, options = {})
       return rem if rem.is_a? Reminder
-      Reminder.new(*Parser.new.parse(rem))
+      Reminder.new(*Parser.new.parse(rem, options))
     end
 
     def self.parse_header(rem)
@@ -943,9 +951,8 @@ module Daniel
       end
 
       def parse_reminder(reminder)
-        rem = Reminder.parse(reminder)
-        rem.mac_key = key_for(rem.params, :mac)
-        rem.validate
+        params = Reminder.parse_header(reminder)
+        rem = Reminder.parse(reminder, :mac_key => key_for(params, :mac))
         rem
       end
 
@@ -1025,8 +1032,8 @@ module Daniel
     # @param rem [String] the reminder string
     # @return [Reminder] the reminder
     def parse_reminder(rem)
-      rem = Reminder.parse(rem)
-      impl(rem).parse_reminder(rem)
+      params = Reminder.parse_header(rem)
+      impl(params).parse_reminder(rem)
     end
 
     # Generate a password based on a reminder.
@@ -1316,7 +1323,7 @@ module Daniel
 
     def parse(args) # rubocop:disable Metrics/AbcSize
       args.each do |reminder|
-        rem = Reminder.parse(reminder)
+        rem = Reminder.parse(reminder, :skip_verify => true)
         params = rem.params
         flags = Flags.explain(params.flags)
         mac = humanify(rem.mac)
