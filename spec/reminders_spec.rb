@@ -77,6 +77,11 @@ describe Daniel::Reminder do
     expect(r.code).to eq 'example.tld'
     expect(r.mac).to eq mac
     expect(r.anonymous?).to be false
+    p = Daniel::Reminder.parse_header(s)
+    expect(p.format_version).to eq 1
+    expect(p.flags).to eq 0x40
+    expect(p.iterations).to eq 4096
+    expect(p.salt).to be nil
   end
 
   it 'parses v1 reminders with all features' do
@@ -95,6 +100,11 @@ describe Daniel::Reminder do
     expect(r.code).to eq 'example.com'
     expect(r.mac).to eq mac
     expect(r.anonymous?).to be false
+    p = Daniel::Reminder.parse_header(s)
+    expect(p.format_version).to eq 1
+    expect(p.flags).to eq 0x60
+    expect(p.iterations).to eq 8192
+    expect(p.salt).to eq "\x00" * 9
   end
 
   it 'can create v1 reminders' do

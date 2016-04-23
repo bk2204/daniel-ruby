@@ -494,7 +494,13 @@ module Daniel
     # {PasswordGenerator.parse_reminder} instead.
     class Parser
       def parse(s)
-        Reminder.new(*do_parse(s))
+        klass, params, csum, remaining = parse_common_header(s)
+        Reminder.new(*klass.new.parse_version(params, csum, remaining))
+      end
+
+      def parse_header(s)
+        klass, params, csum, remaining = parse_common_header(s)
+        klass.new.parse_header(params, csum, remaining)
       end
 
       protected
@@ -502,7 +508,7 @@ module Daniel
       BER_PATTERN = '(?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f])'.freeze
       SUPPORTED_VERSIONS = (0..1).freeze
 
-      def do_parse(rem)
+      def parse_common_header(rem)
         params = Parameters.new
         csum = rem[0..5]
         params.flags, remaining = parse_ber(rem[6..-1])
@@ -513,8 +519,7 @@ module Daniel
         unless SUPPORTED_VERSIONS.include? version
           fail InvalidReminderError, 'bad version'
         end
-        klass = [Version0Parser, Version1Parser][version]
-        klass.new.parse_version(params, csum, remaining)
+        [[Version0Parser, Version1Parser][version], params, csum, remaining]
       end
 
       def parse_ber(s)
@@ -537,6 +542,10 @@ module Daniel
         params.length, params.version = dparams.unpack('w2')
         code, mask = compute_mask(params.flags, params.length, code)
         [params, csum, code, mask, {}]
+      end
+
+      def parse_header(params, csum, remaining)
+        parse_version(params, csum, remaining)[0]
       end
 
       protected
@@ -562,6 +571,12 @@ module Daniel
         parse_jwt(csum, params, remaining[0...len], remaining[len..-1])
       end
 
+      def parse_header(params, csum, remaining)
+        len, remaining = parse_ber(remaining)
+        parse_jwt_header(csum, params, remaining[0...len])
+        params
+      end
+
       protected
 
       def validate_jwt(data, par, code)
@@ -579,12 +594,17 @@ module Daniel
         params.iterations = iters.to_i
       end
 
-      def parse_jwt(csum, params, s, code)
+      def parse_jwt_header(csum, params, s)
         jwt = JWT.parse(s)
         options = {
           :mac => jwt.mac
         }
         parse_key_id(jwt.key_id, csum, params)
+        [jwt, options]
+      end
+
+      def parse_jwt(csum, params, s, code)
+        jwt, options = parse_jwt_header(csum, params, s)
         data = jwt.payload
         validate_jwt(data, params, code)
         mask = data.key?(:msk) ? Util.from_url64(data[:msk]) : nil
@@ -604,6 +624,11 @@ module Daniel
     def self.parse(rem)
       return rem if rem.is_a? Reminder
       Reminder.new(*Parser.new.parse(rem))
+    end
+
+    def self.parse_header(rem)
+      return rem.params if rem.is_a? Reminder
+      Parser.new.parse_header(rem)
     end
 
     def self.compare_checksum(rem_csum, gen_csum)
