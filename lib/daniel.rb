@@ -507,39 +507,37 @@ module Daniel
       end
 
       def self.parse(s, options = {})
-        klass, params, csum, remaining = parse_common_header(s)
-        Reminder.new(*klass.new(params, csum).parse_version(remaining, options))
+        klass, params, csum, args = parse_common_header(s)
+        Reminder.new(*klass.new(params, csum).parse_version(args, options))
       end
 
       def self.parse_header(s)
-        klass, params, csum, remaining = parse_common_header(s)
-        klass.new(params, csum).parse_header(remaining)
-      end
-
-      BER_PATTERN = '(?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f])'.freeze
-      SUPPORTED_VERSIONS = (0..1).freeze
-
-      def self.parse_ber(s)
-        m = /^(#{BER_PATTERN})(.*)$/.match(s)
-        fail InvalidReminderError, 'Invalid reminder' unless m
-        [Util.from_hex(m[1]).unpack('w')[0], m[2]]
+        klass, params, csum, args = parse_common_header(s)
+        klass.new(params, csum).parse_header(args)
       end
 
       class << self
         protected
 
+        BER_PATTERN = '(?:(?:[89a-f][0-9a-f])*[0-9a-f][0-9a-f])'.freeze
+        SUPPORTED_VERSIONS = (0..1).freeze
+
         def parse_common_header(rem)
           params = Parameters.new
           csum = rem[0..5]
-          params.flags, remaining = parse_ber(rem[6..-1])
-          version = 0
-          if (params.flags & Flags::EXPLICIT_VERSION) != 0
-            version, remaining = parse_ber(remaining)
-          end
+          args = parse_ber(rem[6..-1])
+          params.flags = args.shift
+          version = (params.flags & Flags::EXPLICIT_VERSION) != 0 ? args[0] : 0
           unless SUPPORTED_VERSIONS.include? version
             fail InvalidReminderError, 'bad version'
           end
-          [[Version0Parser, Version1Parser][version], params, csum, remaining]
+          [[Version0Parser, Version1Parser][version], params, csum, args]
+        end
+
+        def parse_ber(s)
+          m = /^(#{BER_PATTERN}{3})(.*)$/.match(s)
+          fail InvalidReminderError, 'Invalid reminder' unless m
+          Util.from_hex(m[1]).unpack('w3') << m[2]
         end
       end
     end
@@ -549,18 +547,14 @@ module Daniel
     # This class is an implementation detail.  Use
     # {PasswordGenerator.parse_reminder} instead.
     class Version0Parser < Parser
-      def parse_version(remaining, _options)
-        pat = /^(#{BER_PATTERN}{2})(.*)$/
-        fail InvalidReminderError, 'Invalid reminder' unless remaining =~ pat
-        hex_params, code = Regexp.last_match[1..2]
-        dparams = Util.from_hex(hex_params)
-        @params.length, @params.version = dparams.unpack('w2')
+      def parse_version(args, _options)
+        @params.length, @params.version, code = *args
         code, mask = compute_mask(@params.flags, @params.length, code)
         [@params, @checksum, code, mask, {}]
       end
 
-      def parse_header(remaining)
-        parse_version(remaining, {})[0]
+      def parse_header(args)
+        parse_version(args, {})[0]
       end
 
       protected
@@ -581,13 +575,13 @@ module Daniel
     # This class is an implementation detail.  Use
     # {PasswordGenerator.parse_reminder} instead.
     class Version1Parser < Parser
-      def parse_version(remaining, options)
-        len, remaining = self.class.parse_ber(remaining)
+      def parse_version(args, options)
+        len, remaining = args[1..-1]
         parse_jwt(remaining[0...len], remaining[len..-1], options)
       end
 
-      def parse_header(remaining)
-        len, remaining = self.class.parse_ber(remaining)
+      def parse_header(args)
+        len, remaining = args[1..-1]
         parse_jwt_header(remaining[0...len])
         @params
       end
