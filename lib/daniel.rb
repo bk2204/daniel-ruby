@@ -628,7 +628,8 @@ module Daniel
     # This method does not validate the MAC on the reminder it generates.  Use
     # {PasswordGenerator.parse_reminder} instead.
     #
-    # @param rem [String] the complete reminder string
+    # @param rem [String, Reminder] the complete reminder string or a Reminder
+    #   object
     # @param options [Hash] options required to parse the parameters
     # @return [Reminder] the parsed set of parameters
     def self.parse(rem, options = {})
@@ -636,6 +637,14 @@ module Daniel
       Reminder.new(*Parser.parse(rem, options))
     end
 
+    # Parse the header of a reminder.
+    #
+    # This method does not validate the MAC on the reminder it generates.  Use
+    # {PasswordGenerator.parse_reminder} instead.
+    #
+    # @param rem [String, Reminder] the complete reminder string or a Reminder
+    #   object
+    # @return [Parameters] the parsed set of parameters
     def self.parse_header(rem)
       return rem.params if rem.is_a? Reminder
       Parser.parse_header(rem)
