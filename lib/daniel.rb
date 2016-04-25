@@ -685,14 +685,7 @@ module Daniel
     # @return [String, nil] the encoded JWT in compact serialization or nil
     def jwt
       return nil if params.format_version == 0
-      data = {
-        :flg => params.flags,
-        :len => params.length,
-        :ver => params.version,
-        :code => code
-      }
-      data[:msk] = Util.to_url64(mask) if mask
-      JWT.new(data, :mac => mac, :mac_key => mac_key, :key_id => key_id)
+      JWT.new(jwt_data, :mac => mac, :mac_key => mac_key, :key_id => key_id)
     end
 
     # Validate the MAC on the reminder.
@@ -715,6 +708,17 @@ module Daniel
     end
 
     protected
+
+    def jwt_data
+      data = {
+        :flg => params.flags,
+        :len => params.length,
+        :ver => params.version,
+        :code => code
+      }
+      data[:msk] = Util.to_url64(mask) if mask
+      data
+    end
 
     def key_id
       k = [params.format_version, params.iterations, checksum]
