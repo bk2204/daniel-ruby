@@ -77,7 +77,7 @@ module Base64
     m = { '=' => 0 }
     chars.each_with_index { |c, i| m[c] = i }
     res = []
-    t = '    '
+    t = '    ' # rubocop:disable Lint/UselessAssignment
     while !s.nil? && !s.empty?
       t = s[0..3]
       s = s[4..-1]
