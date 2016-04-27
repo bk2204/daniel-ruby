@@ -35,15 +35,21 @@ module Daniel
       len = data.length
       s = Daniel::Util.to_binary('')
       (len / 16).ceil.times do
-        cur, data = data[0..15], data[16..-1]
-        buf = @cipher.encrypt(Daniel::Util.to_bit_array(@iv))
-        s += xor(Daniel::Util.from_bit_array(buf)[0, cur.length], cur)
-        increment
+        chunk, data = encrypt_block(data)
+        s += chunk
       end
       Daniel::Util.to_binary(s)
     end
 
     private
+
+    def encrypt_block(data)
+      cur = data[0..15]
+      buf = @cipher.encrypt(Daniel::Util.to_bit_array(@iv))
+      s = xor(Daniel::Util.from_bit_array(buf)[0, cur.length], cur)
+      increment
+      [s, data[16..-1]]
+    end
 
     def increment
       iv = Daniel::Util.to_binary(@iv).bytes.reverse
