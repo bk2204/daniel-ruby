@@ -76,6 +76,11 @@ module Daniel
             @clipboard = false
           end
 
+          opts.on('-r', 'Use machine-readable output') do
+            require 'cgi'
+            @machine_readable = true
+          end
+
           opts.on('-v VERSION', 'Set the password version') do |ver|
             @params.version = ver
           end
@@ -90,7 +95,7 @@ module Daniel
           Clipboard.copy pass
           puts 'Password copied to clipboard.'
         else
-          print pass
+          print @machine_readable ? CGI.escape(pass) : pass
         end
       end
     end
