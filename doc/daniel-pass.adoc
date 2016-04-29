@@ -18,7 +18,8 @@ situations such as testing or quality assurance work which require many
 low-value passwords that pass typical password tests.
 
 This tool is not suitable for strong passwords used for real authentication, as
-it relies on a secret written in plaintext on disk.
+it relies on a secret written in plaintext on disk.  If you need strong
+passwords for authentication, please use daniel(1) instead.
 
 The code, which must be provided on the command line, is typically a username,
 hostname, or email address, but can be any valid UTF-8 string.
