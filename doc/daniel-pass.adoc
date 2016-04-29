@@ -30,6 +30,10 @@ Options
 	if this option is not specified is to copy the password to the clipboard.
 	Note that this option has the inverse meaning of the `-p` flag for daniel(1).
 
+-r::
+	Produce machine-readable output.  All generated data (including passwords)
+	will be URI-encoded.
+
 -v <version>::
 	Specify a particular password version.  The default is 0.  This can be useful
 	for testing situations that require password changes.
