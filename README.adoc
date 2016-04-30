@@ -195,8 +195,18 @@ So what about the cryptography you're using?
 
 Glad you asked.  Essentially, the master password is hashed with some static
 data using 1024 iterations of PBKDF-2 using HMAC-SHA256.  No salt is used, since
-there is no place to store the salt.  This produces the master secret.  The
-code, flags, password version, and some static data are hashed using PBKDF-2
+there is no place to store the salt.  This produces the master secret.
+
+The checksum is generated from the first three bytes, hex-encoded, of the
+SHA-256 hash of the master secret and some static data.  This is done from the
+master secret and not the master password because it forces an attacker to go
+through the PBKDF-2 step in order to generate candidate matches.
+
+Now things differ.
+
+=== Version 0
+
+The code, flags, password version, and some static data are hashed using PBKDF-2
 again, this time with the master secret as the salt.  This produces the
 initialization vector.
 
@@ -210,10 +220,31 @@ the first _n_ bytes (where _n_ is the existing password length), regardless of
 value, are XORed with the existing password to generate a mask, which is encoded
 in the reminder.
 
-The checksum is generated from the first three bytes, hex-encoded, of the
-SHA-256 hash of the master secret and some static data.  This is done from the
-master secret and not the master password because it forces an attacker to go
-through the PBKDF-2 step in order to generate candidate matches.
+=== Version 1
 
-That's it.  The algorithm was designed to be difficult to attack, and yet fast
-enough to run on a low-powered Android phone.
+The master secret is run through an additional, variable number of iterations of
+PBKDF2/HMAC-SHA256 (default of 1024), with an additional salt (if provided).
+This produces the master key.
+
+The master key is used with HKDF-Expand (using SHA-256) to produce a 256-bit
+seed and 256-bit MAC key.
+
+The flags, version, and code are serialized into a canonical JSON format, and
+hashed with SHA-256.  An HMAC-DRBG instance using SHA-256 is created using the
+seed and the hash of the JSON parameters.  1024 bytes are generated at a time,
+and the password or mask is generated from these bytes, just as the AES output
+is used for version 0.
+
+The data for a version 1 reminder is encoded as a JWT with a prefix and suffix.
+The MAC key is used to protect the contents of this JWT using the HS256
+algorithm.
+
+The version 1 algorithm was designed to improve on defects in version 0 (such as
+the lack of salt, a fixed number of iterations, and unprotected parameters).  It
+also has the benefit that it can be easily implemented without support for
+cryptographic operations other than SHA-256 and HMAC, in case of export
+concerns.
+
+Version 1 reminders also have the ability to use a checksum of all-zeros, which
+indicates that no checksum comparison is to be done.  This prevents leaking any
+information about the master password, except by checking of the MAC.
