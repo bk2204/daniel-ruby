@@ -253,12 +253,12 @@ module Daniel
     attr_reader :flags, :length, :version, :salt, :format_version, :iterations
 
     def initialize(flags = 2, length = 16, version = 0, options = {})
-      self.flags = flags
       @length = length
       @version = version
       self.salt = options[:salt]
       @format_version = options[:format_version] || 0
       @iterations = options[:iterations] || 1024
+      self.flags = flags
     end
 
     def flags=(flags)
@@ -269,6 +269,7 @@ module Daniel
       if (flags & (Flags::REPLICATE_EXISTING | Flags::ARBITRARY_BYTES)) != 0
         flags &= ~Flags::SYMBOL_MASK_NEGATED
       end
+      flags |= Flags::EXPLICIT_VERSION if @format_version > 0
       @flags = flags
     end
 
@@ -866,7 +867,7 @@ module Daniel
       data['presets'].each do |name, params|
         p = Daniel::Parameters.new
         [
-          :flags, :version, :length, :format_version, :salt, :iterations
+          :format_version, :flags, :version, :length, :salt, :iterations
         ].each do |sym|
           val = data_from(params, sym)
           p.method(:"#{sym}=").call(val) if val

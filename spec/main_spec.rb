@@ -505,6 +505,26 @@ if RUBY_ENGINE != 'opal'
           ':code example.com'
         ]
       end
+
+      it "sets explicit version flag correctly#{msg}" do
+        reminder = '72eb36' \
+          '4e01812feyJhbGciOiJIUzI1NiIsImtpZCI6IjE6MTAyNDo3MmViMzYiLCJ0eXAiO' \
+          'iJKV1QifQ.eyJjb2RlIjoiZXhhbXBsZS5jb20iLCJmbGciOjc4LCJsZW4iOjE2LCJ' \
+          '2ZXIiOjB9.SXKBiXhyBTFqoEcV3Nh6WprnTOCVWT3f6Rv0eHXn_Jkexample.com'
+        prog = Daniel::MainProgram.new
+        prog.lines = ['example.com']
+        prog.passphrase = 'foobar'
+        prog.prompt = type
+        prog.main(%w(--format-version 1 -f 0x0e) + args)
+        expect(prog.passwords).to eq ['YcYAWNpjt2qqzKvw']
+        expect(prog.output.flatten).to eq func.call [
+          ':master-password?',
+          ':checksum 72eb36',
+          ':code?',
+          ":reminder #{reminder}",
+          ':code?'
+        ]
+      end
     end
 
     it 'produces proper estimate output' do

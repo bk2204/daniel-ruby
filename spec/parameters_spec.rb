@@ -62,6 +62,17 @@ describe Daniel::Parameters do
     expect(Daniel::Parameters.new.format_version).to eq 0
   end
 
+  it 'sets the EXPLICIT_VERSION flag when using non-zero format version' do
+    constant = Daniel::Flags::EXPLICIT_VERSION
+    p = Daniel::Parameters.new(20, 8, 5, :format_version => 1)
+    expect(p.flags).to eq 20 | constant
+    expect(p.flags & constant).to eq constant
+    p = Daniel::Parameters.new(20, 8, 5, :format_version => 1)
+    p.flags = 0x0e
+    expect(p.flags).to eq 0x4e
+    expect(p.flags & constant).to eq constant
+  end
+
   it 'defaults to having no salt' do
     expect(Daniel::Parameters.new.salt).to be nil
   end
