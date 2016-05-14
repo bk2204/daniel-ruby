@@ -188,3 +188,24 @@ chosen.
 	Changing the version number produces a completely different password unrelated
 	to any others.  To change the password version at the code prompt, use
 	`!version=<version>`.
+
+Configuration
+-------------
+
+daniel accepts some configuration options in
+`$XDG_CONFIG_HOME/daniel/main.yaml`.  This YAML file currently supports one key:
+`presets`.  The corresponding value is a hash, where the keys are named presets
+of values, and the value is a hash containing one or more of the following keys.
+
+|===
+|Key               | Value
+|`flags`           | Flags value (integer)
+|`format-version`  | Format version (0 or 1)
+|`length`          | Length of the password
+|`iterations`      | PBKDF2 iterations
+|`salt`            | PBKDF2 salt
+|`version`         | Default password version number
+|===
+
+By default, the `default` presets are used unless overridden on the command
+line.  The `-t` flag can be used to default to a different preset.
