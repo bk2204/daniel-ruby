@@ -892,10 +892,72 @@ module Daniel
   # Unless the DC::Flags::ARBITRARY_BYTES flag is set, the password should be
   # valid UTF-8.
   class PasswordGenerator
+    # Base class for password generators.
+    #
+    # This class is an implementation detail.
+    module GeneratorBase
+      def setup
+        @prefix = format('DrewPassChart: Version 0x%08x: ', 0)
+        @checksum = nil
+      end
+
+      def checksum
+        return @checksum unless @checksum.nil?
+        @checksum = compute_checksum
+      end
+
+      def generate_existing(gen, parameters, mask)
+        if parameters.length != mask.length
+          fail InvalidParametersError, 'Invalid mask length'
+        end
+        result = []
+        result += gen.call.to_a while result.length < parameters.length
+        xor(mask, result[0...parameters.length])
+      end
+
+      def xor(string, bytes)
+        string = Util.to_binary(string)
+        string.bytes.zip(bytes).map { |a, b| a ^ b }.pack('C*')
+      end
+
+      def generate_default(gen, parameters)
+        set = CharacterSet.new parameters.flags
+        result = ''
+        while result.length < parameters.length
+          result += gen.call.select do |x|
+            set.include?(x)
+          end.pack('C*')
+        end
+        result[0, parameters.length]
+      end
+
+      def compute_checksum
+        digest = OpenSSL::Digest::SHA256.new
+        [@prefix, 'Quick Check: ', @master_secret].each do |s|
+          s = Daniel::Util.to_binary(s)
+          digest.update([s.bytesize].pack('N'))
+          digest.update(s)
+        end
+        Daniel::Util.to_binary(digest.digest[0, 3])
+      end
+
+      def process_strings(strings, salt)
+        str = Daniel::Util.to_binary('')
+        strings.each do |s|
+          s = Daniel::Util.to_binary(s)
+          str += [s.bytesize].pack('N') + s
+        end
+        digest = OpenSSL::Digest::SHA256.new
+        OpenSSL::PKCS5.pbkdf2_hmac(str, salt, 1024, 32, digest)
+      end
+    end
+
     # Generates version 0 passwords.
     #
     # This class is an implementation detail.
-    class GeneratorVersion0 < PasswordGenerator
+    class GeneratorVersion0
+      include GeneratorBase
+
       def initialize(master_secret)
         setup
         @version = 0
@@ -934,7 +996,9 @@ module Daniel
     # Generates version 1 passwords.
     #
     # This class is an implementation detail.
-    class GeneratorVersion1 < PasswordGenerator
+    class GeneratorVersion1
+      include GeneratorBase
+
       def initialize(master_secret)
         setup
         @version = 1
@@ -1006,16 +1070,13 @@ module Daniel
       end
     end
 
+    include GeneratorBase
+
     def initialize(pass, _version = 0)
       setup
       @master_secret = process_strings([@prefix, 'Master Secret: ', pass], '')
       klasses = [GeneratorVersion0, GeneratorVersion1]
       @impls = klasses.map { |c| c.new(@master_secret) }
-    end
-
-    def checksum
-      return @checksum unless @checksum.nil?
-      @checksum = compute_checksum
     end
 
     # Generate a mask for an existing password.
@@ -1030,7 +1091,7 @@ module Daniel
     # function will return the mask.
     def generate_mask(code, params, password)
       fail InvalidParametersError, 'Invalid flags' unless params.existing_mode?
-      generate(code, params, password)
+      impl(params).generate(code, params, password)
     end
 
     # Generate a password.
@@ -1080,56 +1141,6 @@ module Daniel
     def impl(selector)
       selector = selector.params if selector.is_a? Reminder
       @impls[selector.format_version]
-    end
-
-    def setup
-      @prefix = format('DrewPassChart: Version 0x%08x: ', 0)
-      @checksum = nil
-    end
-
-    def generate_existing(gen, parameters, mask)
-      if parameters.length != mask.length
-        fail InvalidParametersError, 'Invalid mask length'
-      end
-      result = []
-      result += gen.call.to_a while result.length < parameters.length
-      xor(mask, result[0...parameters.length])
-    end
-
-    def xor(string, bytes)
-      string = Util.to_binary(string)
-      string.bytes.zip(bytes).map { |a, b| a ^ b }.pack('C*')
-    end
-
-    def generate_default(gen, parameters)
-      set = CharacterSet.new parameters.flags
-      result = ''
-      while result.length < parameters.length
-        result += gen.call.select do |x|
-          set.include?(x)
-        end.pack('C*')
-      end
-      result[0, parameters.length]
-    end
-
-    def compute_checksum
-      digest = OpenSSL::Digest::SHA256.new
-      [@prefix, 'Quick Check: ', @master_secret].each do |s|
-        s = Daniel::Util.to_binary(s)
-        digest.update([s.bytesize].pack('N'))
-        digest.update(s)
-      end
-      Daniel::Util.to_binary(digest.digest[0, 3])
-    end
-
-    def process_strings(strings, salt)
-      str = Daniel::Util.to_binary('')
-      strings.each do |s|
-        s = Daniel::Util.to_binary(s)
-        str += [s.bytesize].pack('N') + s
-      end
-      digest = OpenSSL::Digest::SHA256.new
-      OpenSSL::PKCS5.pbkdf2_hmac(str, salt, 1024, 32, digest)
     end
   end
 
