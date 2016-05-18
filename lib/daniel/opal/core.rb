@@ -55,7 +55,6 @@ end
 module Base64
   def self.encode64(s)
     len = s.length % 3
-    chars = ('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /)
     res = ''
     while !s.nil? && !s.empty?
       chunk = Daniel::Util.to_binary(s[0, 3]).bytes + [0, 0]
@@ -63,7 +62,7 @@ module Base64
       enc = (chunk[0] << 16) | (chunk[1] << 8) | chunk[2]
       rres = ''
       4.times do
-        rres += chars[enc & 0x3f]
+        rres += CHARS[enc & 0x3f]
         enc >>= 6
       end
       res += rres.reverse
@@ -73,21 +72,26 @@ module Base64
   end
 
   def self.decode64(s)
-    chars = (('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /))
-    m = { '=' => 0 }
-    chars.each_with_index { |c, i| m[c] = i }
     res = []
     t = '    ' # rubocop:disable Lint/UselessAssignment
     while !s.nil? && !s.empty?
       t = s[0..3]
       s = s[4..-1]
       val = 0
-      t.each_char { |b| val = (val << 6) | m[b] }
-      res += [val >> 16, (val >> 8) & 0xff, val & 0xff]
+      t.each_char { |b| val = (val << 6) | CHAR_MAP[b] }
+      res += [val >> 16, val >> 8, val]
     end
-    res = Daniel::Util.to_binary(res.map { |b| Daniel::Util.to_chr(b) }.join)
+    res = res.map { |b| Daniel::Util.to_chr(b & 0xff) }.join
+    res = Daniel::Util.to_binary(res)
     return res if t[3] != '='
     t[2] == '=' ? res[0..-3] : res[0..-2]
+  end
+
+  class << self
+    private
+
+    CHARS = ('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /)
+    CHAR_MAP = CHARS.each_with_index.map { |c, i| [c, i] }.to_h.merge '=' => 0
   end
 end
 
