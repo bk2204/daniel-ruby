@@ -76,42 +76,46 @@ def generate_from_reminder(pwobj, reminder)
   unhide(:password_helper)
 end
 
-def main
-  pwobj = nil
-  reminders = {}
+# Logic for main dispatch.
+class MainProgram
+  def initialize
+    @pwobj = nil
+    @reminders = {}
+    @pwbox = element(:generated_password)
+    @clipboard_area = element(:clipboard_area)
+  end
 
-  password_box = element(:generated_password)
-
-  element(:master_password_button).on :click do
+  def master_password_button
     pass = element(:master_password).value
-    pwobj = Daniel::PasswordGenerator.new pass
-    element(:checksum).text = Daniel::Util.to_hex(pwobj.checksum)
+    @pwobj = Daniel::PasswordGenerator.new pass
+    element(:checksum).text = Daniel::Util.to_hex(@pwobj.checksum)
 
     [:reminder, :reminder_button, :code, :code_button].each { |id| enable(id) }
     show(:checksum_text)
   end
 
-  element(:reminder_button).on :click do
-    generate_from_reminder(pwobj, element(:reminder).value)
-  end
-  element(:remlist_button).on :click do
-    generate_from_reminder(pwobj, reminders[element(:remlist).value])
+  def reminder_button
+    generate_from_reminder(@pwobj, element(:reminder).value)
   end
 
-  element(:code_button).on :click do
+  def remlist_button
+    generate_from_reminder(@pwobj, @reminders[element(:remlist).value])
+  end
+
+  def code_button
     params = Daniel::Parameters.new(flags)
     code = element(:code).value
-    pass = pwobj.generate(code, params)
-    password_box.value = pass
-    element(:reminder).value = pwobj.reminder(code, params)
+    pass = @pwobj.generate(code, params)
+    @pwbox.value = pass
+    element(:reminder).value = @pwobj.reminder(code, params)
     unhide(:password_helper)
   end
 
-  element(:source_button).on :click do
+  def source_button
     HTTP.get(element(:source).value) do |response|
       if response.ok?
         element(:remlist_contents).children.remove
-        reminders = {}
+        @reminders = {}
         entries = response.body.each_line.map do |rem|
           rem = rem.chomp
           next if /^\s*(?:#|$)/.match(rem)
@@ -120,7 +124,7 @@ def main
         end
         entries = entries.reject(&:nil?).sort_by { |e| e[0] }
         entries.each do |(code, rem)|
-          reminders[code] = rem
+          @reminders[code] = rem
           elem = Element.new(:option)
           elem.prop(:value, code)
           element(:remlist_contents).append(elem)
@@ -130,26 +134,43 @@ def main
     end
   end
 
+  def show_hide_password_button
+    # Are we going to make it visible?
+    visible = @clipboard_area.has_class? :invisible
+    text = visible ? 'Hide Password' : 'Show Password'
+    @clipboard_area.toggle_class :invisible
+    element(:show_hide_password_button).attr(:value, text)
+  end
+
+  def copy(e)
+    pass = element(:generated_password).value
+    return unless pass && !pass.empty?
+    cd = e.originalEvent.clipboardData
+    cd.setData('text/plain', pass)
+    e.prevent
+  end
+end
+
+def main
+  prog = MainProgram.new
+
   Element.find('input[name=type]').on(:change) { handle_type_change }
 
-  clipboard_area = element(:clipboard_area)
-
-  show_button = element(:show_hide_password_button)
-  show_button.on :click do
-    # Are we going to make it visible?
-    visible = element(:clipboard_area).has_class? :invisible
-    text = visible ? 'Hide Password' : 'Show Password'
-    clipboard_area.toggle_class :invisible
-    show_button.attr(:value, text)
+  [
+    :master_password_button,
+    :reminder_button,
+    :remlist_button,
+    :code_button,
+    :source_button,
+    :show_hide_password_button
+  ].each do |button|
+    element(button).on :click do
+      prog.send(button)
+    end
   end
 
   Document.on :copy do |e|
-    pass = element(:generated_password).value
-    if pass && !pass.empty?
-      cd = e.originalEvent.clipboardData
-      cd.setData('text/plain', pass)
-      e.prevent
-    end
+    prog.copy(e)
   end
 end
 
