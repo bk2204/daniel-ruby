@@ -119,7 +119,7 @@ class MainProgram
         entries = response.body.each_line.map do |rem|
           rem = rem.chomp
           next if /^\s*(?:#|$)/.match(rem)
-          code = Daniel::Reminder.parse(rem).code
+          code = @pwobj.parse_reminder(rem).code
           [code, rem]
         end
         entries = entries.reject(&:nil?).sort_by { |e| e[0] }
