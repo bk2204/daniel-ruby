@@ -113,24 +113,19 @@ class MainProgram
 
   def source_button
     HTTP.get(element(:source).value) do |response|
-      if response.ok?
-        element(:remlist_contents).children.remove
-        @reminders = {}
-        entries = response.body.each_line.map do |rem|
-          rem = rem.chomp
-          next if /^\s*(?:#|$)/.match(rem)
-          code = @pwobj.parse_reminder(rem).code
-          [code, rem]
-        end
-        entries = entries.reject(&:nil?).sort_by { |e| e[0] }
-        entries.each do |(code, rem)|
-          @reminders[code] = rem
-          elem = Element.new(:option)
-          elem.prop(:value, code)
-          element(:remlist_contents).append(elem)
-        end
-        unhide(:remlist_block)
+      break unless response.ok?
+      element(:remlist_contents).children.remove
+      @reminders = {}
+      entries = response.body.each_line.map do |rem|
+        rem = rem.chomp
+        next if /^\s*(?:#|$)/.match(rem)
+        [@pwobj.parse_reminder(rem).code, rem]
       end
+      entries.reject(&:nil?).sort.each do |(code, rem)|
+        @reminders[code] = rem
+        create_reminder_entry(code)
+      end
+      unhide(:remlist_block)
     end
   end
 
@@ -148,6 +143,14 @@ class MainProgram
     cd = e.originalEvent.clipboardData
     cd.setData('text/plain', pass)
     e.prevent
+  end
+
+  protected
+
+  def create_reminder_entry(code)
+    elem = Element.new(:option)
+    elem.prop(:value, code)
+    element(:remlist_contents).append(elem)
   end
 end
 
