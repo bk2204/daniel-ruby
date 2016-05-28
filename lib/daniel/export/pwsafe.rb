@@ -11,6 +11,7 @@ module Daniel
       FIELD_VERSION = 0
       FIELD_UUID = 0x01
       FIELD_TITLE = 0x03
+      FIELD_USERNAME = 0x04
       FIELD_PASS = 0x06
       FIELD_EOE = 0xff
       LATEST_VERSION = "\x0d\x03".freeze
@@ -30,8 +31,10 @@ module Daniel
         rem = generator.parse_reminder(reminder)
         pass = generator.generate_from_reminder(rem)
         uuid = Util.from_hex(@bgen.uuid.delete('-'))
+        username, title = parse_code(rem.code)
         write_field(FIELD_UUID, uuid)
-        write_field(FIELD_TITLE, rem.code)
+        write_field(FIELD_USERNAME, username) if username
+        write_field(FIELD_TITLE, title)
         write_field(FIELD_PASS, pass)
         write_field(FIELD_EOE)
       end
@@ -53,6 +56,12 @@ module Daniel
         @writer.print(tf.encrypt(keyblock))
         @writer.print(iv)
         write_database_header
+      end
+
+      def parse_code(code)
+        m = /\Apass:(.+)@(.+)\z/.match code
+        return [nil, code] unless m
+        return [m[1], m[2]].map { |s| CGI.unescape(s) }
       end
 
       # Write one or more full 128-bit (16-byte) blocks, encrypted and MAC'd.
