@@ -61,7 +61,7 @@ module Daniel
       def parse_code(code)
         m = /\Apass:(.+)@(.+)\z/.match code
         return [nil, code] unless m
-        return [m[1], m[2]].map { |s| CGI.unescape(s) }
+        [m[1], m[2]].map { |s| CGI.unescape(s) }
       end
 
       # Write one or more full 128-bit (16-byte) blocks, encrypted and MAC'd.
