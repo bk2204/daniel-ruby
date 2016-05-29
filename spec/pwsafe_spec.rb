@@ -33,5 +33,22 @@ if RUBY_ENGINE != 'opal'
       hash = '8ab2ede934952e6ba99cab58fcedf8e02be144f135ae561e9785fa118270b3e6'
       expect(OpenSSL::Digest::SHA256.hexdigest(io.string)).to eq hash
     end
+
+    it 'generates a random salt for each invocation' do
+      pass = 'foobar'
+      io1 = StringIO.new('', 'w')
+      pwsafe1 = Daniel::Export::PasswordSafe.new(pass, io1)
+      io2 = StringIO.new('', 'w')
+      pwsafe2 = Daniel::Export::PasswordSafe.new(pass, io2)
+      [pwsafe1, pwsafe2].each do |p|
+        gen = Daniel::PasswordGenerator.new(pass)
+        p.add_entry(gen, '72eb36021000example.tld')
+        p.add_entry(gen, '72eb36021000pass:jdoe%40nic.tld@example.com')
+        p.finish
+      end
+      # If the salt ended up being the same, we would generate the same byte
+      # sequence.
+      expect(io1.string).not_to eq io2.string
+    end
   end
 end
