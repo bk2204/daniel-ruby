@@ -112,19 +112,10 @@ class MainProgram
   end
 
   def source_button
-    HTTP.get(element(:source).value) do |response|
-      break unless response.ok?
-      element(:remlist_contents).children.remove
-      @reminders = {}
-      entries = response.body.each_line.map do |rem|
-        rem = rem.chomp
-        next if /^\s*(?:#|$)/.match(rem)
-        [@pwobj.parse_reminder(rem).code, rem]
-      end
-      entries.reject(&:nil?).sort.each do |(code, rem)|
-        @reminders[code] = rem
-        create_reminder_entry(code)
-      end
+    element(:remlist_contents).children.remove
+    fetch_reminders do |reminders|
+      @reminders = reminders
+      @reminders.keys.each { |code| create_reminder_entry(code) }
       unhide(:remlist_block)
     end
   end
@@ -151,6 +142,19 @@ class MainProgram
     elem = Element.new(:option)
     elem.prop(:value, code)
     element(:remlist_contents).append(elem)
+  end
+
+  def fetch_reminders
+    @reminders = {}
+    HTTP.get(element(:source).value) do |response|
+      break unless response.ok?
+      entries = response.body.each_line.map do |rem|
+        rem = rem.chomp
+        next if /^\s*(?:#|$)/.match(rem)
+        [@pwobj.parse_reminder(rem).code, rem]
+      end
+      yield entries.reject(&:nil?).sort.to_h
+    end
   end
 end
 
