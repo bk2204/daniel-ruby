@@ -59,9 +59,9 @@ module Daniel
       end
 
       def parse_code(code)
-        m = /\Apass:(.+)@(.+)\z/.match code
-        return [nil, code] unless m
-        [m[1], m[2]].map { |s| CGI.unescape(s) }
+        parsed = Daniel::CodeParser.parse(code)
+        return [parsed[:username], parsed[:domain]] if parsed[:username]
+        [nil, code]
       end
 
       # Write one or more full 128-bit (16-byte) blocks, encrypted and MAC'd.

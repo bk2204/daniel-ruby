@@ -26,6 +26,7 @@ if RUBY_ENGINE == 'opal'
   require 'opal'
   require 'daniel/opal'
 else
+  require 'cgi'
   require 'openssl'
   require 'securerandom'
 end
@@ -317,6 +318,19 @@ module Daniel
     end
 
     alias_method :eql?, :==
+  end
+
+  # Parse a code according to a standard format
+  class CodeParser
+    def self.parse(code)
+      parsed = { :code => code }
+      m = /^pass:(.+)@(.+)$/.match code
+      return parsed unless m
+      { :username => m[1], :domain => m[2] }.each do |(k, v)|
+        parsed[k] = CGI.unescape(v)
+      end
+      parsed
+    end
   end
 
   # A PRNG based on a secret and a salt.

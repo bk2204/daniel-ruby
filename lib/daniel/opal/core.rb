@@ -127,3 +127,11 @@ class String
     end
   end
 end
+
+class CGI
+  def self.unescape(s)
+    s.gsub(/%([0-9a-fA-F]{2})/) do
+      Daniel::Util.to_chr(Regexp.last_match[1].to_i(16))
+    end
+  end
+end
