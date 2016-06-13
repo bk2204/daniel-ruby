@@ -128,6 +128,7 @@ class String
   end
 end
 
+# CGI utility polyfill.
 class CGI
   def self.unescape(s)
     s.gsub(/%([0-9a-fA-F]{2})/) do
