@@ -151,10 +151,21 @@ class MainProgram
       entries = response.body.each_line.map do |rem|
         rem = rem.chomp
         next if /^\s*(?:#|$)/.match(rem)
-        [@pwobj.parse_reminder(rem).code, rem]
+        format_reminder(rem)
       end
       yield entries.reject(&:nil?).sort.to_h
     end
+  end
+
+  def format_reminder(rem)
+    code = @pwobj.parse_reminder(rem).code
+    parsed = Daniel::CodeParser.parse(code)
+    s = if parsed[:domain]
+          format('%s (username %s)', parsed[:domain], parsed[:username])
+        else
+          code
+        end
+    [s, rem]
   end
 end
 
