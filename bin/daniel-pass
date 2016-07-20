@@ -61,9 +61,12 @@ module Daniel
       end
 
       def main(args)
-        code = parse_args(args.dup)
-        generator = PasswordGenerator.new @passphrase
-        output_password(generator.generate(code, @params))
+        codes = parse_args(args.dup)
+        passes = codes.map do |code|
+          generator = PasswordGenerator.new @passphrase
+          generator.generate(code, @params)
+        end
+        output_passwords(passes)
       end
 
       protected
@@ -86,16 +89,17 @@ module Daniel
           end
         end.parse!(args)
         fail MissingArgumentError, 'No code provided' if args.empty?
-        args[0].dup
+        args.map(&:dup)
       end
 
-      def output_password(pass)
+      def output_passwords(passes)
         if @clipboard
           require 'clipboard' if @clipboard
-          Clipboard.copy pass
+          Clipboard.copy pass[0]
           puts 'Password copied to clipboard.'
         else
-          print @machine_readable ? CGI.escape(pass) : pass
+          r = passes.map { |pass| @machine_readable ? CGI.escape(pass) : pass }
+          print r.join("\n")
         end
       end
     end
