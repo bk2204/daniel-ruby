@@ -73,7 +73,7 @@ module Daniel
 
       def parse_args(args)
         OptionParser.new do |opts|
-          opts.banner = 'Usage: daniel-pass [-p] CODE'
+          opts.banner = 'Usage: daniel-pass [-p] CODE...'
 
           opts.on('-p', 'Print passwords to standard output') do
             @clipboard = false
