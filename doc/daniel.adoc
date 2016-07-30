@@ -42,7 +42,7 @@ password.
 If the provided code starts with an exclamation point, it is taken as a bang
 command. `!!` repeats the last non-command code.
 
-'daniel' [-r] [-p] [-v <version>] [-P <format>] -m::
+'daniel' [-r] [-p] [-v <version>] [-P <format>] -m|--existing::
 	Similar to the first form, but after the code prompt, the user is prompted to
 	enter an existing password.  This password is encoded into the reminder, which
 	is then output.  As with the first form, the reminder is useless without the
@@ -50,7 +50,7 @@ command. `!!` repeats the last non-command code.
 +
 This form is useful to encode existing credentials.
 
-'daniel' [-r] [-f <flags>] [-l <length>] -e::
+'daniel' [-r] [-f <flags>] [-l <length>] -e|--entropy::
   Instead of generating a password, output statistics about the entropy of a
 	password generated with those parameters.
 
@@ -152,6 +152,7 @@ The errors are as follows:
 Options
 -------
 -f <flags>::
+--password-flags <flags>::
 	Specify the set of characters permitted in the password.  A flags value of 0
 	permits all printable ASCII characters (ASCII 32–ASCII 126).  The default, 2,
 	is to exclude spaces, as these are handled poorly by
@@ -165,6 +166,7 @@ this case, simply increase the version number until a suitable password is
 chosen.
 
 -l <length>::
+--password-length <length>::
 	Specify the length of the password to be generated in characters.  The default
 	is 16.  If two passwords are generated with identical parameters except for
 	their length, one will start with the other.  That is, changing only the
@@ -176,13 +178,16 @@ chosen.
 	_bubblebabble_ is also accepted (for BubbleBabble format).
 
 -p::
+--clipboard::
 	If the clipboard gem is installed, copy the passwords to the clipboard instead
 	of printing them to standard output.
 
 -r::
+--machine-readable::
 	Produce machine-readable output.
 
 -v <version>::
+--password-version <version>::
 	Specify a particular password version.  The default is 0.  This can be useful
 	for institutions or websites that require frequently changing passwords.
 	Changing the version number produces a completely different password unrelated

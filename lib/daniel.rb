@@ -1230,7 +1230,8 @@ module Daniel
       OptionParser.new do |opts|
         opts.banner = 'Usage: daniel [-mrep] [-f FLAGS] [-l LENGTH] [-v VER]'
 
-        opts.on('-v PASSWORD-VERSION', 'Set version') do |version|
+        opts.on('-v PASSWORD-VERSION', '--password-version PASSWORD-VERSION',
+                'Set version') do |version|
           @params.version = version
         end
 
@@ -1238,29 +1239,32 @@ module Daniel
           @params.format_version = v
         end
 
-        opts.on('-f FLAGS', 'Set flags') do |flags|
+        opts.on('-f FLAGS', '--password-flags FLAGS', 'Set flags') do |flags|
           @params.flags = flags
           flags_set = true
         end
 
-        opts.on('-l LENGTH', 'Set length') do |length|
+        opts.on('-l LENGTH', '--password-length LEGNTH',
+                'Set length') do |length|
           @params.length = length
         end
 
-        opts.on('-m', 'Generate reminders from existing passwords') do
+        opts.on('-m', '--existing', 'Generate reminders from existing
+                passwords') do
           @params.flags = Flags::REPLICATE_EXISTING
           existing_set = true
         end
 
-        opts.on('-r', 'Produce machine-readable output') do
+        opts.on('-r', '--machine-readable',
+                'Produce machine-readable output') do
           @prompt = :machine
         end
 
-        opts.on('-e', 'Generate entropy estimates') do
+        opts.on('-e', '--entropy', 'Generate entropy estimates') do
           @mode = :estimate
         end
 
-        opts.on('-p', 'Store passwords to clipboard') do
+        opts.on('-p', '--clipboard', 'Store passwords to clipboard') do
           @clipboard = true
         end
 
@@ -1275,7 +1279,8 @@ module Daniel
           @format = format.to_sym
         end
 
-        opts.on('-t PRESET', 'Default parameters to a preset value') do |preset|
+        opts.on('-t PRESET', '--preset',
+                'Default parameters to a preset value') do |preset|
           p = @config.parameters(preset)
           unless p
             fail OptionParser::InvalidArgument, "not a valid preset '#{preset}'"
