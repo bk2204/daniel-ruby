@@ -95,7 +95,7 @@ module Daniel
       def output_passwords(passes)
         if @clipboard
           require 'clipboard' if @clipboard
-          Clipboard.copy pass[0]
+          Clipboard.copy passes[0]
           puts 'Password copied to clipboard.'
         else
           r = passes.map { |pass| @machine_readable ? CGI.escape(pass) : pass }
