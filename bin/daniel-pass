@@ -94,7 +94,7 @@ module Daniel
 
       def output_passwords(passes)
         if @clipboard
-          require 'clipboard' if @clipboard
+          require 'clipboard'
           Clipboard.copy passes[0]
           puts 'Password copied to clipboard.'
         else
