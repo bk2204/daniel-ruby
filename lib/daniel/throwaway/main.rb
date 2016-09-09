@@ -17,25 +17,37 @@ module Daniel
     # Main program.
     class MainProgram < Daniel::Program
       def initialize
-        @config = Configuration.new
-        @params = @config.parameters(:throwaway)
-        @passphrase = @config.passphrase(:throwaway)
-        @clipboard = true
-        fail MissingDataError, 'No passphrase provided' unless @passphrase
-        fail MissingDataError, 'No parameters provided' unless @params
+        initialize_variables
+        fail MissingDataError, 'No passphrase provided' unless passphrase
+        fail MissingDataError, 'No parameters provided' unless params
         super
       end
 
       def main(args)
         codes = parse_args(args.dup)
         passes = codes.map do |code|
-          generator = PasswordGenerator.new @passphrase
-          generator.generate(code, @params)
+          generator = PasswordGenerator.new passphrase
+          generator.generate(code, params)
         end
         output_passwords(passes)
       end
 
       protected
+
+      def initialize_variables
+        @config = Configuration.new
+        @clipboard = true
+        @io = $stdout
+      end
+
+      def params
+        return @params if @params
+        @params = @config.parameters(:throwaway)
+      end
+
+      def passphrase
+        @config.passphrase(:throwaway)
+      end
 
       def parse_args(args)
         OptionParser.new do |opts|
@@ -51,7 +63,7 @@ module Daniel
           end
 
           opts.on('-v VERSION', 'Set the password version') do |ver|
-            @params.version = ver
+            params.version = ver
           end
         end.parse!(args)
         fail MissingArgumentError, 'No code provided' if args.empty?
@@ -62,10 +74,10 @@ module Daniel
         if @clipboard
           require 'clipboard'
           Clipboard.copy passes[0]
-          puts 'Password copied to clipboard.'
+          @io.puts 'Password copied to clipboard.'
         else
           r = passes.map { |pass| @machine_readable ? CGI.escape(pass) : pass }
-          print r.join("\n")
+          @io.print r.join("\n")
         end
       end
     end

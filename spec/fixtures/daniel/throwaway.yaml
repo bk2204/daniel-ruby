@@ -1,0 +1,8 @@
+---
+presets:
+    throwaway:
+        flags: 0x0a
+        version: 0
+        length: 16
+        format-version: 0
+        passphrase: foo
