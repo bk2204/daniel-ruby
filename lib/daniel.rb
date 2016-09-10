@@ -133,7 +133,7 @@ module Daniel
       a.bytes.to_a.zip(b.bytes.to_a).each do |ab, bb|
         diff |= ab ^ bb
       end
-      diff == 0
+      diff.zero?
     end
   end
 
@@ -199,7 +199,7 @@ module Daniel
       end
       result = []
       flags.each_with_index do |item, index|
-        result << item if (value & (1 << index)) != 0
+        result << item if (value & (1 << index)).nonzero?
       end
       result
     end
@@ -214,8 +214,16 @@ module Daniel
     def self.flag_names
       flags = {}
       constants.each { |k| flags[k] = const_get(k) }
-      pairs = flags.select { |_, v| (v & (v - 1)) == 0 }.sort_by { |_, v| v }
+      pairs = flags.select { |_, v| power_of_two?(v) }.sort_by { |_, v| v }
       pairs.map { |k, _| k.to_s.downcase.tr('_', '-') }
+    end
+
+    class << self
+      protected
+
+      def power_of_two?(v)
+        (v & (v - 1)).zero?
+      end
     end
   end
 
@@ -225,7 +233,7 @@ module Daniel
     #
     # @param options [Integer] a set of bit flags
     def initialize(options = Flags::NO_SPACES)
-      super((options & Flags::ARBITRARY_BYTES) != 0 ? 0x00..0xff : 0x20..0x7e)
+      super((options & Flags::ARBITRARY_BYTES).nonzero? ? 0x00..0xff : 0x20..0x7e)
       m = {
         Flags::NO_NUMBERS => 0x30..0x39,
         Flags::NO_SPACES => [0x20],
@@ -234,7 +242,7 @@ module Daniel
         Flags::NO_LETTERS => [(0x41..0x5a).to_a, (0x61..0x7a).to_a].flatten
       }
       m.each do |k, v|
-        v.each { |x| delete(x) } if options & k != 0
+        v.each { |x| delete(x) } if (options & k).nonzero?
       end
     end
 
@@ -264,10 +272,10 @@ module Daniel
 
     def flags=(flags)
       flags = Flags.mask_from_characters(flags)
-      if (flags & ~Flags::IMPLEMENTED_MASK) != 0
+      if (flags & ~Flags::IMPLEMENTED_MASK).nonzero?
         raise InvalidParametersError, format('Invalid flags value %08x', flags)
       end
-      if (flags & (Flags::REPLICATE_EXISTING | Flags::ARBITRARY_BYTES)) != 0
+      if (flags & (Flags::REPLICATE_EXISTING | Flags::ARBITRARY_BYTES)).nonzero?
         flags &= ~Flags::SYMBOL_MASK_NEGATED
       end
       flags |= Flags::EXPLICIT_VERSION if @format_version > 0
@@ -703,7 +711,7 @@ module Daniel
     #
     # @return [String, nil] the encoded JWT in compact serialization or nil
     def jwt
-      return nil if params.format_version == 0
+      return nil if params.format_version.zero?
       JWT.new(jwt_data, :mac => mac, :mac_key => mac_key, :key_id => key_id)
     end
 
@@ -805,8 +813,8 @@ module Daniel
         return @checksum if @checksum
         k = []
         (len + 1).times do |i|
-          k[i] = i == 0 ? 1 : (((k[i - 1] * 5) +
-                               (data[i * 2 - 2] * 7 + data[i * 2 - 1])) % 36)
+          k[i] = i.zero? ? 1 : (((k[i - 1] * 5) +
+                                (data[i * 2 - 2] * 7 + data[i * 2 - 1])) % 36)
         end
         @checksum = k
       end
