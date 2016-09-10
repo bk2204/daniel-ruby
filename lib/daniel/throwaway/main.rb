@@ -18,8 +18,8 @@ module Daniel
     class MainProgram < Daniel::Program
       def initialize
         initialize_variables
-        fail MissingDataError, 'No passphrase provided' unless passphrase
-        fail MissingDataError, 'No parameters provided' unless params
+        raise MissingDataError, 'No passphrase provided' unless passphrase
+        raise MissingDataError, 'No parameters provided' unless params
         super
       end
 
@@ -66,7 +66,7 @@ module Daniel
             params.version = ver
           end
         end.parse!(args)
-        fail MissingArgumentError, 'No code provided' if args.empty?
+        raise MissingArgumentError, 'No code provided' if args.empty?
         args.map(&:dup)
       end
 

@@ -53,7 +53,7 @@ module Daniel
   class InvalidJWTError < Exception
   end
 
-  # An exception indicating an JSON Web Token failed validation (MAC check).
+  # An exception indicating an JSON Web Token raiseed validation (MAC check).
   class JWTValidationError < Exception
   end
 
@@ -195,7 +195,7 @@ module Daniel
     def self.explain(value)
       flags = flag_names
       if value < 0 || value > ((1 << flags.length) - 1)
-        fail InvalidParametersError, 'Invalid flags value'
+        raise InvalidParametersError, 'Invalid flags value'
       end
       result = []
       flags.each_with_index do |item, index|
@@ -265,7 +265,7 @@ module Daniel
     def flags=(flags)
       flags = Flags.mask_from_characters(flags)
       if (flags & ~Flags::IMPLEMENTED_MASK) != 0
-        fail InvalidParametersError, format('Invalid flags value %08x', flags)
+        raise InvalidParametersError, format('Invalid flags value %08x', flags)
       end
       if (flags & (Flags::REPLICATE_EXISTING | Flags::ARBITRARY_BYTES)) != 0
         flags &= ~Flags::SYMBOL_MASK_NEGATED
@@ -417,7 +417,7 @@ module Daniel
       header, payload, mac = s.split('.').map { |t| Util.from_url64(t) }
       re = /^#{Regexp.escape(HEADER).sub('%s', "(\\d+:\\d+:[a-f0-9]+(:.*)?)")}$/
       m = re.match header
-      fail InvalidJWTError, 'invalid JWT header' unless m
+      raise InvalidJWTError, 'invalid JWT header' unless m
       new(payload, :mac => mac, :mac_key => options[:mac_key], :key_id => m[1],
                    :skip_verify => options[:skip_verify])
     end
@@ -464,7 +464,7 @@ module Daniel
 
     def validate
       unless Daniel::Util.constant_equal?(compute_hmac, mac)
-        fail JWTValidationError, 'MAC is incorrect'
+        raise JWTValidationError, 'MAC is incorrect'
       end
       @payload = check_canonical_object(@serialized) unless @payload
       @valid = true
@@ -494,17 +494,17 @@ module Daniel
     end
 
     def compute_hmac
-      fail MissingDataError unless @mac_key
+      raise MissingDataError unless @mac_key
       hmac = OpenSSL::HMAC.new(@mac_key, OpenSSL::Digest::SHA256.new)
       hmac << [header, @serialized].map { |s| Util.to_url64(s) }.join('.')
       hmac.digest
     end
 
     def check_canonical_object(s)
-      fail InvalidJWTError, 'overlong JWT' if s.length > 1024
+      raise InvalidJWTError, 'overlong JWT' if s.length > 1024
       data = JSON.parse(s, :symbolize_names => 1)
       canon_json = self.class.canonical_json(data)
-      fail InvalidJWTError, 'noncanonical data' if s != canon_json
+      raise InvalidJWTError, 'noncanonical data' if s != canon_json
       data
     end
   end
@@ -544,14 +544,14 @@ module Daniel
           params.flags = args.shift
           version = (params.flags & Flags::EXPLICIT_VERSION) != 0 ? args[0] : 0
           unless SUPPORTED_VERSIONS.include? version
-            fail InvalidReminderError, 'bad version'
+            raise InvalidReminderError, 'bad version'
           end
           [[Version0Parser, Version1Parser][version], params, csum, args]
         end
 
         def parse_ber(s)
           m = /^(#{BER_PATTERN}{3})(.*)$/.match(s)
-          fail InvalidReminderError, 'Invalid reminder' unless m
+          raise InvalidReminderError, 'Invalid reminder' unless m
           Util.from_hex(m[1]).unpack('w3') << m[2]
         end
       end
@@ -579,7 +579,7 @@ module Daniel
 
         m = /^([0-9a-f]{#{2 * @params.length}})(.*)$/.match(code)
         unless m
-          fail InvalidReminderError, 'Flags set to existing but mask missing'
+          raise InvalidReminderError, 'Flags set to existing but mask missing'
         end
         [m[2], Util.from_hex(m[1])]
       end
@@ -605,9 +605,9 @@ module Daniel
 
       def validate_jwt(data, code)
         par = @params
-        fail InvalidReminderError, 'invalid protocol' if par.format_version != 1
-        fail InvalidReminderError, 'invalid flags' if data[:flg] != par.flags
-        fail InvalidReminderError, 'invalid code' if data[:code] != code
+        raise InvalidReminderError, 'invalid protocol' if par.format_version != 1
+        raise InvalidReminderError, 'invalid flags' if data[:flg] != par.flags
+        raise InvalidReminderError, 'invalid code' if data[:code] != code
         true
       end
 
@@ -667,7 +667,7 @@ module Daniel
 
     def self.compare_checksum(rem_csum, gen_csum)
       if rem_csum != gen_csum && rem_csum != '000000'
-        fail ChecksumMismatchError.new(rem_csum, gen_csum)
+        raise ChecksumMismatchError.new(rem_csum, gen_csum)
       end
       true
     end
@@ -922,7 +922,7 @@ module Daniel
 
       def generate_existing(gen, parameters, mask)
         if parameters.length != mask.length
-          fail InvalidParametersError, 'Invalid mask length'
+          raise InvalidParametersError, 'Invalid mask length'
         end
         result = []
         result += gen.call.to_a while result.length < parameters.length
@@ -1104,7 +1104,7 @@ module Daniel
     # Because of the way XOR works, if the mask argument is the password, this
     # function will return the mask.
     def generate_mask(code, params, password)
-      fail InvalidParametersError, 'Invalid flags' unless params.existing_mode?
+      raise InvalidParametersError, 'Invalid flags' unless params.existing_mode?
       impl(params).generate(code, params, password)
     end
 
@@ -1274,7 +1274,7 @@ module Daniel
 
         opts.on('-P FORMAT', 'Output passwords in another form') do |format|
           unless %w(plain bubblebabble).include? format
-            fail OptionParser::InvalidArgument, "not a valid format '#{format}'"
+            raise OptionParser::InvalidArgument, "not a valid format '#{format}'"
           end
           @format = format.to_sym
         end
@@ -1283,7 +1283,7 @@ module Daniel
                 'Default parameters to a preset value') do |preset|
           p = @config.parameters(preset)
           unless p
-            fail OptionParser::InvalidArgument, "not a valid preset '#{preset}'"
+            raise OptionParser::InvalidArgument, "not a valid preset '#{preset}'"
           end
           @params = p
         end
@@ -1299,7 +1299,7 @@ module Daniel
       end.parse!(args)
 
       if flags_set && existing_set
-        fail OptionParser::InvalidArgument, "Can't use both -m and -f"
+        raise OptionParser::InvalidArgument, "Can't use both -m and -f"
       end
 
       true

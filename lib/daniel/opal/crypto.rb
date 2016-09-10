@@ -78,7 +78,7 @@ module OpenSSL
     # AES polyfill using sjcl.
     class AES
       def initialize(keylen, mode)
-        fail Daniel::Exception, 'invalid mode' unless mode == :CTR
+        raise Daniel::Exception, 'invalid mode' unless mode == :CTR
         @keylen = keylen
       end
 
@@ -90,7 +90,7 @@ module OpenSSL
       end
 
       def iv=(iv)
-        fail Daniel::Exception, 'need key before IV' unless @key
+        raise Daniel::Exception, 'need key before IV' unless @key
         @aes = Native(`new sjcl.cipher.aes(#{@key.to_n})`)
         @ctr = Daniel::CounterMode.new(@aes, iv[0, 16])
       end
@@ -160,7 +160,7 @@ module OpenSSL
   # PBKDF2 polyfill using sjcl.
   module PKCS5
     def self.pbkdf2_hmac(pass, salt, iter, keylen, _digest)
-      fail Daniel::Exception, 'invalid length' unless keylen == 32
+      raise Daniel::Exception, 'invalid length' unless keylen == 32
       pass, salt = [pass, salt].map { |s| Daniel::Util.to_bit_array(s) }
       data = Native(`sjcl.misc.pbkdf2(#{pass.to_n}, #{salt.to_n}, #{iter})`)
       Daniel::Util.from_bit_array(data)

@@ -44,7 +44,7 @@ class Array
       end
       s
     else
-      fail "Don't know how to pack '#{template}'"
+      raise "Don't know how to pack '#{template}'"
     end
   end
 end
@@ -123,7 +123,7 @@ class String
       end
       a
     else
-      fail "Don't know how to unpack '#{template}'"
+      raise "Don't know how to unpack '#{template}'"
     end
   end
 end
