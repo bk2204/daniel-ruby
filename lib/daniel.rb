@@ -841,7 +841,7 @@ module Daniel
       end
 
       def tuples
-        len.times.map do |i|
+        Array.new(len) do |i|
           tuple(checksum[i], data[i * 2], data[i * 2 + 1])
         end
       end

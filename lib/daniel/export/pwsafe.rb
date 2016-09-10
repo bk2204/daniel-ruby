@@ -19,7 +19,7 @@ module Daniel
       def initialize(pass, writer, options = {})
         @bgen = ByteGenerator.new(pass, options[:salt])
         @writer = writer
-        salt, datakey, mackey, iv = 4.times.map { @bgen.random_bytes(32) }
+        salt, datakey, mackey, iv = Array.new(4) { @bgen.random_bytes(32) }
         iv = iv[0..15]
         @encrypter = Twofish.new(datakey, :mode => :cbc, :padding => :none,
                                           :iv => iv)
