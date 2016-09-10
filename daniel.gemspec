@@ -17,12 +17,15 @@ Gem::Specification.new do |s|
   s.add_dependency('io-console') if ::RUBY_VERSION < '1.9'
   s.add_dependency('twofish', '~> 1.0.7')
   s.add_dependency('clipboard', '~> 1.0.6')
-  s.add_dependency('opal', '~> 0.10.1')
 
   s.add_development_dependency('rake', '~> 10.0')
   s.add_development_dependency('rspec', '~> 2.11')
-  s.add_development_dependency('opal-rspec', '~> 0.6.0')
   s.add_development_dependency('rubocop', '~> 0.42.0')
+
+  if ::RUBY_VERSION >= '2.2'
+    s.add_dependency('opal', '~> 0.10.1')
+    s.add_development_dependency('opal-rspec', '~> 0.6.0')
+  end
 
   s.files  = %w(LICENSE Rakefile README.adoc doc/daniel.adoc)
   s.files += Dir.glob('bin/*')
