@@ -233,7 +233,8 @@ module Daniel
     #
     # @param options [Integer] a set of bit flags
     def initialize(options = Flags::NO_SPACES)
-      super((options & Flags::ARBITRARY_BYTES).nonzero? ? 0x00..0xff : 0x20..0x7e)
+      all_bytes = (options & Flags::ARBITRARY_BYTES).nonzero?
+      super(all_bytes ? 0x00..0xff : 0x20..0x7e)
       m = {
         Flags::NO_NUMBERS => 0x30..0x39,
         Flags::NO_SPACES => [0x20],
@@ -616,9 +617,9 @@ module Daniel
       protected
 
       def validate_jwt(data, code)
-        par = @params
-        raise InvalidReminderError, 'invalid protocol' if par.format_version != 1
-        raise InvalidReminderError, 'invalid flags' if data[:flg] != par.flags
+        p = @params
+        raise InvalidReminderError, 'invalid protocol' if p.format_version != 1
+        raise InvalidReminderError, 'invalid flags' if data[:flg] != p.flags
         raise InvalidReminderError, 'invalid code' if data[:code] != code
         true
       end
@@ -1286,7 +1287,8 @@ module Daniel
 
         opts.on('-P FORMAT', 'Output passwords in another form') do |format|
           unless %w(plain bubblebabble).include? format
-            raise OptionParser::InvalidArgument, "not a valid format '#{format}'"
+            raise OptionParser::InvalidArgument,
+                  "not a valid format '#{format}'"
           end
           @format = format.to_sym
         end
@@ -1295,7 +1297,8 @@ module Daniel
                 'Default parameters to a preset value') do |preset|
           p = @config.parameters(preset)
           unless p
-            raise OptionParser::InvalidArgument, "not a valid preset '#{preset}'"
+            raise OptionParser::InvalidArgument,
+                  "not a valid preset '#{preset}'"
           end
           @params = p
         end

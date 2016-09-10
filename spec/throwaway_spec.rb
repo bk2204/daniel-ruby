@@ -13,7 +13,8 @@ if RUBY_ENGINE != 'opal'
     end
 
     def initialize_variables
-      file = File.join(File.dirname(__FILE__), %w(fixtures daniel throwaway.yaml))
+      file = File.join(File.dirname(__FILE__),
+                       %w(fixtures daniel throwaway.yaml))
       @config = Daniel::Configuration.new(File.new(file, 'r'))
       @clipboard = false
     end
