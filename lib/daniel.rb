@@ -42,23 +42,23 @@ module Daniel
   end
 
   # An exception indicating an invalid parameter value.
-  class InvalidParametersError < Exception
+  class InvalidParametersError < Daniel::Exception
   end
 
   # An exception indicating an invalid reminder string.
-  class InvalidReminderError < Exception
+  class InvalidReminderError < Daniel::Exception
   end
 
   # An exception indicating an invalid JSON Web Token.
-  class InvalidJWTError < Exception
+  class InvalidJWTError < Daniel::Exception
   end
 
   # An exception indicating an JSON Web Token raiseed validation (MAC check).
-  class JWTValidationError < Exception
+  class JWTValidationError < Daniel::Exception
   end
 
   # An exception indicating that the required data is not present.
-  class MissingDataError < Exception
+  class MissingDataError < Daniel::Exception
   end
 
   # An exception indicating a checksum mismatch.

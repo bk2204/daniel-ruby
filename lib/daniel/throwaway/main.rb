@@ -7,11 +7,11 @@ module Daniel
     end
 
     # Missing command-line argument.
-    class MissingArgumentError < Exception
+    class MissingArgumentError < Daniel::ThrowawayPass::Exception
     end
 
     # Missing command-line argument.
-    class MissingDataError < Exception
+    class MissingDataError < Daniel::ThrowawayPass::Exception
     end
 
     # Main program.
