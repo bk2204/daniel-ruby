@@ -8,3 +8,7 @@ doc/*
 lib/daniel/opal/*.js
 tags
 TAGS
+# Bundler
+.bundle/
+Gemfile.lock
+vendor/
