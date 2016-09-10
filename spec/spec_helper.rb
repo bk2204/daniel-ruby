@@ -1,6 +1,6 @@
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
-RUBY_ENGINE = 'unknown' unless defined?(RUBY_ENGINE)
+RUBY_ENGINE = 'unknown'.freeze unless defined?(RUBY_ENGINE)
 
 # This has to two separate if statements or Opal won't ignore it.
 if RUBY_ENGINE != 'opal'

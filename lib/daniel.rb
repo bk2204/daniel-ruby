@@ -21,7 +21,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-RUBY_ENGINE = 'unknown' unless defined? RUBY_ENGINE
+RUBY_ENGINE = 'unknown'.freeze unless defined? RUBY_ENGINE
 if RUBY_ENGINE == 'opal'
   require 'opal'
   require 'daniel/opal'
