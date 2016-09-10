@@ -38,7 +38,7 @@ require 'yaml'
 # A password generation tool.
 module Daniel
   # The class from which all Daniel exceptions derive.
-  class Exception < StandardError
+  class Exception < RuntimeError
   end
 
   # An exception indicating an invalid parameter value.
