@@ -162,14 +162,15 @@ module Daniel
     #
     # This function computes only values that are part of {Flags::SYMBOL_MASK}.
     def self.mask_from_characters(text)
-      if text.is_a?(Fixnum)
-        return text
-      elsif text =~ /^0[0-7]+$/
-        return text.to_i(8)
-      elsif text =~ /^\d+$/
-        return text.to_i
-      elsif text =~ /^0[xX][A-Fa-f0-9]+$/
-        return text.to_i(16)
+      case text
+      when Fixnum
+        text
+      when /^0[0-7]+$/
+        text.to_i(8)
+      when /^\d+$/
+        text.to_i
+      when /^0[xX][A-Fa-f0-9]+$/
+        text.to_i(16)
       else
         value = SYMBOL_MASK_NEGATED
         masks = {
@@ -184,7 +185,7 @@ module Daniel
           '-' => NO_SYMBOLS_OTHER
         }
         masks.keys.each { |ch| value &= ~masks[ch] if text.include? ch }
-        return value
+        value
       end
     end
 
