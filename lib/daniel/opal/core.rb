@@ -73,7 +73,7 @@ module Base64
 
   def self.decode64(s)
     res = []
-    t = '    ' # rubocop:disable Lint/UselessAssignment
+    t = '    '
     while !s.nil? && !s.empty?
       t = s[0..3]
       s = s[4..-1]
@@ -88,8 +88,6 @@ module Base64
   end
 
   class << self
-    private
-
     CHARS = ('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /)
     CHAR_MAP = CHARS.each_with_index.map { |c, i| [c, i] }.to_h.merge '=' => 0
   end
