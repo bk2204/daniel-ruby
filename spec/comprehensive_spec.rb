@@ -10,7 +10,7 @@ def entries
   f = File.new(File.join(File.dirname(__FILE__), 'fixtures', 'reminders.csv'),
                'r')
   f.each_line.map do |line|
-    next if /^\s*#/.match(line)
+    next if /^\s*#/ =~ line
     line.chomp.split(':').map { |s| unescape(s) }
   end.reject(&:nil?)
 end
@@ -51,7 +51,7 @@ describe Daniel::PasswordGenerator do
       expect(gen.generate_from_reminder(rem)).to eq(result)
     end
 
-    if /^000000/.match(reminder)
+    if /^000000/ =~ reminder
       it "marks all-zero reminders as anonymous for #{description}" do
         pending 'Opal encoding issues' if known_failure(master)
 

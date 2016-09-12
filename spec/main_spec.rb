@@ -74,7 +74,7 @@ def process_message_human(msg)
   when ':code?'
     nil
   else
-    if s.start_with?(*(strings.keys))
+    if s.start_with?(*strings.keys)
       s.sub(/\A(:[a-z-]+) (.*)\z/) do
         str, rest = Regexp.last_match[1..2]
         "#{strings[str]} #{rest}"
@@ -112,12 +112,12 @@ def parse_human(msgs)
   end
 end
 
-def with_config(&block)
+def with_config
   key = 'XDG_CONFIG_HOME'
   old = ENV[key]
   ENV[key] = File.join(File.dirname(__FILE__), 'fixtures')
   begin
-    ret = block.call
+    ret = yield
   ensure
     ENV[key] = old
   end
@@ -456,7 +456,8 @@ if RUBY_ENGINE != 'opal'
                    %w(0e187863b62ca736f75c84a6265985f5)
                  else
                    [Daniel::Util.to_binary(
-                     "\x0E\x18xc\xB6\x2C\xA76\xF7\x5C\x84\xA6\x26Y\x85\xF5")]
+                     "\x0E\x18xc\xB6\x2C\xA76\xF7\x5C\x84\xA6\x26Y\x85\xF5"
+                   )]
                  end
         expect(prog.passwords).to eq output
       end
