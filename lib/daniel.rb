@@ -331,7 +331,7 @@ module Daniel
       true
     end
 
-    alias_method :eql?, :==
+    alias :eql? :==
   end
 
   # Parse a code according to a standard format

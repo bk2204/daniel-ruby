@@ -118,7 +118,7 @@ module OpenSSL
         self
       end
 
-      alias_method :<<, :update
+      alias :<< :update
 
       def digest
         Daniel::Util.from_bit_array(@jsobj.finalize)
@@ -144,7 +144,7 @@ module OpenSSL
       self
     end
 
-    alias_method :<<, :update
+    alias :<< :update
 
     def digest
       Daniel::Util.from_bit_array(@jsobj.digest)
