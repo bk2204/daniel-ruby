@@ -12,7 +12,7 @@ module Daniel
         oldfile = File.new(args[0], 'r')
         newfile = File.new(args[1], 'w')
         oldfile.each_line do |l|
-          if /^(#|\s*$)/.match(l)
+          if /^(#|\s*$)/ =~ l
             newfile.print(l)
           else
             newfile.puts(converter.convert(l.chomp))
