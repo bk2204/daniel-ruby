@@ -75,7 +75,7 @@ module Daniel
         # For some bizarre reason, we don't MAC the type or the length, or the
         # pad data.  But whatever.
         @mac << data
-        p = rem == 0 ? unpadded : unpadded + @bgen.random_bytes(16 - rem)
+        p = rem.zero? ? unpadded : unpadded + @bgen.random_bytes(16 - rem)
         write_encrypted(p)
       end
 
