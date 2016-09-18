@@ -4,6 +4,7 @@
 require File.join(File.dirname(__FILE__), 'spec_helper')
 
 if RUBY_ENGINE != 'opal'
+  require 'clipboard'
   require 'daniel/throwaway/main'
 
   class MockMainProgram < Daniel::ThrowawayPass::MainProgram
@@ -16,7 +17,7 @@ if RUBY_ENGINE != 'opal'
       file = File.join(File.dirname(__FILE__),
                        %w(fixtures daniel throwaway.yaml))
       @config = Daniel::Configuration.new(File.new(file, 'r'))
-      @clipboard = false
+      @clipboard = true
     end
   end
 
@@ -40,6 +41,16 @@ if RUBY_ENGINE != 'opal'
       prog = MockMainProgram.new(io)
       prog.main(%w(-p -v1 bar baz))
       expect(io.string).to eq "YME0d&bl2N&#tk*g\n&@r6A8BdRQgJeY@u"
+    end
+
+    it 'by default copies to the clipboard' do
+      clip = class_double('Clipboard').as_stubbed_const
+      expect(clip).to receive(:copy).with('3*Re7n*qcDDl9N6y')
+
+      io = StringIO.new('', 'w')
+      prog = MockMainProgram.new(io)
+      prog.main(%w(bar))
+      expect(io.string).to match(/clipboard/)
     end
   end
 end
