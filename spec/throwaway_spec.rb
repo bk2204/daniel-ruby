@@ -29,7 +29,7 @@ if RUBY_ENGINE != 'opal'
       expect(io.string).to eq "3*Re7n*qcDDl9N6y\nDp4iWIX26UwV55N("
     end
 
-    it 'should generate machine-readable passwords with -r' do
+    it 'should generate machine-readable passwords with -pr' do
       io = StringIO.new('', 'w')
       prog = MockMainProgram.new(io)
       prog.main(%w(-pr bar baz))
@@ -50,6 +50,16 @@ if RUBY_ENGINE != 'opal'
       io = StringIO.new('', 'w')
       prog = MockMainProgram.new(io)
       prog.main(%w(bar))
+      expect(io.string).to match(/clipboard/)
+    end
+
+    it 'should generate machine-readable passwords with pr' do
+      clip = class_double('Clipboard').as_stubbed_const
+      expect(clip).to receive(:copy).with('3%2ARe7n%2AqcDDl9N6y')
+
+      io = StringIO.new('', 'w')
+      prog = MockMainProgram.new(io)
+      prog.main(%w(-r bar))
       expect(io.string).to match(/clipboard/)
     end
   end

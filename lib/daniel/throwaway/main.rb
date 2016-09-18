@@ -71,13 +71,13 @@ module Daniel
       end
 
       def output_passwords(passes)
+        passes = passes.map { |p| @machine_readable ? CGI.escape(p) : p }
         if @clipboard
           require 'clipboard'
           Clipboard.copy passes[0]
           @io.puts 'Password copied to clipboard.'
         else
-          r = passes.map { |pass| @machine_readable ? CGI.escape(pass) : pass }
-          @io.print r.join("\n")
+          @io.print passes.join("\n")
         end
       end
     end
