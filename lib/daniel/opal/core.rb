@@ -35,7 +35,7 @@ class Array
           val = item
           t = Daniel::Util.to_chr(val & 0x7f)
           val >>= 7
-          while val != 0
+          while val.nonzero?
             t = Daniel::Util.to_chr((val & 0x7f) | 0x80) + t
             val >>= 7
           end
@@ -67,7 +67,7 @@ module Base64
       end
       res += rres.reverse
     end
-    return res if len == 0
+    return res if len.zero?
     len == 1 ? res[0..-3] + '==' : res[0..-2] + '='
   end
 
