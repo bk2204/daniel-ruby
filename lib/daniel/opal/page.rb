@@ -150,7 +150,7 @@ class MainProgram
       break unless response.ok?
       entries = response.body.each_line.map do |rem|
         rem = rem.chomp
-        next if /^\s*(?:#|$)/.match(rem)
+        next if /^\s*(?:#|$)/ =~ rem
         format_reminder(rem)
       end
       yield entries.reject(&:nil?).sort.to_h
