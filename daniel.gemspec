@@ -1,8 +1,6 @@
-require './lib/daniel'
-
 Gem::Specification.new do |s|
   s.name        = 'daniel'
-  s.version     = Daniel::Version.to_s
+  s.version     = '0.2.0'
   s.author      = 'brian m. carlson'
   s.email       = 'sandals@crustytoothpaste.net'
   s.homepage    = 'https://github.com/bk2204/daniel-ruby'
