@@ -12,16 +12,22 @@ Gem::Specification.new do |s|
     password.
   EOD
 
-  s.add_dependency('io-console') if ::RUBY_VERSION < '1.9'
   s.add_dependency('twofish', '~> 1.0.7')
   s.add_dependency('clipboard', '~> 1.0.6')
 
   s.add_development_dependency('rake', '~> 10.0')
   s.add_development_dependency('rspec', '~> 3.0')
-  s.add_development_dependency('rubocop', '~> 0.42.0')
+
+  if ::RUBY_VERSION < '1.9'
+    #s.add_dependency('io-console', '0.3')
+    s.add_dependency('json', '~> 1.8')
+  else
+    s.add_development_dependency('rubocop', '~> 0.42.0')
+  end
 
   if ::RUBY_VERSION >= '2.2'
     s.add_dependency('opal', '~> 0.10.1')
+    s.add_dependency('opal-jquery', '~> 0.4.2')
     s.add_development_dependency('opal-rspec', '~> 0.6.0')
   end
 
