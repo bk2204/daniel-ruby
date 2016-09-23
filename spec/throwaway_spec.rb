@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 # encoding: UTF-8
 
-require File.join(File.dirname(__FILE__), 'spec_helper')
+require 'spec_helper'
 
 if RUBY_ENGINE != 'opal'
   require 'clipboard'

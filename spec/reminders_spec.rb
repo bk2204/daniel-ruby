@@ -1,8 +1,7 @@
 #!/usr/bin/ruby
 # encoding: UTF-8
 
-# Ruby 1.8 doesn't have require_relative.
-require File.join(File.dirname(__FILE__), 'spec_helper')
+require 'spec_helper'
 
 describe Daniel::Reminder do
   # A basic 16-character passphrase.

@@ -1,8 +1,7 @@
 #!/usr/bin/ruby
 # encoding: UTF-8
 
-# Ruby 1.8 doesn't have require_relative.
-require File.join(File.dirname(__FILE__), 'spec_helper')
+require 'spec_helper'
 
 describe Daniel::CodeParser do
   it 'should return the code for items which are not specially formatted' do

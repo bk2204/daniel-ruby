@@ -1,8 +1,7 @@
 #!/usr/bin/ruby
 # encoding: UTF-8
 
-# Ruby 1.8 doesn't have require_relative.
-require File.join(File.dirname(__FILE__), 'spec_helper')
+require 'spec_helper'
 
 # These test cases are from RFC 5869.
 describe Daniel::PasswordGenerator::GeneratorVersion1 do
