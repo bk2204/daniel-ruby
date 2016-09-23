@@ -29,7 +29,6 @@ rescue LoadError => e
 end
 
 begin
-
   opal_dest = 'build/html'
   opal_files = {
     'daniel' => 'daniel',
@@ -39,6 +38,7 @@ begin
   opal_files.each do |js, ruby|
     file "#{opal_dest}/#{js}.js" => ['build/html', "lib/#{ruby}.rb"] do |t|
       require 'opal'
+      require 'opal-jquery'
 
       next unless t.needed?
       Opal.append_path 'lib'
