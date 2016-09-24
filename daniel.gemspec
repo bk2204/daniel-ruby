@@ -21,7 +21,9 @@ Gem::Specification.new do |s|
   if ::RUBY_VERSION < '1.9'
     #s.add_dependency('io-console', '0.3')
     s.add_dependency('json', '~> 1.8')
-  else
+  end
+
+  if ::RUBY_VERSION >= '2.0'
     s.add_development_dependency('rubocop', '~> 0.42.0')
   end
 
