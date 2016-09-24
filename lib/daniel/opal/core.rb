@@ -49,50 +49,6 @@ class Array
   end
 end
 
-# Base64 polyfill.
-#
-# Opal 0.9.2 has a bug with base64 that causes it to encode an extra NUL byte.
-module Base64
-  def self.encode64(s)
-    len = s.length % 3
-    res = ''
-    while !s.nil? && !s.empty?
-      chunk = Daniel::Util.to_binary(s[0, 3]).bytes + [0, 0]
-      s = s[3..-1]
-      enc = (chunk[0] << 16) | (chunk[1] << 8) | chunk[2]
-      rres = ''
-      4.times do
-        rres += CHARS[enc & 0x3f]
-        enc >>= 6
-      end
-      res += rres.reverse
-    end
-    return res if len.zero?
-    len == 1 ? res[0..-3] + '==' : res[0..-2] + '='
-  end
-
-  def self.decode64(s)
-    res = []
-    t = '    '
-    while !s.nil? && !s.empty?
-      t = s[0..3]
-      s = s[4..-1]
-      val = 0
-      t.each_char { |b| val = (val << 6) | CHAR_MAP[b] }
-      res += [val >> 16, val >> 8, val]
-    end
-    res = res.map { |b| Daniel::Util.to_chr(b & 0xff) }.join
-    res = Daniel::Util.to_binary(res)
-    return res if t[3] != '='
-    t[2] == '=' ? res[0..-3] : res[0..-2]
-  end
-
-  class << self
-    CHARS = ('A'..'Z').to_a + ('a'..'z').to_a + ('0'..'9').to_a + %w(+ /)
-    CHAR_MAP = CHARS.each_with_index.map { |c, i| [c, i] }.to_h.merge '=' => 0
-  end
-end
-
 module JSON
   def self.generate(obj, options = {})
     obj.to_json
