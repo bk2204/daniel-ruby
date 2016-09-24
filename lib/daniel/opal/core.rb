@@ -93,6 +93,12 @@ module Base64
   end
 end
 
+module JSON
+  def self.generate(obj, options = {})
+    obj.to_json
+  end
+end
+
 # String polyfill.
 class String
   def bytesize
