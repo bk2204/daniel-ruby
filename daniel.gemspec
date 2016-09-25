@@ -35,6 +35,5 @@ Gem::Specification.new do |s|
 
   s.files  = %w(LICENSE Rakefile README.adoc doc/daniel.adoc)
   s.files += Dir.glob('bin/*')
-  # Update this to lib/**/*.rb when daniel/credential is ready to go.
-  s.files += Dir.glob('lib/*.rb')
+  s.files += Dir.glob('lib/**/*.rb')
 end
