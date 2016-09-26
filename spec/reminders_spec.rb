@@ -143,4 +143,17 @@ describe Daniel::Reminder do
     expect { Daniel::Reminder.parse('8244c520810001la-france') } \
       .to raise_error(Daniel::InvalidReminderError, /mask missing/)
   end
+
+  it 'should validate reminders properly in delayed mode' do
+    r = Daniel::Reminder.parse(example, :skip_verify => true)
+    k = Daniel::Util.from_url64('w6vSGl3w_iEO8qhoCRO2vRxRqMY-3AK7-QasPXSrEIY')
+    r.mac_key = k
+    expect { r.validate }.not_to raise_error
+
+    r = Daniel::Reminder.parse(example.sub(/...(example\.tld)$/, 'abc\1'),
+                               :skip_verify => true)
+    k = Daniel::Util.from_url64('w6vSGl3w_iEO8qhoCRO2vRxRqMY-3AK7-QasPXSrEIY')
+    r.mac_key = k
+    expect { r.validate }.to raise_error(Daniel::JWTValidationError)
+  end
 end
