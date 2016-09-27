@@ -49,6 +49,7 @@ class Array
   end
 end
 
+# JSON polyfill.
 module JSON
   def self.generate(obj, _options = {})
     obj.to_json
