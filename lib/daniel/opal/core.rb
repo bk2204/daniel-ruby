@@ -50,7 +50,7 @@ class Array
 end
 
 module JSON
-  def self.generate(obj, options = {})
+  def self.generate(obj, _options = {})
     obj.to_json
   end
 end
