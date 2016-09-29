@@ -31,19 +31,15 @@ class Array
   end
 
   def pack_h
-    m = {}
-    (0..9).each { |n| m[n.to_s] = n }
-    ('a'..'f').each { |l| m[l.to_s] = l.ord - 0x61 + 10 }
-    ('A'..'F').each { |l| m[l.to_s] = l.ord - 0x41 + 10 }
-    s = Daniel::Util.to_binary('')
-    p = []
-    self[0].each_char do |item|
-      p << item
-      next unless p.size == 2
-      s += Daniel::Util.to_chr((m[p[0]] << 4) + m[p[1]])
-      p = []
+    m = { '0' => 0, '1' => 1, '2' => 2, '3' => 3, '4' => 4,
+          '5' => 5, '6' => 6, '7' => 7, '8' => 8, '9' => 9,
+          'a' => 10, 'b' => 11, 'c' => 12, 'd' => 13, 'e' => 14, 'f' => 15,
+          'A' => 10, 'B' => 11, 'C' => 12, 'D' => 13, 'E' => 14, 'F' => 15 }
+    a = []
+    self[0].each_char.each_slice(2) do |p|
+      a << ((m[p[0]] << 4) + m[p[1]])
     end
-    s
+    a.pack('C*')
   end
 
   def pack_w
