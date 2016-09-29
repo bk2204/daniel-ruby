@@ -73,28 +73,38 @@ class String
 
   def unpack(template)
     if template == 'H*'
-      s = ''
-      m = %w(0 1 2 3 4 5 6 7 8 9 a b c d e f)
-      bytes.each do |v|
-        s += m[v >> 4] + m[v & 0xf]
-      end
-      [s]
+      unpack_h
     elsif template.start_with? 'w'
-      a = []
-      val = 0
-      bytes.each do |v|
-        if v <= 0x7f
-          a << (val | v)
-          val = 0
-        else
-          val |= (v & 0x7f)
-          val <<= 7
-        end
-      end
-      a
+      unpack_w
     else
       raise "Don't know how to unpack '#{template}'"
     end
+  end
+
+  private
+
+  def unpack_h
+    s = ''
+    m = %w(0 1 2 3 4 5 6 7 8 9 a b c d e f)
+    bytes.each do |v|
+      s += m[v >> 4] + m[v & 0xf]
+    end
+    [s]
+  end
+
+  def unpack_w
+    a = []
+    val = 0
+    bytes.each do |v|
+      if v <= 0x7f
+        a << (val | v)
+        val = 0
+      else
+        val |= (v & 0x7f)
+        val <<= 7
+      end
+    end
+    a
   end
 end
 
