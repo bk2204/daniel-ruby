@@ -18,9 +18,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency('rake', '~> 10.0')
   s.add_development_dependency('rspec', '~> 3.0')
 
-  if ::RUBY_VERSION < '1.9'
-    s.add_dependency('json', '~> 1.8')
-  end
+  s.add_dependency('json', '~> 1.8') if ::RUBY_VERSION < '1.9'
 
   if ::RUBY_VERSION >= '2.0'
     s.add_development_dependency('rubocop', '~> 0.42.0')
