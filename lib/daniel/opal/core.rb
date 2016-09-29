@@ -43,22 +43,18 @@ class Array
   end
 
   def pack_w
-    s = Daniel::Util.to_binary('')
+    a = []
     each do |item|
-      if item <= 0x7f
-        s += Daniel::Util.to_chr(item)
-      else
-        val = item
-        t = Daniel::Util.to_chr(val & 0x7f)
+      val = item
+      t = [val & 0x7f]
+      val >>= 7
+      while val.nonzero?
+        t << ((val & 0x7f) | 0x80)
         val >>= 7
-        while val.nonzero?
-          t = Daniel::Util.to_chr((val & 0x7f) | 0x80) + t
-          val >>= 7
-        end
-        s += t
       end
+      a += t.reverse
     end
-    s
+    a.pack('C*')
   end
 end
 
