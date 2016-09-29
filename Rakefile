@@ -66,4 +66,4 @@ end
 
 task :build => [:"opal:build", :html]
 task :all => [:spec] + possible
-task :default => :spec
+task :default => :all
