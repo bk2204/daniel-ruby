@@ -4,48 +4,65 @@ require 'base64'
 class Array
   def pack(template)
     if template == 'C*'
-      s = Daniel::Util.to_binary('')
-      each { |n| s += Daniel::Util.to_chr(n) }
-      s
+      pack_c
     elsif template == 'N'
-      a = []
-      (0..3).reverse_each { |shift| a.push((self[0] >> (shift * 8)) & 0xff) }
-      s = a.pack('C*')
-      s
+      pack_n
     elsif template == 'H*'
-      m = {}
-      (0..9).each { |n| m[n.to_s] = n }
-      ('a'..'f').each { |l| m[l.to_s] = l.ord - 0x61 + 10 }
-      ('A'..'F').each { |l| m[l.to_s] = l.ord - 0x41 + 10 }
-      s = Daniel::Util.to_binary('')
-      p = []
-      self[0].each_char do |item|
-        p << item
-        next unless p.size == 2
-        s += Daniel::Util.to_chr((m[p[0]] << 4) + m[p[1]])
-        p = []
-      end
-      s
+      pack_h
     elsif template.start_with? 'w'
-      s = Daniel::Util.to_binary('')
-      each do |item|
-        if item <= 0x7f
-          s += Daniel::Util.to_chr(item)
-        else
-          val = item
-          t = Daniel::Util.to_chr(val & 0x7f)
-          val >>= 7
-          while val.nonzero?
-            t = Daniel::Util.to_chr((val & 0x7f) | 0x80) + t
-            val >>= 7
-          end
-          s += t
-        end
-      end
-      s
+      pack_w
     else
       raise "Don't know how to pack '#{template}'"
     end
+  end
+
+  private
+
+  def pack_c
+    s = Daniel::Util.to_binary('')
+    each { |n| s += Daniel::Util.to_chr(n) }
+    s
+  end
+
+  def pack_n
+    a = []
+    (0..3).reverse_each { |shift| a.push((self[0] >> (shift * 8)) & 0xff) }
+    a.pack('C*')
+  end
+
+  def pack_h
+    m = {}
+    (0..9).each { |n| m[n.to_s] = n }
+    ('a'..'f').each { |l| m[l.to_s] = l.ord - 0x61 + 10 }
+    ('A'..'F').each { |l| m[l.to_s] = l.ord - 0x41 + 10 }
+    s = Daniel::Util.to_binary('')
+    p = []
+    self[0].each_char do |item|
+      p << item
+      next unless p.size == 2
+      s += Daniel::Util.to_chr((m[p[0]] << 4) + m[p[1]])
+      p = []
+    end
+    s
+  end
+
+  def pack_w
+    s = Daniel::Util.to_binary('')
+    each do |item|
+      if item <= 0x7f
+        s += Daniel::Util.to_chr(item)
+      else
+        val = item
+        t = Daniel::Util.to_chr(val & 0x7f)
+        val >>= 7
+        while val.nonzero?
+          t = Daniel::Util.to_chr((val & 0x7f) | 0x80) + t
+          val >>= 7
+        end
+        s += t
+      end
+    end
+    s
   end
 end
 
