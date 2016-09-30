@@ -419,6 +419,24 @@ if RUBY_ENGINE != 'opal'
         ]
       end
 
+      it "handles UTF-8 existing passwords properly with -m#{msg}" do
+        prog = Daniel::MainProgram.new
+        prog.lines = ['example.tld']
+        prog.passphrase = ['foobar', 'La république française',
+                           'La république française']
+        prog.prompt = type
+        prog.main(%w(-m) + args)
+        expect(prog.output.flatten).to eq func.call [
+          ':master-password?',
+          ':checksum 72eb36',
+          ':code?',
+          ':existing?',
+          ':reminder 72eb36201900' \
+          'afff414d4d78df751dba98ff53c2fe0be3d3d5810d1d196ef8example.tld',
+          ':code?'
+        ]
+      end
+
       it 'parses existing-password reminders correctly' do
         reminder = '72eb36200f045ed8d92f9309c10059ee79f5d50266example.tld'
         prog = Daniel::MainProgram.new

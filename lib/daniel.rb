@@ -1425,7 +1425,8 @@ module Daniel
       if @params.existing_mode?
         current = query_existing
         return unless current
-        @params.length = current.length
+        # to_binary required for non-ASCII passwords
+        @params.length = Daniel::Util.to_binary(current).length
         mask = generator.generate_mask(code, @params, current)
       else
         output_password(encode(generator.generate(code, @params),
