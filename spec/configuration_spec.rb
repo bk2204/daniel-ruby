@@ -37,14 +37,17 @@ describe Daniel::Configuration do
             iterations: 12345
             version: 3
             length: 12
+            anonymous: true
     EOM
     c = Daniel::Configuration.new(StringIO.new(data, 'r'))
     p = Daniel::Parameters.new(0x5e, 12, 3, :salt => 'sodium chloride',
                                             :format_version => 1,
                                             :iterations => 12_345)
+    p2 = p.dup
+    p2.anonymous = true
     expect(c.parameters(:default)).to eq p
     expect(c.passphrase(:default)).to be nil
-    expect(c.parameters(:example)).to eq p
+    expect(c.parameters(:example)).to eq p2
     expect(c.passphrase(:example)).to be nil
     p = Daniel::Parameters.new(0x08, 20, 45)
     expect(c.parameters(:throwaway)).to eq p

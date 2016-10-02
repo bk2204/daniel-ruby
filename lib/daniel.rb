@@ -331,7 +331,8 @@ module Daniel
     end
 
     def ==(other)
-      [:flags, :length, :version, :salt, :format_version].each do |m|
+      [:flags, :length, :version, :salt, :format_version,
+       :anonymous].each do |m|
         return false unless method(m).call == other.method(m).call
       end
       true
@@ -912,7 +913,8 @@ module Daniel
       data['presets'].each do |name, params|
         p = Daniel::Parameters.new
         [
-          :format_version, :flags, :version, :length, :salt, :iterations
+          :format_version, :flags, :version, :length, :salt, :iterations,
+          :anonymous
         ].each do |sym|
           val = data_from(params, sym)
           p.method(:"#{sym}=").call(val) if val
