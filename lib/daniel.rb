@@ -262,6 +262,7 @@ module Daniel
   # The parameters affecting generation of a password.
   class Parameters
     attr_reader :flags, :length, :version, :salt, :format_version, :iterations
+    attr_accessor :anonymous
 
     def initialize(flags = 2, length = 16, version = 0, options = {})
       @length = length
@@ -270,6 +271,7 @@ module Daniel
       @format_version = options[:format_version] || 0
       @iterations = options[:iterations] || 1024
       self.flags = flags
+      @anonymous = options[:anonymous] || false
     end
 
     def flags=(flags)
@@ -322,6 +324,10 @@ module Daniel
     #   if it is limited to UTF-8 text only
     def binary?
       flag? Flags::ARBITRARY_BYTES
+    end
+
+    def anonymous?
+      @anonymous
     end
 
     def ==(other)
@@ -621,7 +627,9 @@ module Daniel
         p = @params
         raise InvalidReminderError, 'invalid protocol' if p.format_version != 1
         raise InvalidReminderError, 'invalid flags' if data[:flg] != p.flags
-        raise InvalidReminderError, 'invalid code' if data[:code] != code
+        if data[:code] != code && !code.empty?
+          raise InvalidReminderError, 'invalid code'
+        end
         true
       end
 
@@ -648,7 +656,9 @@ module Daniel
         mask = data.key?(:msk) ? Util.from_url64(data[:msk]) : nil
         @params.length = data[:len]
         @params.version = data[:ver]
-        [@params, @checksum, code, mask, options]
+        @params.anonymous = true if @checksum == '000000' && code.empty?
+        # We use data[:code] because code may be empty if we're anonymous.
+        [@params, @checksum, data[:code], mask, options]
       end
     end
 
@@ -733,7 +743,7 @@ module Daniel
     end
 
     def anonymous?
-      checksum == '000000'
+      params.anonymous?
     end
 
     protected
@@ -749,8 +759,13 @@ module Daniel
       data
     end
 
+    # "Printable" checksum (anonymized)
+    def pchecksum
+      anonymous? ? '000000' : checksum
+    end
+
     def key_id
-      k = [params.format_version, params.iterations, checksum]
+      k = [params.format_version, params.iterations, pchecksum]
       k << Util.to_url64(params.salt) if params.salt
       k.join(':')
     end
@@ -761,16 +776,18 @@ module Daniel
 
     def format_v0
       p = params
-      prefix([p.flags, p.length, p.version], mask) + code
+      suffix = p.anonymous? ? '' : code
+      prefix([p.flags, p.length, p.version], mask) + suffix
     end
 
     def format_v1
       jwts = jwt.to_s
-      prefix([params.flags, 1, jwts.length]) + jwts + code
+      suffix = params.anonymous? ? '' : code
+      prefix([params.flags, 1, jwts.length]) + jwts + suffix
     end
 
     def prefix(ints, mask = nil)
-      checksum + Util.to_hex(ints.pack('w3') + mask.to_s)
+      pchecksum + Util.to_hex(ints.pack('w3') + mask.to_s)
     end
   end
 
