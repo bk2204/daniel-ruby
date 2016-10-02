@@ -543,6 +543,26 @@ if RUBY_ENGINE != 'opal'
           ':code?'
         ]
       end
+
+      it "generates anonymous reminders correctly#{msg}" do
+        reminder = '000000' \
+          '4e01812feyJhbGciOiJIUzI1NiIsImtpZCI6IjE6MTAyNDowMDAwMDAiLCJ0eXAiO' \
+          'iJKV1QifQ.eyJjb2RlIjoiZXhhbXBsZS5jb20iLCJmbGciOjc4LCJsZW4iOjE2LCJ' \
+          '2ZXIiOjB9.0HZYydmooH0C9fSLfsfhTkxr9LYl4ccrt-jECJx8sBM'
+        prog = Daniel::MainProgram.new
+        prog.lines = ['example.com']
+        prog.passphrase = 'foobar'
+        prog.prompt = type
+        prog.main(%w(--format-version 1 -f 0x0e --anonymous) + args)
+        expect(prog.passwords).to eq ['YcYAWNpjt2qqzKvw']
+        expect(prog.output.flatten).to eq func.call [
+          ':master-password?',
+          ':checksum 72eb36',
+          ':code?',
+          ":reminder #{reminder}",
+          ':code?'
+        ]
+      end
     end
 
     it 'produces proper estimate output' do

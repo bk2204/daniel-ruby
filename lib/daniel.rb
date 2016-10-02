@@ -1282,6 +1282,10 @@ module Daniel
           @params.length = length
         end
 
+        opts.on('--[no-]anonymous', 'Omit checksum') do |anon|
+          @params.anonymous = anon
+        end
+
         opts.on('-m', '--existing', 'Generate reminders from existing
                 passwords') do
           @params.flags = Flags::REPLICATE_EXISTING

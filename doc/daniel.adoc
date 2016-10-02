@@ -194,6 +194,12 @@ chosen.
 	to any others.  To change the password version at the code prompt, use
 	`!version=<version>`.
 
+--anonymous::
+--no-anonymous::
+  Specify that the reminder should be anonymous (or not).  Only version 1 can be
+  anonymous, and anonymous reminders set a checksum of all zeros so as to
+  minimize any information leakage.
+
 Configuration
 -------------
 
