@@ -47,7 +47,7 @@ begin
     end
   end
   task :"opal:build" => opal_files.keys.map { |f| "#{opal_dest}/#{f}.js" }
-  possible << :"opal:build"
+  possible << :build
 rescue LoadError => e
   $stderr.puts e
 end
