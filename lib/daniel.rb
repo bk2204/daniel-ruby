@@ -919,6 +919,7 @@ module Daniel
           val = data_from(params, sym)
           p.method(:"#{sym}=").call(val) if val
         end
+        load_random_salt(params, p) if params['random_salt']
         @presets[name] = { :params => p, :passphrase => params['passphrase'] }
       end
     end
@@ -930,6 +931,12 @@ module Daniel
         val = Daniel::Util.from_base64(val.value)
       end
       val
+    end
+
+    def load_random_salt(params, p)
+      count = params['random_salt']
+      gen = ByteGenerator.new('random salt')
+      p.salt = gen.random_bytes(count)
     end
   end
 

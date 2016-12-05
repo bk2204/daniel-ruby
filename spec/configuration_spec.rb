@@ -53,4 +53,25 @@ describe Daniel::Configuration do
     expect(c.parameters(:throwaway)).to eq p
     expect(c.passphrase(:throwaway)).to eq "bob's your uncle"
   end
+
+  it 'should produce random salt if requested' do
+    pending "Opal doesn't support YAML yet" if ::RUBY_ENGINE == 'opal'
+
+    data = <<-EOM.gsub(/^\s{4}/, '')
+    ---
+    presets:
+        default:
+            random_salt: 16
+            flags: 0x5e
+            format-version: 1
+            iterations: 12345
+            version: 3
+            length: 12
+    EOM
+    salts = 5.times.map do
+      c = Daniel::Configuration.new(StringIO.new(data, 'r'))
+      c.parameters(:default).salt
+    end
+    expect(salts.uniq.length).to eq 5
+  end
 end
