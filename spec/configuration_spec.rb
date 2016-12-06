@@ -68,10 +68,11 @@ describe Daniel::Configuration do
             version: 3
             length: 12
     EOM
-    salts = 5.times.map do
+    salts = Array.new(5) do
       c = Daniel::Configuration.new(StringIO.new(data, 'r'))
       c.parameters(:default).salt
     end
     expect(salts.uniq.length).to eq 5
+    salts.each { |s| expect(s.length).to eq 16 }
   end
 end

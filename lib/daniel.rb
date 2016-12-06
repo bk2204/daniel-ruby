@@ -911,16 +911,7 @@ module Daniel
       data = ::YAML.load(file.read)
       return unless data['presets']
       data['presets'].each do |name, params|
-        p = Daniel::Parameters.new
-        [
-          :format_version, :flags, :version, :length, :salt, :iterations,
-          :anonymous
-        ].each do |sym|
-          val = data_from(params, sym)
-          p.method(:"#{sym}=").call(val) if val
-        end
-        load_random_salt(params, p) if params['random-salt']
-        @presets[name] = { :params => p, :passphrase => params['passphrase'] }
+        @presets[name] = process_preset(params)
       end
     end
 
@@ -933,10 +924,27 @@ module Daniel
       val
     end
 
-    def load_random_salt(params, p)
-      count = params['random-salt']
-      gen = ByteGenerator.new('random salt')
-      p.salt = gen.random_bytes(count)
+    def process_preset(params)
+      p = Daniel::Parameters.new
+      [
+        :format_version, :flags, :version, :length, :iterations,
+        :anonymous
+      ].each do |sym|
+        val = data_from(params, sym)
+        p.method(:"#{sym}=").call(val) if val
+      end
+      load_salt(params, p)
+      { :params => p, :passphrase => params['passphrase'] }
+    end
+
+    def load_salt(params, p)
+      salt = data_from(params, :salt)
+      count = data_from(params, :random_salt)
+      if !salt && count
+        # Initialized with a random seed automatically.
+        salt = ByteGenerator.new('random salt').random_bytes(count)
+      end
+      p.salt = salt
     end
   end
 
