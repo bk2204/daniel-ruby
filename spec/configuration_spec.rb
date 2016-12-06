@@ -61,7 +61,7 @@ describe Daniel::Configuration do
     ---
     presets:
         default:
-            random_salt: 16
+            random-salt: 16
             flags: 0x5e
             format-version: 1
             iterations: 12345

@@ -919,7 +919,7 @@ module Daniel
           val = data_from(params, sym)
           p.method(:"#{sym}=").call(val) if val
         end
-        load_random_salt(params, p) if params['random_salt']
+        load_random_salt(params, p) if params['random-salt']
         @presets[name] = { :params => p, :passphrase => params['passphrase'] }
       end
     end
@@ -934,7 +934,7 @@ module Daniel
     end
 
     def load_random_salt(params, p)
-      count = params['random_salt']
+      count = params['random-salt']
       gen = ByteGenerator.new('random salt')
       p.salt = gen.random_bytes(count)
     end
