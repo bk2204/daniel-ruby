@@ -12,15 +12,19 @@ module Daniel
         oldfile = File.new(args[0], 'r')
         newfile = File.new(args[1], 'w')
         oldfile.each_line do |l|
-          if /^(#|\s*$)/ =~ l
-            newfile.print(l)
-          else
-            newfile.puts(converter.convert(l.chomp))
-          end
+          newfile.puts(process_line(converter, l))
         end
       end
 
       protected
+
+      def process_line(converter, line)
+        if /^(#|\s*$)/ =~ line
+          l
+        else
+          converter.convert(line.chomp)
+        end
+      end
 
       def do_prompt
         res = []
