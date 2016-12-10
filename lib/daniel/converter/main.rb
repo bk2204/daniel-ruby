@@ -1,3 +1,4 @@
+require 'optparse'
 require 'daniel/converter'
 
 # A password generation tool.
@@ -7,6 +8,8 @@ module Daniel
     # Main program for daniel-convert.
     class MainProgram < Daniel::Program
       def main(args)
+        options, args = parse_options(args)
+        return if options[:help]
         oldpass, newpass = do_prompt
         converter = Daniel::Converter.new(oldpass, newpass)
         oldfile = File.new(args[0], 'r')
@@ -44,6 +47,23 @@ module Daniel
 
       def read_line
         STDIN.readline.chomp
+      end
+
+      def parse_options(args)
+        options = {}
+        OptionParser.new do |opts|
+          opts.banner = 'Usage: daniel-converter [-r] OLDFILE NEWFILE'
+
+          opts.on_tail('-h', '--help', 'Show this message') do
+            puts opts
+            puts <<-EOM.gsub(/^\s+/, '')
+            Read the entries from OLDFILE using one passphrase and rewrite them
+            into NEWFILE using a different passphrase.
+            EOM
+            options[:help] = true
+          end
+        end.parse!(args)
+        [options, args]
       end
     end
   end
