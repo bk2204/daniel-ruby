@@ -5,7 +5,7 @@ require 'optparse'
 module Daniel
   # Export to various formats.
   module Export
-    # Main program for daniel-convert.
+    # Main program for daniel-export.
     class MainProgram < Daniel::Program
       def main(args)
         options, args = parse_options(args)
