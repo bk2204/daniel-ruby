@@ -17,6 +17,7 @@ module Daniel
         srcfile.each_line do |l|
           converter.add_entry(generator, l.chomp) unless /^(#|\s*$)/ =~ l
         end
+        converter.finish
       end
 
       protected

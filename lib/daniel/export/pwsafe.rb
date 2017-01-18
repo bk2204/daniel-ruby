@@ -42,6 +42,7 @@ module Daniel
       def finish
         @writer.print('PWS3-EOF' * 2)
         @writer.print(@mac.digest)
+        @writer.flush
       end
 
       protected

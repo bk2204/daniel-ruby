@@ -13,6 +13,7 @@ if RUBY_ENGINE != 'opal'
     SimpleCov.start 'rails'
   end
 
+  require 'tmpdir'
   require 'daniel/converter'
 end
 
