@@ -1236,6 +1236,7 @@ module Daniel
       begin
         Object.send :require, 'io/console'
         pass = @stdin.noecho(&:gets).chomp
+        print "\n"
       rescue Errno::ENOTTY
         pass = @stdin.gets.chomp
       end
@@ -1447,13 +1448,12 @@ module Daniel
       interactive 'Enter existing passphrase:', ':existing?'
       current = read_passphrase
       if @prompt == :interactive
-        print "\nRepeat existing passphrase: " if @stdin.isatty
+        print "Repeat existing passphrase: " if @stdin.isatty
         current2 = read_passphrase
         if current != current2
-          puts "\nPassphrases did not match."
+          puts "Passphrases did not match."
           return nil
         end
-        print "\n"
       end
       current
     end
@@ -1497,7 +1497,6 @@ module Daniel
     def main_loop(args)
       prompt 'Please enter your master password:', ':master-password?'
       pass = read_passphrase
-      print "\n"
       generator = PasswordGenerator.new pass, @params.format_version
       prompt '# ok, checksum is', ':checksum', Util.to_hex(generator.checksum)
       if args.empty?
