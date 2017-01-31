@@ -198,7 +198,9 @@ chosen.
 --no-anonymous::
   Specify that the reminder should be anonymous (or not).  Only version 1 can be
   anonymous, and anonymous reminders set a checksum of all zeros so as to
-  minimize any information leakage.
+  minimize any information leakage.  Additionally, anonymous reminders do not
+  contain any extra data outside of the header and JWT; the code is not
+  suffixed.
 
 Configuration
 -------------
