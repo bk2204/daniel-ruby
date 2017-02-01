@@ -163,7 +163,7 @@ Since daniel employs a cryptographically-secure PRNG to generate bytes and
 selects the first bytes that match, a generated password might not contain a
 particular type of character needed as part of a site's security policy.  In
 this case, simply increase the version number until a suitable password is
-chosen.
+chosen (see <<password-version,the `-v` option>>).
 
 -l <length>::
 --password-length <length>::
@@ -186,6 +186,7 @@ chosen.
 --machine-readable::
 	Produce machine-readable output.
 
+[[password-version]]
 -v <version>::
 --password-version <version>::
 	Specify a particular password version.  The default is 0.  This can be useful
