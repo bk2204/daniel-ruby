@@ -1,0 +1,24 @@
+daniel-export(1)
+================
+
+Name
+----
+daniel-export - export passwords to Password Safe format
+
+Synopsis
+--------
+[verse]
+'daniel-export' [-r] <reminders> <export>
+
+Description
+-----------
+daniel-export converts a text file of reminders using one master password into a
+Password Safe v3 format file containing the usernames (if any) and passwords.
+
+Options
+-------
+
+-r::
+  Produce machine-readable output.  All generated data (including passwords)
+  will be URI-encoded.  The prompts are the same as those listed in
+  **daniel**(1).
