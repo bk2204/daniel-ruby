@@ -1448,10 +1448,10 @@ module Daniel
       interactive 'Enter existing passphrase:', ':existing?'
       current = read_passphrase
       if @prompt == :interactive
-        print "Repeat existing passphrase: " if @stdin.isatty
+        print 'Repeat existing passphrase: ' if @stdin.isatty
         current2 = read_passphrase
         if current != current2
-          puts "Passphrases did not match."
+          puts 'Passphrases did not match.'
           return nil
         end
       end
