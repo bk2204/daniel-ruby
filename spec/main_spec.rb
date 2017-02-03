@@ -656,7 +656,7 @@ if RUBY_ENGINE != 'opal'
         '# ok, checksum is 72eb36',
         'Enter code: ',
         'Enter existing passphrase: ',
-        "\nPassphrases did not match.",
+        "Passphrases did not match.",
         'Enter code: '
       ]
     end
