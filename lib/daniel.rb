@@ -345,10 +345,16 @@ module Daniel
   class CodeParser
     def self.parse(code)
       parsed = { :code => code }
-      m = /^pass:(.+)@(.+)$/.match code
+      m = /^(pass|pin):(?:(.+)@)?(.+)$/.match code
       return parsed unless m
-      { :username => m[1], :domain => m[2] }.each do |(k, v)|
-        parsed[k] = CGI.unescape(v)
+      { :type => m[1].to_sym, :username => m[2],
+        :domain => m[3] }.each do |(k, v)|
+        case v
+        when Symbol
+          parsed[k] = v
+        when String
+          parsed[k] = CGI.unescape(v)
+        end
       end
       parsed
     end

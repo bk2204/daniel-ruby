@@ -14,6 +14,19 @@ describe Daniel::CodeParser do
     code = 'pass:doe%40nic.tld@example.com'
     parsed = Daniel::CodeParser.parse(code)
     expect(parsed).to eq(:code => code, :username => 'doe@nic.tld',
-                         :domain => 'example.com')
+                         :domain => 'example.com', :type => :pass)
+  end
+
+  it 'should handle pin: codes correctly' do
+    code = 'pin:doe%40nic.tld@example.com'
+    parsed = Daniel::CodeParser.parse(code)
+    expect(parsed).to eq(:code => code, :username => 'doe@nic.tld',
+                         :domain => 'example.com', :type => :pin)
+  end
+
+  it 'should handle pin: codes without usernames correctly' do
+    code = 'pin:example.com'
+    parsed = Daniel::CodeParser.parse(code)
+    expect(parsed).to eq(:code => code, :domain => 'example.com', :type => :pin)
   end
 end
