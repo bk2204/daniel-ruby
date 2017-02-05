@@ -350,10 +350,12 @@ module Daniel
       { :type => m[1].to_sym, :username => m[2],
         :domain => m[3] }.each do |(k, v)|
         case v
-        when Symbol
-          parsed[k] = v
+        # Symbol and String are the same in Opal, so specify String first so
+        # escaping works correctly.
         when String
           parsed[k] = CGI.unescape(v)
+        when Symbol
+          parsed[k] = v
         end
       end
       parsed
