@@ -160,8 +160,17 @@ class MainProgram
   def format_reminder(rem)
     code = @pwobj.parse_reminder(rem).code
     parsed = Daniel::CodeParser.parse(code)
-    s = if parsed[:domain]
-          format('%s (username %s)', parsed[:domain], parsed[:username])
+    username = parsed[:username]
+    domain = parsed[:domain]
+    s = case parsed[:type]
+        when :pin
+          if username
+            format('%s (PIN for %s)', domain, username)
+          else
+            format('%s (PIN)', domain)
+          end
+        when :pass
+          format('%s (username %s)', domain, username)
         else
           code
         end
