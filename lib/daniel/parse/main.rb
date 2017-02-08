@@ -4,7 +4,7 @@ require 'daniel'
 # A password generation tool.
 module Daniel
   # Parses reminders for a given master password.
-  class Parse
+  module Parse
     # Main program for daniel-parse.
     class MainProgram < Daniel::Program
       def main(args)
