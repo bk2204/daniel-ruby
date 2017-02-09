@@ -15,7 +15,7 @@ module Daniel
         file = File.new(args[1], 'r')
         file.each_line do |l|
           result = process_line(gen, pattern, l.chomp)
-          prompt 'Entry: ', ':entry', *result if result
+          prompt 'Entry:', ':entry', *result if result
         end
       end
 

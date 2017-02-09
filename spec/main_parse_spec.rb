@@ -4,7 +4,6 @@
 require 'spec_helper'
 
 if RUBY_ENGINE != 'opal'
-  require 'stringio'
   require 'daniel/parse/main'
 
   module Daniel
@@ -38,6 +37,14 @@ if RUBY_ENGINE != 'opal'
         f.puts '72eb36021000example.com'
         f.puts '72eb36021000nonexistent.example.tld'
         f.close
+
+        prog = Daniel::Parse::MainProgram.new
+        prog.main(['example.tld', infile])
+
+        expect(prog.messages).to eq [
+          "Entry: example.tld 72eb36021000example.tld\n",
+          "Entry: nonexistent.example.tld 72eb36021000nonexistent.example.tld\n"
+        ]
 
         prog = Daniel::Parse::MainProgram.new
         prog.main(['-r', 'example.tld', infile])
