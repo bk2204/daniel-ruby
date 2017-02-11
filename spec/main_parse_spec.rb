@@ -21,6 +21,9 @@ if RUBY_ENGINE != 'opal'
           @messages << args.join
         end
 
+        def puts(*)
+        end
+
         def interactive(*)
         end
       end
@@ -93,6 +96,36 @@ if RUBY_ENGINE != 'opal'
           ":entry example.tld 72eb36021000example.tld\n",
           ":entry nonexistent.example.tld 72eb36021000nonexistent.example.tld\n",
           ":entry example.tld #{anon_yes}\n"
+        ]
+      end
+    end
+
+    it 'should find only valid entries with passphrase' do
+      Dir.mktmpdir do |dir|
+        infile = File.join(dir, 'input')
+
+        anon_yes = '00000042018150eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6MTk0MzU5OjA' \
+          'wMDAwMDoyd0pfUDgwV2tZME1ZdmpjOExjWEpBIiwidHlwIjoiSldUIn0.eyJjb2RlI' \
+          'joiZXhhbXBsZS50bGQiLCJmbGciOjY2LCJsZW4iOjE2LCJ2ZXIiOjB9.40slH9d8RM' \
+          '1H8yEITr6ObutJn7d7LA8x_mnObg6YKVI'
+        anon_no = '00000042018150eyJhbGciOiJIUzI1NiIsImtpZCI6IjE6MTk0MzU5OjAw' \
+          'MDAwMDpNTEszUnhHV3lrQ1ROQlBQRFJxVVVnIiwidHlwIjoiSldUIn0.eyJjb2RlIj' \
+          'oiZXhhbXBsZS50bGQiLCJmbGciOjY2LCJsZW4iOjE2LCJ2ZXIiOjB9.ZY-t5K3pphe' \
+          'y3Q6KviwHvVGA7OOgm9SmynADh5opni8'
+
+        f = File.new(infile, 'w')
+        f.puts '72eb36021000example.tld'
+        f.puts anon_yes
+        f.puts anon_no
+        f.close
+
+        prog = Daniel::Parse::MainProgram.new
+        prog.passphrase = 'foobar'
+        prog.main(['--prompt', 'example', infile])
+
+        expect(prog.messages).to eq [
+          "Entry: example.tld 72eb36021000example.tld\n",
+          "Entry: example.tld #{anon_yes}\n"
         ]
       end
     end
