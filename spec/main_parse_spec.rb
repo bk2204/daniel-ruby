@@ -75,7 +75,7 @@ if RUBY_ENGINE != 'opal'
         f = File.new(infile, 'w')
         f.puts '72eb36021000example.tld'
         f.puts '72eb36021000example.com'
-        f.puts '72eb36021000nonexistent.example.tld'
+        f.puts '72eb36021000nothing.example.tld'
         f.puts anon_yes
         f.puts anon_no
         f.close
@@ -85,7 +85,7 @@ if RUBY_ENGINE != 'opal'
 
         expect(prog.messages).to eq [
           "Entry: example.tld 72eb36021000example.tld\n",
-          "Entry: nonexistent.example.tld 72eb36021000nonexistent.example.tld\n",
+          "Entry: nothing.example.tld 72eb36021000nothing.example.tld\n",
           "Entry: example.tld #{anon_yes}\n"
         ]
 
@@ -94,7 +94,7 @@ if RUBY_ENGINE != 'opal'
 
         expect(prog.messages).to eq [
           ":entry example.tld 72eb36021000example.tld\n",
-          ":entry nonexistent.example.tld 72eb36021000nonexistent.example.tld\n",
+          ":entry nothing.example.tld 72eb36021000nothing.example.tld\n",
           ":entry example.tld #{anon_yes}\n"
         ]
       end
