@@ -59,6 +59,28 @@ if RUBY_ENGINE != 'opal'
       end
     end
 
+    it 'should ignore comments and blank lines' do
+      Dir.mktmpdir do |dir|
+        infile = File.join(dir, 'input')
+
+        f = File.new(infile, 'w')
+        f.puts '# comment'
+        f.puts
+        f.puts '72eb36021000example.tld'
+        f.puts '72eb36021000example.com'
+        f.puts '72eb36021000nonexistent.example.tld'
+        f.close
+
+        prog = Daniel::Parse::MainProgram.new
+        prog.main(['-r', 'example.tld', infile])
+
+        expect(prog.messages).to eq [
+          ":entry example.tld 72eb36021000example.tld\n",
+          ":entry nonexistent.example.tld 72eb36021000nonexistent.example.tld\n"
+        ]
+      end
+    end
+
     it 'should find matching anonymous entries' do
       Dir.mktmpdir do |dir|
         infile = File.join(dir, 'input')
@@ -115,6 +137,7 @@ if RUBY_ENGINE != 'opal'
 
         f = File.new(infile, 'w')
         f.puts '72eb36021000example.tld'
+        f.puts 'd90403021000example.tld'
         f.puts anon_yes
         f.puts anon_no
         f.close
