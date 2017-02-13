@@ -150,6 +150,15 @@ if RUBY_ENGINE != 'opal'
           "Entry: example.tld 72eb36021000example.tld\n",
           "Entry: example.tld #{anon_yes}\n"
         ]
+
+        prog = Daniel::Parse::MainProgram.new
+        prog.passphrase = 'foobar'
+        prog.main(['-r', '--prompt', 'example', infile])
+
+        expect(prog.messages).to eq [
+          ":entry example.tld 72eb36021000example.tld\n",
+          ":entry example.tld #{anon_yes}\n"
+        ]
       end
     end
   end
