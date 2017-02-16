@@ -1,0 +1,32 @@
+daniel-parse(1)
+===============
+
+Name
+----
+daniel-parse - parser for daniel(1) reminders
+
+Synopsis
+--------
+[verse]
+'daniel-parse' [--prompt] [-r] <pattern> <file>
+
+Description
+-----------
+daniel-parse parses a file containing daniel(1) reminders and outputs those with
+codes that match the given pattern (a Perl-compatible regular expression).
+
+Since daniel(1) can produce anonymous reminders, it is possible to have a file
+containing various reminders without being able to easily determine what codes
+they refer to (as the actual data may be Base64-encoded).  daniel-parse allows
+easier maintenance of such reminder files.
+
+Options
+-------
+-r::
+	Produce machine-readable output.  All generated data (including passwords)
+	will be URI-encoded.
+
+--prompt::
+  Prompt for a passphrase.  Only reminders which match this passphrase will be
+  emitted.  Note that for version 0 reminders, only a comparison of checksums is
+  done, as no further integrity checking can be provided.
