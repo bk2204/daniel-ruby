@@ -262,7 +262,7 @@ module Daniel
   # The parameters affecting generation of a password.
   class Parameters
     attr_reader :flags, :length, :version, :salt, :format_version, :iterations
-    attr_accessor :anonymous
+    attr_accessor :anonymous, :encrypted
 
     def initialize(flags = 2, length = 16, version = 0, options = {})
       @length = length
@@ -272,6 +272,7 @@ module Daniel
       @iterations = options[:iterations] || 1024
       self.flags = flags
       @anonymous = options[:anonymous] || false
+      @anonymous = options[:encrypted] || false
     end
 
     def flags=(flags)
@@ -330,9 +331,13 @@ module Daniel
       @anonymous
     end
 
+    def encrypted?
+      @encrypted
+    end
+
     def ==(other)
       [:flags, :length, :version, :salt, :format_version,
-       :anonymous].each do |m|
+       :anonymous, :encrypted].each do |m|
         return false unless method(m).call == other.method(m).call
       end
       true
@@ -1078,12 +1083,7 @@ module Daniel
 
       def generate(code, params, mask = nil)
         seed = key_for(params, :seed)
-        data = {
-          :flg => params.flags,
-          :ver => params.version,
-          :code => code
-        }
-        salt = OpenSSL::Digest::SHA256.digest(JWT.canonical_json(data))
+        salt = data_hash(code, params)
         prng = Daniel::ByteGenerator.new(seed, salt)
 
         gen = generator_function(prng)
@@ -1107,6 +1107,20 @@ module Daniel
       end
 
       protected
+
+      # Generate an encoding of the code and parameters.
+      def data(code, params)
+        {
+          :code => code,
+          :flg => params.flags,
+          :ver => params.version
+        }
+      end
+
+      # Generate a unique hash of the code and parameters.
+      def data_hash(code, params)
+        OpenSSL::Digest::SHA256.digest(JWT.canonical_json(data(code, params)))
+      end
 
       # Generate a key of length bytes based on the iteration count, salt (if
       # any), and the master secret.
