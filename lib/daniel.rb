@@ -428,12 +428,10 @@ module Daniel
 
   # A limited JSON Web Token implementation.
   #
-  # This implementation only generates HMAC-SHA-256 tokens, and it requires that
-  # all data be canonicalized (shortest possible JSON with keys sorted).
+  # This implementation only generates HMAC-SHA-256 and AES-256-GCM tokens, and
+  # it requires that all data be canonicalized (shortest possible JSON with keys
+  # sorted).
   class JWT
-    HEADER_SIG = '{"alg":"HS256","kid":"%s","typ":"JWT"}'.freeze
-    HEADER_ENC = '{"alg":"dir","enc":"A256GCM","kid":"%s","typ":"JWT"}'.freeze
-
     attr_reader :mac, :iv, :key_id, :serialized
 
     class << self
@@ -447,50 +445,19 @@ module Daniel
         "{#{items.join(',')}}"
       end
 
-      def valid_header(header)
-        [HEADER_SIG, HEADER_ENC].each do |h|
-          re = /^#{Regexp.escape(h).sub('%s', "(\\d+:\\d+:[a-f0-9]+(:.*)?)")}$/
-          m = re.match header
-          return [m[1], JSON.parse(header)['enc'] ? :enc : :sig] if m
-        end
-        [nil, nil]
-      end
-
-      def decrypt(key, header, iv, ciphertext, mac)
-        raise MissingDataError unless key && key.length == 32
-        cipher = OpenSSL::Cipher.new('aes-256-gcm')
-        cipher.decrypt
-        cipher.key = key
-        cipher.iv = iv
-        cipher.auth_tag = mac
-        cipher.auth_data = Util.to_url64(header)
-        [cipher.update(ciphertext) + cipher.final,
-         { :iv => iv, :mac => mac }]
-      end
-
-      def parse_data(type, components, key_id, options)
-        data = options.dup.merge(:type => type, :key_id => key_id)
-        case type
-        when :sig
-          [components[1], data.merge(:mac => components[2])]
-        when :enc
-          begin
-            payload, params = decrypt(data[:data_key], components[0],
-                                      *components[2..4])
-            [payload, data.merge(params)]
-          rescue OpenSSL::Cipher::CipherError
-            raise JWTValidationError, 'MAC is incorrect'
-          end
-        end
+      def parse_header(s, head)
+        components = s.split('.').map { |t| Util.from_url64(t) }
+        re = /^#{Regexp.escape(head).sub('%s', "(\\d+:\\d+:[a-f0-9]+(:.*)?)")}$/
+        m = re.match components[0]
+        raise InvalidJWTError, 'invalid JWT header' unless m
+        [components, m[1]]
       end
     end
 
     def self.parse(s, options = {})
-      components = s.split('.').map { |t| Util.from_url64(t) }
-      key_id, type = valid_header(components[0])
-      raise InvalidJWTError, 'invalid JWT header' unless type
-      payload, res = parse_data(type, components, key_id, options)
-      new(payload, res)
+      header, _rest = s.split('.').map { |t| Util.from_url64(t) }
+      data = JSON.parse(header, :symbolize_names => 1)
+      (data[:enc] ? EncryptedJWT : SimpleJWT).parse(s, options)
     end
 
     # Return a hash in canonical JSON form.
@@ -538,21 +505,6 @@ module Daniel
       self
     end
 
-    def mac_key=(key)
-      @mac_key = key
-      @valid = nil
-    end
-
-    def data_key=(key)
-      @data_key = key
-      @valid = nil
-    end
-
-    def iv=(iv)
-      @iv = iv
-      @valid = nil
-    end
-
     def payload
       return check_canonical_object(@serialized) if @skip_verify
       validate unless @valid
@@ -570,36 +522,6 @@ module Daniel
     end
 
     protected
-
-    def header
-      (@type == :sig ? HEADER_SIG : HEADER_ENC) % @key_id
-    end
-
-    def encrypt
-      raise MissingDataError unless @data_key
-      cipher = OpenSSL::Cipher.new('aes-256-gcm')
-      cipher.encrypt
-      cipher.key = @data_key
-      cipher.iv = @iv
-      cipher.auth_data = Util.to_url64(header)
-      [cipher.update(@serialized) + cipher.final, cipher.auth_tag]
-    end
-
-    def compute_mac
-      case @type
-      when :sig
-        compute_hmac
-      when :enc
-        encrypt[1]
-      end
-    end
-
-    def compute_hmac
-      raise MissingDataError unless @mac_key
-      hmac = OpenSSL::HMAC.new(@mac_key, OpenSSL::Digest::SHA256.new)
-      hmac << [header, @serialized].map { |s| Util.to_url64(s) }.join('.')
-      hmac.digest
-    end
 
     def check_canonical_object(s)
       raise InvalidJWTError, 'overlong JWT' if s.length > 1024
@@ -620,6 +542,108 @@ module Daniel
       @mac = options[:mac]
       @key_id = options[:key_id]
       @skip_verify = options[:skip_verify]
+    end
+  end
+
+  # An HMAC-SHA-256 JSON Web Token implementation.
+  class SimpleJWT < JWT
+    HEADER = '{"alg":"HS256","kid":"%s","typ":"JWT"}'.freeze
+
+    def self.parse(s, options = {})
+      components, key_id = JWT.send(:parse_header, s, HEADER)
+      new(components[1], options.merge(:key_id => key_id,
+                                       :mac => components[2]))
+    end
+
+    def key=(key)
+      @mac_key = key
+      @valid = nil
+    end
+
+    alias mac_key= key=
+
+    def to_s
+      validate unless @valid
+      [header, @serialized, @mac].map { |s| Util.to_url64(s) }.join('.')
+    end
+
+    protected
+
+    def header
+      HEADER % @key_id
+    end
+
+    def compute_mac
+      raise MissingDataError unless @mac_key
+      hmac = OpenSSL::HMAC.new(@mac_key, OpenSSL::Digest::SHA256.new)
+      hmac << [header, @serialized].map { |s| Util.to_url64(s) }.join('.')
+      hmac.digest
+    end
+  end
+
+  # An AES-256-GCM JSON Web Token implementation.
+  class EncryptedJWT < JWT
+    HEADER = '{"alg":"dir","enc":"A256GCM","kid":"%s","typ":"JWT"}'.freeze
+
+    class << self
+      protected
+
+      def decrypt(key, header, iv, ciphertext, mac)
+        raise MissingDataError unless key && key.length == 32
+        cipher = OpenSSL::Cipher.new('aes-256-gcm')
+        cipher.decrypt
+        cipher.key = key
+        cipher.iv = iv
+        cipher.auth_tag = mac
+        cipher.auth_data = Util.to_url64(header)
+        [cipher.update(ciphertext) + cipher.final,
+         { :iv => iv, :mac => mac }]
+      rescue OpenSSL::Cipher::CipherError
+        raise JWTValidationError, 'MAC is incorrect'
+      end
+    end
+
+    def self.parse(s, options = {})
+      components, key_id = JWT.send(:parse_header, s, HEADER)
+      payload, data = decrypt(options[:data_key], components[0],
+                              *components[2..4])
+      new(payload, options.merge(:key_id => key_id).merge(data))
+    end
+
+    def key=(key)
+      @data_key = key
+      @valid = nil
+    end
+
+    alias data_key= key=
+
+    def iv=(iv)
+      @iv = iv
+      @valid = nil
+    end
+
+    def to_s
+      [header, '', iv, *encrypt].map { |s| Util.to_url64(s) }.join('.')
+    end
+
+    protected
+
+    def header
+      HEADER % @key_id
+    end
+
+    def encrypt
+      raise MissingDataError unless @data_key
+      cipher = OpenSSL::Cipher.new('aes-256-gcm')
+      cipher.encrypt
+      cipher.key = @data_key
+      cipher.iv = @iv
+      cipher.auth_data = Util.to_url64(header)
+      [cipher.update(@serialized) + cipher.final, cipher.auth_tag]
+    end
+
+    def compute_mac
+      encrypt[1]
     end
   end
 
@@ -818,7 +842,8 @@ module Daniel
     # @return [String, nil] the encoded JWT in compact serialization or nil
     def jwt
       return nil if params.format_version.zero?
-      JWT.new(jwt_data, :mac => mac, :mac_key => mac_key, :key_id => key_id)
+      SimpleJWT.new(jwt_data, :mac => mac, :mac_key => mac_key,
+                              :key_id => key_id)
     end
 
     # Validate the MAC on the reminder.

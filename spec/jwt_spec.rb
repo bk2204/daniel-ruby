@@ -29,8 +29,8 @@ describe Daniel::JWT do
   end
 
   it 'has a valid header' do
-    expect { JSON.parse(Daniel::JWT::HEADER_SIG) }.not_to raise_error
-    expect { JSON.parse(Daniel::JWT::HEADER_ENC) }.not_to raise_error
+    expect { JSON.parse(Daniel::SimpleJWT::HEADER) }.not_to raise_error
+    expect { JSON.parse(Daniel::EncryptedJWT::HEADER) }.not_to raise_error
   end
 
   it 'has a header that contains the expected items (unencrypted)' do
@@ -96,7 +96,7 @@ describe Daniel::JWT do
       :name => 'John Doe',
       :sub => '1234567890'
     }
-    j = Daniel::JWT.new(data, :mac_key => 'secret', :key_id => key_id)
+    j = Daniel::SimpleJWT.new(data, :mac_key => 'secret', :key_id => key_id)
     expect(j.payload).to eq data
     expect(j.to_s).to eq example
   end
