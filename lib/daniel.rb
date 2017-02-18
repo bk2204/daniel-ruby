@@ -521,16 +521,6 @@ module Daniel
       @payload
     end
 
-    def to_s
-      validate unless @valid
-      case @type
-      when :sig
-        [header, @serialized, @mac].map { |s| Util.to_url64(s) }.join('.')
-      when :enc
-        [header, '', iv, *encrypt].map { |s| Util.to_url64(s) }.join('.')
-      end
-    end
-
     protected
 
     def check_canonical_object(s)
