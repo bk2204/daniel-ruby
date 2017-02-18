@@ -66,7 +66,7 @@ describe Daniel::Reminder do
     m = /\.([A-Za-z0-9_-]+)example\.tld$/.match(s)
     mac = Daniel::Util.from_url64(m[1])
     k = Daniel::Util.from_url64('w6vSGl3w_iEO8qhoCRO2vRxRqMY-3AK7-QasPXSrEIY')
-    r = Daniel::Reminder.parse(s, :mac_key => k)
+    r = Daniel::Reminder.parse(s, :key => k)
     expect(r.checksum).to eq '72eb36'
     expect(r.params.format_version).to eq 1
     expect(r.params.flags).to eq 0x40
@@ -89,7 +89,7 @@ describe Daniel::Reminder do
     m = /\.([A-Za-z0-9_-]+)example\.com$/.match(s)
     mac = Daniel::Util.from_url64(m[1])
     k = Daniel::Util.from_url64('6_DXNpxRaNa7K-7dC_Xb7yqacik2NiVlAjB6SSYANdw')
-    r = Daniel::Reminder.parse(s, :mac_key => k)
+    r = Daniel::Reminder.parse(s, :key => k)
     expect(r.checksum).to eq 'ca6796'
     expect(r.params.format_version).to eq 1
     expect(r.params.flags).to eq 0x60
@@ -113,8 +113,7 @@ describe Daniel::Reminder do
                                                  :format_version => 1)
     s = example
     k = Daniel::Util.from_url64('w6vSGl3w_iEO8qhoCRO2vRxRqMY-3AK7-QasPXSrEIY')
-    r = Daniel::Reminder.new(params, '72eb36', 'example.tld', nil,
-                             :mac_key => k)
+    r = Daniel::Reminder.new(params, '72eb36', 'example.tld', nil, :key => k)
     expect(r.to_s).to eq s
   end
 
@@ -126,7 +125,7 @@ describe Daniel::Reminder do
     k = Daniel::Util.from_url64('6_DXNpxRaNa7K-7dC_Xb7yqacik2NiVlAjB6SSYANdw')
     r = Daniel::Reminder.new(params, 'ca6796', 'example.com',
                              Daniel::Util.to_binary("\xff") * 12,
-                             :mac_key => k)
+                             :key => k)
     expect(r.to_s).to eq s
   end
 
@@ -147,13 +146,13 @@ describe Daniel::Reminder do
   it 'should validate reminders properly in delayed mode' do
     r = Daniel::Reminder.parse(example, :skip_verify => true)
     k = Daniel::Util.from_url64('w6vSGl3w_iEO8qhoCRO2vRxRqMY-3AK7-QasPXSrEIY')
-    r.mac_key = k
+    r.key = k
     expect { r.validate }.not_to raise_error
 
     r = Daniel::Reminder.parse(example.sub(/...(example\.tld)$/, 'abc\1'),
                                :skip_verify => true)
     k = Daniel::Util.from_url64('w6vSGl3w_iEO8qhoCRO2vRxRqMY-3AK7-QasPXSrEIY')
-    r.mac_key = k
+    r.key = k
     expect { r.validate }.to raise_error(Daniel::JWTValidationError)
   end
 end

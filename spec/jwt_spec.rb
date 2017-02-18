@@ -53,17 +53,17 @@ describe Daniel::JWT do
   it 'validates data correctly (unencrypted)' do
     j = nil
     expect do
-      j = Daniel::JWT.parse(example, :mac_key => 'secret')
+      j = Daniel::JWT.parse(example, :key => 'secret')
     end.not_to raise_error
     expect(j.valid?).to eq true
     expect { j.validate }.not_to raise_error
 
     s = example.sub(/...$/, 'abc')
     expect do
-      j = Daniel::JWT.parse(s, :mac_key => 'secret')
+      j = Daniel::JWT.parse(s, :key => 'secret')
     end.to raise_error(Daniel::JWTValidationError)
     j = Daniel::JWT.parse(s)
-    j.mac_key = 'secret'
+    j.key = 'secret'
     expect(j.valid?).to eq false
     expect { j.validate }.to raise_error(Daniel::JWTValidationError)
   end
@@ -71,22 +71,22 @@ describe Daniel::JWT do
   it 'validates data correctly (encrypted)' do
     j = nil
     expect do
-      j = Daniel::JWT.parse(example2, :data_key => key)
+      j = Daniel::JWT.parse(example2, :key => key)
     end.not_to raise_error
     expect(j.valid?).to eq true
     expect { j.validate }.not_to raise_error
 
     s = example2.sub(/...$/, 'abc')
     expect do
-      j = Daniel::JWT.parse(s, :data_key => key)
+      j = Daniel::JWT.parse(s, :key => key)
     end.to raise_error(Daniel::JWTValidationError)
   end
 
   it 'round-trips properly' do
-    j = Daniel::JWT.parse(example, :mac_key => 'secret')
+    j = Daniel::JWT.parse(example, :key => 'secret')
     expect(j.to_s).to eq example
 
-    j = Daniel::JWT.parse(example2, :data_key => key)
+    j = Daniel::JWT.parse(example2, :key => key)
     expect(j.to_s).to eq example2
   end
 
@@ -96,13 +96,13 @@ describe Daniel::JWT do
       :name => 'John Doe',
       :sub => '1234567890'
     }
-    j = Daniel::SimpleJWT.new(data, :mac_key => 'secret', :key_id => key_id)
+    j = Daniel::SimpleJWT.new(data, :key => 'secret', :key_id => key_id)
     expect(j.payload).to eq data
     expect(j.to_s).to eq example
   end
 
   it 'parses JSON properly' do
-    j = Daniel::JWT.parse(example, :mac_key => 'secret')
+    j = Daniel::JWT.parse(example, :key => 'secret')
     data = {
       :admin => true,
       :name => 'John Doe',

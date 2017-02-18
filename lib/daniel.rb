@@ -478,15 +478,25 @@ module Daniel
     end
 
     def initialize(payload, options = {})
-      initialize_from_options(options)
+      @key = options[:key]
+      @iv = options[:iv]
+      @valid = false
+      @mac = options[:mac]
+      @key_id = options[:key_id]
+      @skip_verify = options[:skip_verify]
       if payload.is_a? String
         @serialized = payload
-        validate if @mac_key || @data_key
+        validate if @key
       else
         @payload = payload
         @serialized = self.class.canonical_json(payload)
         @mac = compute_mac unless @mac
       end
+    end
+
+    def key=(key)
+      @key = key
+      @valid = nil
     end
 
     def valid?
@@ -530,19 +540,6 @@ module Daniel
       raise InvalidJWTError, 'noncanonical data' if s != canon_json
       data
     end
-
-    private
-
-    def initialize_from_options(options)
-      @type = options[:type] || (options[:data_key] ? :enc : :sig)
-      @data_key = options[:data_key]
-      @iv = options[:iv]
-      @mac_key = options[:mac_key]
-      @valid = false
-      @mac = options[:mac]
-      @key_id = options[:key_id]
-      @skip_verify = options[:skip_verify]
-    end
   end
 
   # An HMAC-SHA-256 JSON Web Token implementation.
@@ -554,13 +551,6 @@ module Daniel
       new(components[1], options.merge(:key_id => key_id,
                                        :mac => components[2]))
     end
-
-    def key=(key)
-      @mac_key = key
-      @valid = nil
-    end
-
-    alias mac_key= key=
 
     def to_s
       validate unless @valid
@@ -574,8 +564,8 @@ module Daniel
     end
 
     def compute_mac
-      raise MissingDataError unless @mac_key
-      hmac = OpenSSL::HMAC.new(@mac_key, OpenSSL::Digest::SHA256.new)
+      raise MissingDataError unless @key
+      hmac = OpenSSL::HMAC.new(@key, OpenSSL::Digest::SHA256.new)
       hmac << [header, @serialized].map { |s| Util.to_url64(s) }.join('.')
       hmac.digest
     end
@@ -605,17 +595,9 @@ module Daniel
 
     def self.parse(s, options = {})
       components, key_id = JWT.send(:parse_header, s, HEADER)
-      payload, data = decrypt(options[:data_key], components[0],
-                              *components[2..4])
+      payload, data = decrypt(options[:key], components[0], *components[2..4])
       new(payload, options.merge(:key_id => key_id).merge(data))
     end
-
-    def key=(key)
-      @data_key = key
-      @valid = nil
-    end
-
-    alias data_key= key=
 
     def iv=(iv)
       @iv = iv
@@ -633,10 +615,10 @@ module Daniel
     end
 
     def encrypt
-      raise MissingDataError unless @data_key
+      raise MissingDataError unless @key
       cipher = OpenSSL::Cipher.new('aes-256-gcm')
       cipher.encrypt
-      cipher.key = @data_key
+      cipher.key = @key
       cipher.iv = @iv
       cipher.auth_data = Util.to_url64(header)
       [cipher.update(@serialized) + cipher.final, cipher.auth_tag]
@@ -768,7 +750,7 @@ module Daniel
 
       def parse_jwt(s, code, options)
         jwt = parse_jwt_header(s, options)
-        jwt.mac_key = options[:mac_key]
+        jwt.key = options[:key]
         data = jwt.payload
         validate_jwt(data, code)
         mask = data.key?(:msk) ? Util.from_url64(data[:msk]) : nil
@@ -830,9 +812,9 @@ module Daniel
       options[:mac]
     end
 
-    # Set the MAC key to validate this reminder.
-    def mac_key=(key)
-      options[:mac_key] = key
+    # Set the MAC or encryption key to validate this reminder.
+    def key=(key)
+      options[:key] = key
     end
 
     # The reminder in JWT form.
@@ -842,8 +824,7 @@ module Daniel
     # @return [String, nil] the encoded JWT in compact serialization or nil
     def jwt
       return nil if params.format_version.zero?
-      SimpleJWT.new(jwt_data, :mac => mac, :mac_key => mac_key,
-                              :key_id => key_id)
+      SimpleJWT.new(jwt_data, :mac => mac, :key => key, :key_id => key_id)
     end
 
     # Validate the MAC on the reminder.
@@ -889,8 +870,8 @@ module Daniel
       k.join(':')
     end
 
-    def mac_key
-      options[:mac_key]
+    def key
+      options[:key]
     end
 
     def format_v0
@@ -1202,12 +1183,12 @@ module Daniel
 
       def reminder(code, params, mask = nil)
         Reminder.new(params, Util.to_hex(checksum), code, mask,
-                     :mac_key => key_for(params, :mac)).to_s
+                     :key => key_for(params, :mac)).to_s
       end
 
       def parse_reminder(reminder)
         params = Reminder.parse_header(reminder)
-        rem = Reminder.parse(reminder, :mac_key => key_for(params, :mac))
+        rem = Reminder.parse(reminder, :key => key_for(params, :mac))
         rem
       end
 
