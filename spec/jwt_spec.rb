@@ -10,15 +10,30 @@ describe Daniel::JWT do
      '_FRrQNpNFRrOcjy-K8Vc7wIY-p0PyjwyWO9mAvQIlsY'].join
   end
 
+  def example2
+    [
+      'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoiMTo0MDk2OjAwMDAwMCIs',
+      'InR5cCI6IkpXVCJ9..',
+      'n79N756AEWPhGEsl.',
+      'ZbbQp_rYDZayhIUw-eK8m4CgoDwo1aZXiw8r1A7DBXfuQITwI7YEAOKZk2-JtZLk.',
+      'tEhRvqzzH2ElODrmbeb9UA'
+    ].join
+  end
+
+  def key
+    (0..31).to_a.pack('C*')
+  end
+
   def key_id
     '1:4096:000000'
   end
 
   it 'has a valid header' do
-    expect { JSON.parse(Daniel::JWT::HEADER) }.not_to raise_error
+    expect { JSON.parse(Daniel::JWT::HEADER_SIG) }.not_to raise_error
+    expect { JSON.parse(Daniel::JWT::HEADER_ENC) }.not_to raise_error
   end
 
-  it 'has a header that contains the expected items' do
+  it 'has a header that contains the expected items (unencrypted)' do
     expect(JSON.parse(Daniel::Util.from_url64(example.split('.')[0]))).to eq(
       'alg' => 'HS256',
       'kid' => key_id,
@@ -26,7 +41,16 @@ describe Daniel::JWT do
     )
   end
 
-  it 'validates data correctly' do
+  it 'has a header that contains the expected items (encrypted)' do
+    expect(JSON.parse(Daniel::Util.from_url64(example2.split('.')[0]))).to eq(
+      'alg' => 'dir',
+      'enc' => 'A256GCM',
+      'kid' => key_id,
+      'typ' => 'JWT'
+    )
+  end
+
+  it 'validates data correctly (unencrypted)' do
     j = nil
     expect do
       j = Daniel::JWT.parse(example, :mac_key => 'secret')
@@ -44,9 +68,26 @@ describe Daniel::JWT do
     expect { j.validate }.to raise_error(Daniel::JWTValidationError)
   end
 
+  it 'validates data correctly (encrypted)' do
+    j = nil
+    expect do
+      j = Daniel::JWT.parse(example2, :data_key => key)
+    end.not_to raise_error
+    expect(j.valid?).to eq true
+    expect { j.validate }.not_to raise_error
+
+    s = example2.sub(/...$/, 'abc')
+    expect do
+      j = Daniel::JWT.parse(s, :data_key => key)
+    end.to raise_error(Daniel::JWTValidationError)
+  end
+
   it 'round-trips properly' do
     j = Daniel::JWT.parse(example, :mac_key => 'secret')
     expect(j.to_s).to eq example
+
+    j = Daniel::JWT.parse(example2, :data_key => key)
+    expect(j.to_s).to eq example2
   end
 
   it 'round-trips payload properly' do
