@@ -537,7 +537,7 @@ module Daniel
     HEADER = '{"alg":"HS256","kid":"%s","typ":"JWT"}'.freeze
 
     def self.parse(s, options = {})
-      components, key_id = JWT.send(:parse_header, s, HEADER)
+      components, key_id = JWT.parse_header(s, HEADER)
       new(components[1], options.merge(:key_id => key_id,
                                        :mac => components[2]))
     end
@@ -584,7 +584,7 @@ module Daniel
     end
 
     def self.parse(s, options = {})
-      components, key_id = JWT.send(:parse_header, s, HEADER)
+      components, key_id = JWT.parse_header(s, HEADER)
       payload, data = decrypt(options[:key], components[0], *components[2..4])
       new(payload, options.merge(:key_id => key_id).merge(data))
     end
