@@ -438,8 +438,8 @@ module Daniel
       protected
 
       def old_canonical_json(data)
-        items = data.keys.sort { |a, b| a.to_s <=> b.to_s }.map do |k|
-          dummy = { k.to_s => data[k] }
+        items = data.sort_by { |(k, _)| k.to_s }.map do |(k, v)|
+          dummy = { k.to_s => v }
           JSON.generate(dummy)[1..-2]
         end
         "{#{items.join(',')}}"
