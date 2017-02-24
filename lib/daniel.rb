@@ -153,8 +153,8 @@ module Daniel
 
     # Compute a flag value from a number or string.
     #
-    # @param text [String, Fixnum] the value to convert to a flags value
-    # @return [Fixnum] the computed value.
+    # @param text [String, Integer] the value to convert to a flags value
+    # @return [Integer] the computed value.
     #
     # Accepts a value either as an existing integer; a string containing a
     # decimal, octal, or hexadecimal number in C/Ruby format; or a string
@@ -163,7 +163,7 @@ module Daniel
     # This function computes only values that are part of {Flags::SYMBOL_MASK}.
     def self.mask_from_characters(text)
       case text
-      when Fixnum
+      when Integer
         text
       when /^0[0-7]+$/
         text.to_i(8)
