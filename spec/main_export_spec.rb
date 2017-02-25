@@ -16,11 +16,9 @@ if RUBY_ENGINE != 'opal'
           @passphrase
         end
 
-        def prompt(*)
-        end
+        def prompt(*); end
 
-        def interactive(*)
-        end
+        def interactive(*); end
       end
     end
   end

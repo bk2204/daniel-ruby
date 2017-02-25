@@ -82,8 +82,7 @@ module OpenSSL
         @keylen = keylen
       end
 
-      def encrypt
-      end
+      def encrypt; end
 
       def key=(key)
         @key = Daniel::Util.to_bit_array(key)

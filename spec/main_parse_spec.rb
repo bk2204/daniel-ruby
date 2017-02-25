@@ -21,11 +21,9 @@ if RUBY_ENGINE != 'opal'
           @messages << args.join
         end
 
-        def puts(*)
-        end
+        def puts(*); end
 
-        def interactive(*)
-        end
+        def interactive(*); end
       end
     end
   end
