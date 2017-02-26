@@ -922,8 +922,12 @@ module Daniel
         return @checksum if @checksum
         k = []
         (len + 1).times do |i|
-          k[i] = i.zero? ? 1 : (((k[i - 1] * 5) +
-                                (data[i * 2 - 2] * 7 + data[i * 2 - 1])) % 36)
+          k[i] = if i.zero?
+                   1
+                 else
+                   (((k[i - 1] * 5) + (data[i * 2 - 2] * 7 + data[i * 2 - 1])) %
+                    36)
+                 end
         end
         @checksum = k
       end
