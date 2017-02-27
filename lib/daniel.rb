@@ -1378,7 +1378,7 @@ module Daniel
 
       flags_set = false
       existing_set = false
-      OptionParser.new do |opts|
+      OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
         opts.banner = 'Usage: daniel [-mrep] [-f FLAGS] [-l LENGTH] [-v VER]'
 
         opts.on('-v PASSWORD-VERSION', '--password-version PASSWORD-VERSION',
