@@ -620,7 +620,10 @@ module Daniel
   end
 
   # A parsed reminder value
+  # rubocop:disable Metrics/BlockLength
   Reminder = Struct.new(:params, :checksum, :code, :mask, :options) do
+    # rubocop:enable Metrics/BlockLength
+
     # A parser for reminder string values.
     #
     # This class is an implementation detail.  Use
