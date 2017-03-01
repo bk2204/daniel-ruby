@@ -1,4 +1,4 @@
-Gem::Specification.new do |s|
+Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.name        = 'daniel'
   s.version     = '0.2.0'
   s.author      = 'brian m. carlson'
