@@ -620,10 +620,7 @@ module Daniel
   end
 
   # A parsed reminder value
-  # rubocop:disable Metrics/BlockLength
   Reminder = Struct.new(:params, :checksum, :code, :mask, :options) do
-    # rubocop:enable Metrics/BlockLength
-
     # A parser for reminder string values.
     #
     # This class is an implementation detail.  Use
@@ -1381,7 +1378,7 @@ module Daniel
 
       flags_set = false
       existing_set = false
-      OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
+      OptionParser.new do |opts|
         opts.banner = 'Usage: daniel [-mrep] [-f FLAGS] [-l LENGTH] [-v VER]'
 
         opts.on('-v PASSWORD-VERSION', '--password-version PASSWORD-VERSION',

@@ -1,4 +1,4 @@
-Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
+Gem::Specification.new do |s|
   s.name        = 'daniel'
   s.version     = '0.2.0'
   s.author      = 'brian m. carlson'
@@ -21,7 +21,7 @@ Gem::Specification.new do |s| # rubocop:disable Metrics/BlockLength
   s.add_dependency('json', '~> 1.8') if ::RUBY_VERSION < '1.9'
 
   if ::RUBY_VERSION >= '2.0'
-    s.add_development_dependency('rubocop', '~> 0.42.0')
+    s.add_development_dependency('rubocop', '~> 0.47.0')
   end
 
   if ::RUBY_VERSION >= '2.2'
