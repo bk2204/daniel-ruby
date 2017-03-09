@@ -920,14 +920,9 @@ module Daniel
 
       def checksum # rubocop:disable Metrics/AbcSize
         return @checksum if @checksum
-        k = []
-        (len + 1).times do |i|
-          k[i] = if i.zero?
-                   1
-                 else
-                   (((k[i - 1] * 5) + (data[i * 2 - 2] * 7 + data[i * 2 - 1])) %
-                    36)
-                 end
+        k = [1]
+        (1..len).each do |i|
+          k[i] = ((k[i - 1] * 5) + (data[i * 2 - 2] * 7 + data[i * 2 - 1])) % 36
         end
         @checksum = k
       end
