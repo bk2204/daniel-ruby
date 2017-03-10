@@ -1122,7 +1122,7 @@ module Daniel
         cipher.encrypt
         cipher.key = @master_secret
         cipher.iv = process_strings([@prefix, 'IV: ', flags, version, code],
-                                    @master_secret)
+                                    @master_secret)[0..15]
 
         gen = generator_function(cipher)
         return generate_existing(gen, params, mask) if params.existing_mode?
