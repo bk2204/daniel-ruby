@@ -174,18 +174,17 @@ module Daniel
       else
         value = SYMBOL_MASK_NEGATED
         masks = {
-          '0' => NO_NUMBERS,
-          'A' => NO_LETTERS,
-          'a' => NO_LETTERS,
-          's' => NO_SPACES,
-          ' ' => NO_SPACES,
-          '!' => NO_SYMBOLS_TOP,
-          ':' => NO_SYMBOLS_OTHER,
-          '+' => NO_SYMBOLS_OTHER,
-          '-' => NO_SYMBOLS_OTHER
+          '0' => ~NO_NUMBERS,
+          'A' => ~NO_LETTERS,
+          'a' => ~NO_LETTERS,
+          's' => ~NO_SPACES,
+          ' ' => ~NO_SPACES,
+          '!' => ~NO_SYMBOLS_TOP,
+          ':' => ~NO_SYMBOLS_OTHER,
+          '+' => ~NO_SYMBOLS_OTHER,
+          '-' => ~NO_SYMBOLS_OTHER
         }
-        masks.keys.each { |ch| value &= ~masks[ch] if text.include? ch }
-        value
+        masks.select { |(k, _)| text.include? k }.values.reduce(value, :&)
       end
     end
 
