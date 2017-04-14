@@ -907,8 +907,8 @@ module Daniel
       attr_reader :data, :len
 
       def format_tuple(a, b, c, d = 0, e = 0)
-        v = %w(a e i o u y)
-        co = %w(b c d f g h k l m n p r s t v z x)
+        v = %w[a e i o u y]
+        co = %w[b c d f g h k l m n p r s t v z x]
         [v[a], co[b], v[c], co[d], '-', co[e]]
       end
 
@@ -1422,7 +1422,7 @@ module Daniel
         end
 
         opts.on('-P FORMAT', 'Output passwords in another form') do |format|
-          unless %w(plain bubblebabble).include? format
+          unless %w[plain bubblebabble].include? format
             raise OptionParser::InvalidArgument,
                   "not a valid format '#{format}'"
           end

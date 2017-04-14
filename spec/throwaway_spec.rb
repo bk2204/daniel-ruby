@@ -15,7 +15,7 @@ if RUBY_ENGINE != 'opal'
 
     def initialize_variables
       file = File.join(File.dirname(__FILE__),
-                       %w(fixtures daniel throwaway.yaml))
+                       %w[fixtures daniel throwaway.yaml])
       @config = Daniel::Configuration.new(File.new(file, 'r'))
       @clipboard = true
     end
@@ -25,21 +25,21 @@ if RUBY_ENGINE != 'opal'
     it 'should generate valid passwords' do
       io = StringIO.new('', 'w')
       prog = MockMainProgram.new(io)
-      prog.main(%w(-p bar baz))
+      prog.main(%w[-p bar baz])
       expect(io.string).to eq "3*Re7n*qcDDl9N6y\nDp4iWIX26UwV55N("
     end
 
     it 'should generate machine-readable passwords with -pr' do
       io = StringIO.new('', 'w')
       prog = MockMainProgram.new(io)
-      prog.main(%w(-pr bar baz))
+      prog.main(%w[-pr bar baz])
       expect(io.string).to eq "3%2ARe7n%2AqcDDl9N6y\nDp4iWIX26UwV55N%28"
     end
 
     it 'should generate different passwords with -v' do
       io = StringIO.new('', 'w')
       prog = MockMainProgram.new(io)
-      prog.main(%w(-p -v1 bar baz))
+      prog.main(%w[-p -v1 bar baz])
       expect(io.string).to eq "YME0d&bl2N&#tk*g\n&@r6A8BdRQgJeY@u"
     end
 
@@ -49,7 +49,7 @@ if RUBY_ENGINE != 'opal'
 
       io = StringIO.new('', 'w')
       prog = MockMainProgram.new(io)
-      prog.main(%w(bar))
+      prog.main(%w[bar])
       expect(io.string).to match(/clipboard/)
     end
 
@@ -59,7 +59,7 @@ if RUBY_ENGINE != 'opal'
 
       io = StringIO.new('', 'w')
       prog = MockMainProgram.new(io)
-      prog.main(%w(-r bar))
+      prog.main(%w[-r bar])
       expect(io.string).to match(/clipboard/)
     end
   end

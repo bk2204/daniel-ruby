@@ -127,7 +127,7 @@ if RUBY_ENGINE != 'opal'
   describe Daniel::MainProgram do
     it 'parses args correctly' do
       prog = Daniel::MainProgram.new
-      prog.send(:parse_args, %w(-l8 -v1 -f15))
+      prog.send(:parse_args, %w[-l8 -v1 -f15])
       expect(prog.params.length).to eq 8
       expect(prog.params.version).to eq 1
       expect(prog.params.flags).to eq 15
@@ -135,19 +135,19 @@ if RUBY_ENGINE != 'opal'
 
     it 'parses -m correctly' do
       prog = Daniel::MainProgram.new
-      prog.send(:parse_args, %w(-m))
+      prog.send(:parse_args, %w[-m])
       expect(prog.params.flags).to eq Daniel::Flags::REPLICATE_EXISTING
     end
 
     it 'refuses to accept -f and -m together' do
       prog = Daniel::MainProgram.new
-      expect { prog.send(:parse_args, %w(-m -f15)) } \
+      expect { prog.send(:parse_args, %w[-m -f15]) } \
         .to raise_error(OptionParser::InvalidArgument, /can't.*both.*-m.*-f/i)
     end
 
     [
       ['', method(:human_readable), %w(), :human],
-      [' (machine-readable)', method(:machine_readable), %w(-r)],
+      [' (machine-readable)', method(:machine_readable), %w[-r]],
       [' (interactive)', method(:interactive), %w(), :interactive]
     ].each do |(msg, func, args, type)|
       it "generates reasonable output#{msg}" do
@@ -155,7 +155,7 @@ if RUBY_ENGINE != 'opal'
         prog.lines = ['example.tld']
         prog.passphrase = 'foobar'
         prog.prompt = type
-        prog.main(args + %w(-f10))
+        prog.main(args + %w[-f10])
         expect(prog.passwords).to eq ['nj&xzO@hz&QvuoGY']
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
@@ -171,7 +171,7 @@ if RUBY_ENGINE != 'opal'
         prog.lines = ['example.tld', '!!']
         prog.passphrase = 'foobar'
         prog.prompt = type
-        prog.main(args + %w(-f10))
+        prog.main(args + %w[-f10])
         expect(prog.passwords).to eq [
           'nj&xzO@hz&QvuoGY',
           'nj&xzO@hz&QvuoGY'
@@ -237,9 +237,9 @@ if RUBY_ENGINE != 'opal'
           '!pass',
           'bar'
         ]
-        prog.passphrase = %w(foobar foo)
+        prog.passphrase = %w[foobar foo]
         prog.prompt = type
-        prog.main(args + %w(-f10))
+        prog.main(args + %w[-f10])
         expect(prog.passwords).to eq [
           'nj&xzO@hz&QvuoGY',
           '3*Re7n*qcDDl9N6y'
@@ -263,7 +263,7 @@ if RUBY_ENGINE != 'opal'
         prog.lines = ['example.tld']
         prog.passphrase = 'foobar'
         prog.prompt = type
-        prog.main(%w(-l8 -v1 -f15) + args)
+        prog.main(%w[-l8 -v1 -f15] + args)
         expect(prog.passwords).to eq ['mJRUHjid']
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
@@ -309,7 +309,7 @@ if RUBY_ENGINE != 'opal'
           prog.lines = ['example.tld']
           prog.passphrase = 'foobar'
           prog.prompt = type
-          prog.main(args + %w(-t throwaway))
+          prog.main(args + %w[-t throwaway])
           expect(prog.passwords).to eq ['mJRUHjid']
           expect(prog.output.flatten).to eq func.call [
             ':master-password?',
@@ -361,7 +361,7 @@ if RUBY_ENGINE != 'opal'
       it "handles existing passwords properly#{msg}" do
         prog = Daniel::MainProgram.new
         prog.lines = ['!flags=32', 'example.tld']
-        prog.passphrase = %w(foobar verylongpassword verylongpassword)
+        prog.passphrase = %w[foobar verylongpassword verylongpassword]
         prog.prompt = type
         prog.main(args)
         expect(prog.output.flatten).to eq func.call [
@@ -378,37 +378,37 @@ if RUBY_ENGINE != 'opal'
       it "handles printing passwords in plain format correctly#{msg}" do
         prog = Daniel::MainProgram.new
         prog.lines = ['example.tld']
-        prog.passphrase = %w(foobar)
+        prog.passphrase = %w[foobar]
         prog.prompt = type
-        prog.main(%w(-P plain) + args +
-                  %w(72eb36200900b3f70f5aefa1df6c1aexample.tld))
+        prog.main(%w[-P plain] + args +
+                  %w[72eb36200900b3f70f5aefa1df6c1aexample.tld])
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
           ':checksum 72eb36'
         ]
-        expect(prog.passwords).to eq %w(Pineapple)
+        expect(prog.passwords).to eq %w[Pineapple]
       end
 
       it "handles printing passwords in bubblebabble format correctly#{msg}" do
         prog = Daniel::MainProgram.new
         prog.lines = ['example.tld']
-        prog.passphrase = %w(foobar)
+        prog.passphrase = %w[foobar]
         prog.prompt = type
-        prog.main(%w(-P bubblebabble) + args +
-                  %w(72eb36200900b3f70f5aefa1df6c1aexample.tld))
+        prog.main(%w[-P bubblebabble] + args +
+                  %w[72eb36200900b3f70f5aefa1df6c1aexample.tld])
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
           ':checksum 72eb36'
         ]
-        expect(prog.passwords).to eq %w(xigak-nyryk-humil-bosek-sonax)
+        expect(prog.passwords).to eq %w[xigak-nyryk-humil-bosek-sonax]
       end
 
       it "handles existing passwords properly with -m#{msg}" do
         prog = Daniel::MainProgram.new
         prog.lines = ['example.tld']
-        prog.passphrase = %w(foobar verylongpassword verylongpassword)
+        prog.passphrase = %w[foobar verylongpassword verylongpassword]
         prog.prompt = type
-        prog.main(%w(-m) + args)
+        prog.main(%w[-m] + args)
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
           ':checksum 72eb36',
@@ -425,7 +425,7 @@ if RUBY_ENGINE != 'opal'
         prog.passphrase = ['foobar', 'La république française',
                            'La république française']
         prog.prompt = type
-        prog.main(%w(-m) + args)
+        prog.main(%w[-m] + args)
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
           ':checksum 72eb36',
@@ -441,7 +441,7 @@ if RUBY_ENGINE != 'opal'
         reminder = '72eb36200f045ed8d92f9309c10059ee79f5d50266example.tld'
         prog = Daniel::MainProgram.new
         prog.prompt = type
-        prog.main(%w(-a) + args + [reminder])
+        prog.main(%w[-a] + args + [reminder])
         expect(prog.output.flatten).to eq parse_human func.call [
           ":reminder #{reminder}",
           ':version 0',
@@ -470,7 +470,7 @@ if RUBY_ENGINE != 'opal'
           ':code?'
         ]
         output = if type
-                   %w(0e187863b62ca736f75c84a6265985f5)
+                   %w[0e187863b62ca736f75c84a6265985f5]
                  else
                    [Daniel::Util.to_binary(
                      "\x0E\x18xc\xB6\x2C\xA76\xF7\x5C\x84\xA6\x26Y\x85\xF5"
@@ -484,7 +484,7 @@ if RUBY_ENGINE != 'opal'
         reminder = 'd90403050d816ddefault.example.com'
         prog = Daniel::MainProgram.new
         prog.prompt = type
-        prog.main(%w(-a) + args + [reminder])
+        prog.main(%w[-a] + args + [reminder])
         expect(prog.output.flatten).to eq parse_human func.call [
           ":reminder #{reminder}",
           ':version 0',
@@ -506,7 +506,7 @@ if RUBY_ENGINE != 'opal'
           'FBqAgTgCuovi7YdgfJzmtIJtvWrXSv0example.com'
         prog = Daniel::MainProgram.new
         prog.prompt = type
-        prog.main(%w(-a) + args + [reminder])
+        prog.main(%w[-a] + args + [reminder])
         expect(prog.output.flatten).to eq parse_human func.call [
           ":reminder #{reminder}",
           ':version 1',
@@ -533,7 +533,7 @@ if RUBY_ENGINE != 'opal'
         prog.lines = ['example.com']
         prog.passphrase = 'foobar'
         prog.prompt = type
-        prog.main(%w(--format-version 1 -f 0x0e) + args)
+        prog.main(%w[--format-version 1 -f 0x0e] + args)
         expect(prog.passwords).to eq ['YcYAWNpjt2qqzKvw']
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
@@ -553,7 +553,7 @@ if RUBY_ENGINE != 'opal'
         prog.lines = ['example.com']
         prog.passphrase = 'foobar'
         prog.prompt = type
-        prog.main(%w(--format-version 1 -f 0x0e --anonymous) + args)
+        prog.main(%w[--format-version 1 -f 0x0e --anonymous] + args)
         expect(prog.passwords).to eq ['YcYAWNpjt2qqzKvw']
         expect(prog.output.flatten).to eq func.call [
           ':master-password?',
@@ -567,7 +567,7 @@ if RUBY_ENGINE != 'opal'
 
     it 'produces proper estimate output' do
       prog = Daniel::MainProgram.new
-      prog.main(%w(-e -f10))
+      prog.main(%w[-e -f10])
       expect(prog.output.flatten).to eq [
         '16 characters; 72 possible (6.17 bpc); 98.72 bits of entropy'
       ]
@@ -575,7 +575,7 @@ if RUBY_ENGINE != 'opal'
 
     it 'produces proper estimate output (machine-readable)' do
       prog = Daniel::MainProgram.new
-      prog.main(%w(-e -f10 -r))
+      prog.main(%w[-e -f10 -r])
       expect(prog.output.flatten.map { |s| s.split("\n") }.flatten).to eq [
         ':length 16',
         ':possible-char 72',
@@ -635,22 +635,22 @@ if RUBY_ENGINE != 'opal'
 
     it 'throws an exception with an invalid password format' do
       prog = Daniel::MainProgram.new
-      expect { prog.main(%w(-P bizarre)) }.to \
+      expect { prog.main(%w[-P bizarre]) }.to \
         raise_error(OptionParser::InvalidArgument, /not.*valid/)
     end
 
     it 'throws an exception when -t is used with no config' do
       prog = Daniel::MainProgram.new
-      expect { prog.main(%w(-t throwaway)) }.to \
+      expect { prog.main(%w[-t throwaway]) }.to \
         raise_error(OptionParser::InvalidArgument, /not.*valid/)
     end
 
     it 'handles mismatched passwords properly with -m' do
       prog = Daniel::MainProgram.new
       prog.lines = ['example.tld']
-      prog.passphrase = %w(foobar verylongpassword differentpasssword)
+      prog.passphrase = %w[foobar verylongpassword differentpasssword]
       prog.prompt = :interactive
-      prog.main(%w(-m))
+      prog.main(%w[-m])
       expect(prog.output.flatten).to eq [
         'Please enter your master password: ',
         '# ok, checksum is 72eb36',

@@ -53,13 +53,13 @@ rescue LoadError => e
 end
 
 file 'build/html' do
-  %w(build build/html).each do |dir|
+  %w[build build/html].each do |dir|
     Dir.mkdir dir unless Dir.exist? dir
   end
 end
 
 task :html => ['build/html', :"opal:build"] do
-  %w(daniel.xhtml daniel.css).each do |file|
+  %w[daniel.xhtml daniel.css].each do |file|
     cp "html/#{file}", 'build/html'
   end
 end

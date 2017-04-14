@@ -49,11 +49,11 @@ describe Daniel::Flags do
 
   [
     [0x00, []],
-    [0x1f, %w(no-numbers no-spaces no-symbols-top no-symbols-other no-letters)],
-    [0x20, %w(replicate-existing)],
-    [0x13, %w(no-numbers no-spaces no-letters)],
-    [0x07, %w(no-numbers no-spaces no-symbols-top)],
-    [0x80, %w(arbitrary-bytes)]
+    [0x1f, %w[no-numbers no-spaces no-symbols-top no-symbols-other no-letters]],
+    [0x20, %w[replicate-existing]],
+    [0x13, %w[no-numbers no-spaces no-letters]],
+    [0x07, %w[no-numbers no-spaces no-symbols-top]],
+    [0x80, %w[arbitrary-bytes]]
   ].each do |(flags, array)|
     it "returns the correct explanation for '#{flags}'" do
       expect(Daniel::Flags.explain(flags)).to eq array

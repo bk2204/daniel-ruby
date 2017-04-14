@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
     s.add_development_dependency('opal-rspec', '~> 0.6.0')
   end
 
-  s.files  = %w(LICENSE Rakefile README.adoc doc/daniel.adoc)
+  s.files  = %w[LICENSE Rakefile README.adoc doc/daniel.adoc]
   s.files += Dir.glob('bin/*')
   s.files += Dir.glob('lib/**/*.rb')
 end
