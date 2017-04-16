@@ -94,11 +94,11 @@ def process_message_interactive(msg)
 end
 
 def human_readable(msgs)
-  msgs.flatten.map { |m| process_message_human(m) }.select { |m| !m.nil? }
+  msgs.flatten.map { |m| process_message_human(m) }.reject(&:nil?)
 end
 
 def interactive(msgs)
-  msgs.flatten.map { |m| process_message_interactive(m) }.select { |m| !m.nil? }
+  msgs.flatten.map { |m| process_message_interactive(m) }.reject(&:nil?)
 end
 
 def machine_readable(msgs)
