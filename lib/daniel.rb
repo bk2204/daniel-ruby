@@ -995,7 +995,8 @@ module Daniel
 
     def load_data(file)
       return if file.nil? || !defined?(YAML)
-      data = ::YAML.load(file.read)
+      return unless YAML.respond_to? :safe_load
+      data = ::YAML.safe_load(file.read)
       return unless data['presets']
       data['presets'].each do |name, params|
         @presets[name] = process_preset(params)
