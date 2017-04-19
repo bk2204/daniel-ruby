@@ -54,9 +54,9 @@ def flags
 end
 
 def handle_type_change
-  all_blocks = [:reminder, :new, :list]
+  all_blocks = %i[reminder new list]
   blocks = {
-    :new => [:reminder, :new],
+    :new => %i[reminder new],
     :reminder => [:reminder],
     :list => [:list]
   }
@@ -90,7 +90,7 @@ class MainProgram
     @pwobj = Daniel::PasswordGenerator.new pass
     element(:checksum).text = Daniel::Util.to_hex(@pwobj.checksum)
 
-    [:reminder, :reminder_button, :code, :code_button].each { |id| enable(id) }
+    %i[reminder reminder_button code code_button].each { |id| enable(id) }
     show(:checksum_text)
   end
 
@@ -183,13 +183,13 @@ def main
 
   Element.find('input[name=type]').on(:change) { handle_type_change }
 
-  [
-    :master_password_button,
-    :reminder_button,
-    :remlist_button,
-    :code_button,
-    :source_button,
-    :show_hide_password_button
+  %i[
+    master_password_button
+    reminder_button
+    remlist_button
+    code_button
+    source_button
+    show_hide_password_button
   ].each do |button|
     element(button).on :click do
       prog.send(button)

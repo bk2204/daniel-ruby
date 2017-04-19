@@ -64,6 +64,6 @@ task :html => ['build/html', :"opal:build"] do
   end
 end
 
-task :build => [:"opal:build", :html]
+task :build => %i[opal:build html]
 task :all => [:spec] + possible
 task :default => :all
