@@ -146,9 +146,9 @@ if RUBY_ENGINE != 'opal'
     end
 
     [
-      ['', method(:human_readable), %w(), :human],
+      ['', method(:human_readable), [], :human],
       [' (machine-readable)', method(:machine_readable), %w[-r]],
-      [' (interactive)', method(:interactive), %w(), :interactive]
+      [' (interactive)', method(:interactive), [], :interactive]
     ].each do |(msg, func, args, type)|
       it "generates reasonable output#{msg}" do
         prog = Daniel::MainProgram.new
