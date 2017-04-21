@@ -69,6 +69,8 @@ describe Daniel::JWT do
   end
 
   it 'validates data correctly (encrypted)' do
+    pending 'GCM not yet supported' if ::RUBY_ENGINE == 'opal'
+
     j = nil
     expect do
       j = Daniel::JWT.parse(example2, :key => key)
@@ -82,9 +84,13 @@ describe Daniel::JWT do
     end.to raise_error(Daniel::JWTValidationError)
   end
 
-  it 'round-trips properly' do
+  it 'round-trips properly (unencrypted)' do
     j = Daniel::JWT.parse(example, :key => 'secret')
     expect(j.to_s).to eq example
+  end
+
+  it 'round-trips properly (encrypted)' do
+    pending 'GCM not yet supported' if ::RUBY_ENGINE == 'opal'
 
     j = Daniel::JWT.parse(example2, :key => key)
     expect(j.to_s).to eq example2
