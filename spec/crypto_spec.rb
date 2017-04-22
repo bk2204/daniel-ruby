@@ -79,3 +79,18 @@ describe OpenSSL::HMAC do
     end
   end
 end
+
+describe OpenSSL::Cipher do
+  it 'should produce expected results for CTR mode' do
+    key = '000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f'
+    buffer = ([0] * 32).pack('C*')
+    c = OpenSSL::Cipher::AES.new(256, :CTR)
+    c.encrypt
+    c.key = Daniel::Util.from_hex(key)
+    c.iv = Daniel::Util.from_hex('000102030405060708090a0b0c0d0e0f')
+    expect(Daniel::Util.to_hex(c.update(buffer))).to eq \
+      '5a6e045708fb7196f02e553d02c3a69260f310d5c385585d5516fb5172e520cf'
+    expect(Daniel::Util.to_hex(c.update(buffer))).to eq \
+      '1c65775b3ac5cca4bbe10ba5e511c79296cb07722890a7ef69405d10f964ed5d'
+  end
+end
