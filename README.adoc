@@ -59,7 +59,7 @@ Can I adjust the set of characters that are generated?
 ------------------------------------------------------
 
 Yes.  The flags parameter can be adjusted on the command line with -f, or by
-entering +!flags=_value_+ at the "Enter code:" prompt.  When the flags are set
+entering +!flags=_value_+ at the “Enter code:” prompt.  When the flags are set
 to 0, all characters from hex 20 to hex 7E are included.  The different bits
 mean:
 
@@ -87,7 +87,7 @@ Can I adjust the length of the password?
 ----------------------------------------
 
 Yes.  The length can be adjusted using the `-l` parameter, or by entering
-+!length=_value_+ at the "Enter code:" prompt.  The length is encoded as part
++!length=_value_+ at the “Enter code:” prompt.  The length is encoded as part
 of the reminder, but it does not cause the generated password to be any
 different other than in length.  That is, truncating a 16-character password to
 8 characters is exactly the same as generating an 8-character password with the
@@ -97,7 +97,7 @@ What if a site forces me to change my password frequently?
 ----------------------------------------------------------
 
 There is a version field that can be incremented to produce a completely
-different password.  Use `-v` or enter +!version=_value_+ at the "Enter code:"
+different password.  Use `-v` or enter +!version=_value_+ at the “Enter code:”
 prompt.  The default version is 0, and values up to 2^32^-1 are accepted.  The
 version is encoded as part of the reminder.
 
@@ -187,7 +187,7 @@ program is available.
 
 Having said that, only MRI 1.9.3, 2.0.0, 2.1, 2.2, and 2.3 are officially
 supported.  I will probably notice if the tests fail on 1.8.7 and fix it myself.
-Please feel free to send a pull request if it doesn't work on your preferred
+You're welcome to send a pull request if it doesn't work on your preferred
 flavor (although please stick to 1.8.7-equivalent or newer).
 
 So what about the cryptography you're using?
