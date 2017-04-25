@@ -11,8 +11,8 @@ Synopsis
 'daniel' [-r] [-p] [-v <version>] [-f <flags>] [-l <length>] [-P <format>]
 'daniel' [-r] [-p] [-v <version>] [-P <format>] -m
 'daniel' [-r] [-f <flags>] [-l <length>] -e
-'daniel' [-r] [-p] [-P <format>] <reminder>...
-'daniel' [-r] -a <reminder>...
+'daniel' [-r] [-p] [-P <format>] <reminder>…
+'daniel' [-r] -a <reminder>…
 
 Description
 -----------
@@ -54,14 +54,14 @@ This form is useful to encode existing credentials.
   Instead of generating a password, output statistics about the entropy of a
 	password generated with those parameters.
 
-'daniel' [-r] [-p] [-P <format>] <reminder>...::
+'daniel' [-r] [-p] [-P <format>] <reminder>…::
   Use the specified reminders to regenerate and output their corresponding
 	passwords.
 +
 After the user enters their master password, each password is output without
 pausing.
 
-'daniel' [-r] -a <reminder>...::
+'daniel' [-r] -a <reminder>…::
 	Parse the given reminders and display the parameters and code encoded in them.
 
 Flag Values
@@ -159,7 +159,7 @@ Options
 	many sites.  Changing the flags value results in a completely different
 	password.  To change the password at the code prompt, use `!flags=<flags>`.
 +
-Since daniel employs a cryptographically-secure PRNG to generate bytes and
+Since daniel employs a cryptographically secure PRNG to generate bytes and
 selects the first bytes that match, a generated password might not contain a
 particular type of character needed as part of a site's security policy.  In
 this case, simply increase the version number until a suitable password is
