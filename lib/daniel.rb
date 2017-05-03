@@ -1443,6 +1443,16 @@ module Daniel
           Flags.flag_names.each_with_index do |name, i|
             puts format('    0x%02x: %s', 1 << i, name)
           end
+          puts 'Flags can also be specified as c[CATEGORIES]:'
+          {
+            '0' => 'numbers',
+            'a' => 'letters',
+            's' => 'spaces',
+            '!' => 'top symbols',
+            '-' => 'other symbols'
+          }.each do |k, v|
+            puts "    #{k}: allow #{v}"
+          end
           return false
         end
       end.parse!(args)
