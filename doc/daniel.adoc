@@ -93,6 +93,10 @@ keyboard
 |`:`, `+`, or `-`           |Include other symbols
 |===
 
+Note that if you want only digits, specifying `0` alone won't work.  You can
+prefix the value with an uninterpreted character, such as in `c0`.  This is
+allowed for all values in this table.
+
 The `-m` option is represented using a flags value of exactly 32 (0x20).
 
 Commands
