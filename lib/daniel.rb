@@ -387,11 +387,9 @@ module Daniel
     end
 
     def random_bytes(n)
-      buffer = Util.to_binary('')
-      while buffer.bytesize < n
-        @v = hmac(@k, @v)
-        buffer = Util.to_binary(buffer + @v)
-      end
+      # Round up for uneven chunk sizes.
+      chunks = (n + @v.length - 1) / @v.length
+      buffer = Array.new(chunks) { @v = hmac(@k, @v) }.join
       update
       Util.to_binary(buffer)[0, n]
     end
