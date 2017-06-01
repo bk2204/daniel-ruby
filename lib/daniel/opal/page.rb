@@ -136,6 +136,10 @@ class MainProgram
     e.prevent
   end
 
+  def hide_password_helper
+    hide(:password_helper)
+  end
+
   protected
 
   def create_reminder_entry(code)
@@ -182,6 +186,7 @@ def main
   prog = MainProgram.new
 
   Element.find('input[name=type]').on(:change) { handle_type_change }
+  Element.find('input.state').on(:change) { prog.hide_password_helper }
 
   %i[
     master_password_button
