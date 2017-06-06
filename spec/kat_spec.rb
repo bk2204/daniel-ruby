@@ -13,22 +13,31 @@ describe Daniel::PasswordGenerator do
     ['foo', 'baz', 'Dp4iWIX26UwV55N(', '8244c50a1000baz'],
     # Test Unicode.
     ['La République française', 'la-france', 'w^O)Vl7V0O&eEa^H',
-     '55b1d40a1000la-france']
+     '55b1d40a1000la-france'],
+    ['foobar', 'example.tld', '*XEv(#tcpCd%%plR',
+     '72eb364a01812feyJhbGciOiJIUzI1NiIsImtpZCI6IjE6MTAyNDo3MmViMzYiLCJ0eXAiO' \
+     'iJKV1QifQ.eyJjb2RlIjoiZXhhbXBsZS50bGQiLCJmbGciOjc0LCJsZW4iOjE2LCJ2ZXIiO' \
+     'jB9.GkVuZNcJ1jBPJHFj9r9wQpazQrKnJYgbMFTVjsG1Xc0example.tld',
+     { :format_version => 1 }]
   ].each do |items|
-    master, code, result, reminder = items
+    master, code, result, reminder, options = items
+
+    options ||= {}
 
     it "gives the expected password for #{master}, #{code}" do
       pending 'Opal encoding issues' if known_failure(code)
 
       gen = Daniel::PasswordGenerator.new master
-      expect(gen.generate(code, Daniel::Parameters.new(10))).to eq(result)
+      params = Daniel::Parameters.new(10, 16, 0, options)
+      expect(gen.generate(code, params)).to eq(result)
     end
 
     it "gives the expected reminder for #{master}, #{code}" do
       pending 'Opal encoding issues' if known_failure(code)
 
       gen = Daniel::PasswordGenerator.new master
-      expect(gen.reminder(code, Daniel::Parameters.new(10))).to eq(reminder)
+      params = Daniel::Parameters.new(10, 16, 0, options)
+      expect(gen.reminder(code, params)).to eq(reminder)
     end
 
     it "gives the expected password for #{master}, #{code} reminder" do
@@ -42,7 +51,9 @@ describe Daniel::PasswordGenerator do
       pending 'Opal encoding issues' if known_failure(code)
 
       gen = Daniel::PasswordGenerator.new master
-      reminder = reminder.sub(/^[0-9a-f]{6}/, '000000')
+      unless options[:format_version]
+        reminder = reminder.sub(/^[0-9a-f]{6}/, '000000')
+      end
       expect(gen.generate_from_reminder(reminder)).to eq(result)
     end
   end
