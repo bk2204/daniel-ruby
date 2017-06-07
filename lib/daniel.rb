@@ -346,7 +346,18 @@ module Daniel
   end
 
   # Parse a code according to a standard format
+  #
+  # The format of the code should start with either +pass+ or +pin+, depending
+  # on whether this is a password or a PIN, followed by a colon, and a
+  # URI-encoded username and domain separated by an at sign.
+  #
+  # As an example, +pass:sue%40example.com@example.org+ would be a password for
+  # the user with username +sue@example.com+ at the domain +example.org+.
   class CodeParser
+    # Parse a code into its constituent parts.
+    #
+    # @return [Hash] the parsed code, with +:type+, +:username+, and +:domain+
+    #   keys
     def self.parse(code)
       parsed = { :code => code }
       m = /^(pass|pin):(?:(.+)@)?(.+)$/.match code
