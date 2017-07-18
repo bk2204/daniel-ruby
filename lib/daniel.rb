@@ -1620,4 +1620,4 @@ module Daniel
   end
 end
 
-Daniel::MainProgram.new.main(ARGV) if __FILE__ == $PROGRAM_NAME
+Daniel::MainProgram.new.main(ARGV) if $PROGRAM_NAME == __FILE__

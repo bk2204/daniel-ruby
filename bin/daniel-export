@@ -4,4 +4,4 @@ $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'daniel/export/main'
 
-Daniel::Export::MainProgram.new.main(ARGV) if __FILE__ == $PROGRAM_NAME
+Daniel::Export::MainProgram.new.main(ARGV) if $PROGRAM_NAME == __FILE__
