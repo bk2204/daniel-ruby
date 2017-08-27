@@ -22,6 +22,7 @@ module Daniel
       protected
 
       def process_line(pattern, line)
+        return nil if line =~ /^(#|\s*$)/
         rem = parse_line(line)
         valid_checksum(rem) && rem.code =~ pattern ? [rem.code, line] : nil
       rescue ChecksumMismatchError, JWTValidationError, InvalidReminderError
