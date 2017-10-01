@@ -64,6 +64,14 @@ task :html => ['build/html', :"opal:build"] do
   end
 end
 
+doc_src = Rake::FileList['doc/*.adoc']
+doc_obj = doc_src.map { |f| f.gsub(/\.adoc\z/, '.1') }
+
+rule '.1' => '.adoc' do |t|
+  sh "asciidoctor -b manpage -o #{t.name} #{t.source}"
+end
+
 task :build => %i[opal:build html]
+task :doc => doc_obj
 task :all => [:spec] + possible
 task :default => :all
