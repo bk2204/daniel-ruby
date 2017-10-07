@@ -40,7 +40,6 @@ module Daniel
     def print(*args)
       # This has to include interactive because Ruby 1.8 does a tail-call
       # optimization.
-      # rubocop:disable Performance/Caller
       return unless caller(1).first =~ /in `(prompt|interactive)'/
       msg = args.join('').chomp
       @output ||= []
