@@ -497,7 +497,7 @@ module Daniel
       else
         @payload = payload
         @serialized = self.class.canonical_json(payload)
-        @mac = compute_mac unless @mac
+        @mac ||= compute_mac
       end
     end
 
@@ -517,7 +517,7 @@ module Daniel
       unless Daniel::Util.constant_equal?(compute_mac, mac)
         raise JWTValidationError, 'MAC is incorrect'
       end
-      @payload = check_canonical_object(@serialized) unless @payload
+      @payload ||= check_canonical_object(@serialized)
       @valid = true
       self
     end
@@ -1311,8 +1311,8 @@ module Daniel
   # A base class for daniel-related command-line interface.
   class Program
     def initialize
-      @stdin = $stdin unless @stdin
-      @prompt = @stdin.isatty ? :interactive : :human unless @prompt
+      @stdin ||= $stdin
+      @prompt ||= @stdin.isatty ? :interactive : :human
     end
 
     protected
