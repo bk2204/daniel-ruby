@@ -12,3 +12,4 @@ TAGS
 .bundle/
 Gemfile.lock
 vendor/
+tmp/
