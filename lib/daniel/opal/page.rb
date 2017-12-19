@@ -115,7 +115,7 @@ class MainProgram
     element(:remlist_contents).children.remove
     fetch_reminders do |reminders|
       @reminders = reminders
-      @reminders.keys.each { |code| create_reminder_entry(code) }
+      @reminders.each_key { |code| create_reminder_entry(code) }
       unhide(:remlist_block)
     end
   end
