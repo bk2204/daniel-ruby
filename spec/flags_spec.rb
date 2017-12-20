@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 require 'spec_helper'
 
 FC = Daniel::Flags

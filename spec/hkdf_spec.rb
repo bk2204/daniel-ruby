@@ -1,5 +1,3 @@
-# encoding: UTF-8
-
 require 'spec_helper'
 
 # These test cases are from RFC 5869.
