@@ -1521,13 +1521,13 @@ module Daniel
       # Ruby 1.8 doesn't implement Math#log2 or Float#round with an argument.
       bits = (Math.log(possibles) / Math.log(2) * 1000).round / 1000.0
       tbits = bits * nchars
-      if machine_readable?
-        puts ":length #{nchars}\n:possible-char #{possibles}\n" \
-          ":bits-per-char #{bits}\n:bits-total #{tbits}"
-      else
-        puts "#{nchars} characters; #{possibles} possible (#{bits} bpc); " \
-          "#{tbits} bits of entropy"
-      end
+      f = if machine_readable?
+            ":length %d\n:possible-char %d\n:bits-per-char %.3f\n" \
+            ':bits-total %.3f'
+          else
+            '%d characters; %d possible (%.3f bpc); %.3f bits of entropy'
+          end
+      puts format(f, nchars, possibles, bits, tbits)
     end
 
     def humanify(text)

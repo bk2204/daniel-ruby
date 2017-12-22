@@ -568,7 +568,7 @@ if RUBY_ENGINE != 'opal'
       prog = Daniel::MainProgram.new
       prog.main(%w[-e -f10])
       expect(prog.output.flatten).to eq [
-        '16 characters; 72 possible (6.17 bpc); 98.72 bits of entropy'
+        '16 characters; 72 possible (6.170 bpc); 98.720 bits of entropy'
       ]
     end
 
@@ -578,8 +578,8 @@ if RUBY_ENGINE != 'opal'
       expect(prog.output.flatten.map { |s| s.split("\n") }.flatten).to eq [
         ':length 16',
         ':possible-char 72',
-        ':bits-per-char 6.17',
-        ':bits-total 98.72'
+        ':bits-per-char 6.170',
+        ':bits-total 98.720'
       ]
     end
 
@@ -609,8 +609,9 @@ if RUBY_ENGINE != 'opal'
     end
 
     [
-      [16, 72, 6.17, 98.72, 0x0a],
-      [12, 95, 6.57, 78.84, 0x00]
+      [16,  72, '6.170',   '98.720', 0x0a],
+      [12,  95, '6.570',   '78.840', 0x00],
+      [255, 94, '6.555', '1671.525', 0x02]
     ].each do |(len, possible, bpc, bits, flags)|
       it 'produces proper estimates' do
         prog = Daniel::MainProgram.new
