@@ -6,11 +6,11 @@ Gem::Specification.new do |s|
   s.homepage    = 'https://github.com/bk2204/daniel-ruby'
   s.summary     = 'An easy-to-use password generator'
   s.license     = 'MIT'
-  s.description = <<-EOD
+  s.description = <<-DESC
     daniel is a password tool that can generate new passwords or store existing
     ones and reproduce either with a small reminder string and a master
     password.
-  EOD
+  DESC
 
   s.add_dependency('twofish', '~> 1.0.7')
   s.add_dependency('clipboard', '~> 1.0.6')
