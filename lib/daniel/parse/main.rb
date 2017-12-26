@@ -68,12 +68,12 @@ module Daniel
 
           opts.on_tail('-h', '--help', 'Show this message') do
             puts opts
-            puts <<-EOM.gsub(/^\s+/, '')
+            puts <<-HELP.gsub(/^\s+/, '')
             Read the reminders from FILE with codes matching the regexp in
             PATTERN and print them to stdout.  If --prompt is used, prompts for
             a passphrase first; only reminders matching that passphrase are
             used.
-            EOM
+            HELP
             options[:help] = true
           end
         end.parse!(args)

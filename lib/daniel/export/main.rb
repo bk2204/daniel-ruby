@@ -33,10 +33,10 @@ module Daniel
 
           opts.on_tail('-h', '--help', 'Show this message') do
             puts opts
-            puts <<-EOM.gsub(/^\s+/, '')
+            puts <<-HELP.gsub(/^\s+/, '')
             Read reminders line by line from REMINDERS and produce a Password
             Safe v3 file in EXPORT.
-            EOM
+            HELP
             options[:help] = true
           end
         end.parse!(args)

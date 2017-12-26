@@ -56,10 +56,10 @@ module Daniel
 
           opts.on_tail('-h', '--help', 'Show this message') do
             puts opts
-            puts <<-EOM.gsub(/^\s+/, '')
+            puts <<-HELP.gsub(/^\s+/, '')
             Read the entries from OLDFILE using one passphrase and rewrite them
             into NEWFILE using a different passphrase.
-            EOM
+            HELP
             options[:help] = true
           end
         end.parse!(args)

@@ -11,7 +11,7 @@ describe Daniel::Configuration do
   it 'should load YAML data' do
     pending "Opal doesn't support YAML yet" if ::RUBY_ENGINE == 'opal'
 
-    data = <<-EOM.gsub(/^\s{4}/, '')
+    data = <<-YAML.gsub(/^\s{4}/, '')
     ---
     presets:
         default:
@@ -35,7 +35,7 @@ describe Daniel::Configuration do
             version: 3
             length: 12
             anonymous: true
-    EOM
+    YAML
     c = Daniel::Configuration.new(StringIO.new(data, 'r'))
     p = Daniel::Parameters.new(0x5e, 12, 3, :salt => 'sodium chloride',
                                             :format_version => 1,
@@ -54,7 +54,7 @@ describe Daniel::Configuration do
   it 'should produce random salt if requested' do
     pending "Opal doesn't support YAML yet" if ::RUBY_ENGINE == 'opal'
 
-    data = <<-EOM.gsub(/^\s{4}/, '')
+    data = <<-YAML.gsub(/^\s{4}/, '')
     ---
     presets:
         default:
@@ -64,7 +64,7 @@ describe Daniel::Configuration do
             iterations: 12345
             version: 3
             length: 12
-    EOM
+    YAML
     salts = Array.new(5) do
       c = Daniel::Configuration.new(StringIO.new(data, 'r'))
       c.parameters(:default).salt
