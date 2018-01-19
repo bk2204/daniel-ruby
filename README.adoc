@@ -171,9 +171,9 @@ library.  Other languages, such as Perl, do not.
 What versions of Ruby are supported?
 ------------------------------------
 
-The code should run on MRI 1.8.7, 1.9.3, 2.0.0, 2.1, 2.2, and 23..  1.8 will
-require the io-console gem for interactive use; this is part of the standard
-library in 1.9.3.
+The code should run on MRI 1.8.7, 1.9.3, 2.0.0, 2.1, 2.2, 2.3, 2.4, and 2.5.
+1.8 will require the io-console gem for interactive use; this is part of the
+standard library in 1.9.3.
 
 JRuby 1.7 works fine with the jruby-openssl gem.  Other versions haven't been
 tested, but are expected to work.  At least in theory, there's no reason it
