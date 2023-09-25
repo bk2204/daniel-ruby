@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.add_dependency('twofish', '~> 1.0.7')
   s.add_dependency('clipboard', '~> 1.0.6')
 
-  s.add_development_dependency('rake', '~> 10.0')
+  s.add_development_dependency('rake', '~> 12.0')
   s.add_development_dependency('rspec', '~> 3.0')
 
   s.add_dependency('json', '~> 1.8') if ::RUBY_VERSION < '1.9'
